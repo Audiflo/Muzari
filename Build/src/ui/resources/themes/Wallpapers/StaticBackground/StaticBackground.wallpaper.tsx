@@ -47,7 +47,7 @@ const StaticBackground: React.FC<WallpaperProps> = ({
           </p>
         </div>
       ) : (
-        <h1>HTMLPlayer</h1>
+        <h1>Muzari</h1>
       )}
     </div>
   );

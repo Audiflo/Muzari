@@ -2,7 +2,7 @@
   {
     "key": "upload-music",
     "title": "Upload Your Music",
-    "content": "Click here to add your music files. HTMLPlayer supports various audio formats and can extract metadata automatically.",
+    "content": "Click here to add your music files. Muzari supports various audio formats and can extract metadata automatically.",
     "extraContent": "Click the \"Add Music\" button to upload your music files and get started!",
     "position": "bottom"
   },
@@ -16,7 +16,7 @@
   {
     "key": "settings",
     "title": "Settings",
-    "content": "Customize HTMLPlayer to your liking. Change themes, adjust audio settings, and configure keyboard shortcuts.",
+    "content": "Customize Muzari to your liking. Change themes, adjust audio settings, and configure keyboard shortcuts.",
     "extraContent": "Click here to open the settings panel and explore the options!",
     "position": "right"
   },
@@ -30,7 +30,7 @@
   {
     "key": "lyrics-button",
     "title": "Lyrics Support",
-    "content": "View synchronized lyrics embedded in your audio files. HTMLPlayer supports multiple lyric formats.",
+    "content": "View synchronized lyrics embedded in your audio files. Muzari supports multiple lyric formats.",
     "extraContent": "Click here to show or hide the lyrics panel!",
     "position": "left"
   }

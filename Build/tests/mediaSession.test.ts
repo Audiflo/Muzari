@@ -1,5 +1,6 @@
 import { MediaSessionIntegration } from "../src/platform/integrations/mediaSession";
 import type { MediaActionHandlers } from "../src/platform/integrations/mediaSession";
+import { albumArtStorage } from "../src/platform/storage";
 import type { Track } from "../src/core/engine/types";
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 
@@ -83,6 +84,7 @@ describe("MediaSessionIntegration", () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     integration.dispose();
     if (originalMediaSession) {
       Object.defineProperty(navigator, "mediaSession", originalMediaSession);
@@ -185,7 +187,7 @@ describe("MediaSessionIntegration", () => {
     ]);
   });
 
-  it("publishes metadata without artwork when the art fetch fails", async () => {
+  it("still publishes artwork when the MIME type fetch fails", async () => {
     globalThis.fetch = jest.fn(() =>
       Promise.reject(new Error("art unreachable")),
     ) as unknown as typeof fetch;
@@ -197,7 +199,37 @@ describe("MediaSessionIntegration", () => {
 
     const metadata = session.metadata as FakeMediaMetadata;
     expect(metadata.title).toBe("Song Title");
-    expect(metadata.artwork).toEqual([]);
+    expect(metadata.artwork).toEqual([
+      { src: "https://art.example/cover.png", sizes: "512x512" },
+    ]);
+  });
+
+  it("prefers the live storage object URL over a stale track artwork", async () => {
+    jest
+      .spyOn(albumArtStorage, "get")
+      .mockReturnValue("blob:https://app.example/live-art");
+    globalThis.fetch = jest.fn(() =>
+      Promise.resolve({
+        blob: () => Promise.resolve(new Blob([], { type: "image/jpeg" })),
+      }),
+    ) as unknown as typeof fetch;
+
+    await integration.initialize();
+    await integration.updateMetadata(
+      createTrack({ albumArt: "https://stale.example/evicted.png" }),
+    );
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "blob:https://app.example/live-art",
+    );
+    const metadata = session.metadata as FakeMediaMetadata;
+    expect(metadata.artwork).toEqual([
+      {
+        src: "blob:https://app.example/live-art",
+        sizes: "512x512",
+        type: "image/jpeg",
+      },
+    ]);
   });
 
   it("omits artwork when the track has no album art", async () => {

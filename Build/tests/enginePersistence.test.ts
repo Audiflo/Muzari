@@ -56,21 +56,21 @@ describe("engineSettingsPersistence", () => {
 
   it("returns null for an unversioned legacy blob", () => {
     localStorage.setItem(
-      "htmlplayer-engine-settings",
+      "muzari-engine-settings",
       JSON.stringify({ volume: 0.4 }),
     );
     expect(engineSettingsPersistence.load()).toBeNull();
   });
 
   it("ignores the corrupted blob and returns null", () => {
-    localStorage.setItem("htmlplayer-engine-settings", "{not json");
+    localStorage.setItem("muzari-engine-settings", "{not json");
     expect(engineSettingsPersistence.load()).toBeNull();
   });
 
   it("clears the stored settings", () => {
     engineSettingsPersistence.save(fullSettings({}));
     engineSettingsPersistence.clear();
-    expect(localStorage.getItem("htmlplayer-engine-settings")).toBeNull();
+    expect(localStorage.getItem("muzari-engine-settings")).toBeNull();
   });
 
   it("does not throw when localStorage is unavailable", () => {

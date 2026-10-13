@@ -1,8 +1,8 @@
 {
-  "title": "HTMLPlayer",
+  "title": "Muzari",
   "update": {
     "available": "Update Available",
-    "description": "A new version of HTMLPlayer is ready to install.",
+    "description": "A new version of Muzari is ready to install.",
     "now": "Update Now",
     "later": "Later"
   },
@@ -225,7 +225,7 @@
     "browseLibrary": "Go to library",
     "quickActions": "Quick actions",
     "smartStart": "Play something",
-    "smartStartDescription": "HTMLPlayer picks a great next track.",
+    "smartStartDescription": "Muzari picks a great next track.",
     "libraryDescription": "Jump into the full song list.",
     "favorites": "Play favorites",
     "favoritesDescription": "Shuffle the songs you love the most.",
@@ -272,8 +272,8 @@
   "menu": "Menu",
   "playlists": "Playlists",
   "aboutMenu": "About",
-  "aboutHTMLPlayer": "About HTMLPlayer",
-  "aboutHTMLPlayerDesc": "HTMLPlayer v2.0 - A modern music streaming interface built with React.",
+  "aboutMuzari": "About Muzari",
+  "aboutMuzariDesc": "Muzari - A modern music streaming app built with React.",
   "visualizers": {
     "bars": {
       "name": "Bars",

@@ -21,7 +21,7 @@ fn set_discord_presence(details: String, state: String) -> Result<(), String> {
         .assets(
             discord_rich_presence::activity::Assets::new()
                 .large_image(DISCORD_LARGE_IMAGE_KEY)
-                .large_text("HTMLPlayer"),
+                .large_text("Muzari"),
         );
 
     client

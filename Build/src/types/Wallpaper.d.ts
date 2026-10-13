@@ -10,6 +10,6 @@ declare global {
   }
 }
 
-declare module "htmlplayer/wallpaper" {
+declare module "muzari/wallpaper" {
   export type { WallpaperProps };
 }

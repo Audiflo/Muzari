@@ -107,7 +107,7 @@ export function SettingsExperimental({
       <div className={styles.settingItem}>
         <div className={styles.settingInfo}>
           <label htmlFor="discord-enabled">
-            Enable Discord Integration (Broken Beta)
+            Enable Discord Integration (Broken)
           </label>
           <p className={styles.settingDescription}>
             Note: Discord&apos;s RPC API requires special approval. Currently
@@ -142,7 +142,7 @@ export function SettingsExperimental({
                   toast.success(t("discord.disconnected"));
                 } else {
                   window.open(
-                    "https://discord.com/oauth2/authorize?client_id=1419480226970341476&response_type=code&redirect_uri=https%3A%2F%2Fhtmlplayer-backend.onrender.com%2Foauth%2Fcallback&scope=identify",
+                    "https://discord.com/oauth2/authorize?client_id=1419480226970341476&response_type=code&redirect_uri=https%3A%2F%2Fmuzari-backend.onrender.com%2Foauth%2Fcallback&scope=identify",
                     "_blank",
                   );
                   toast.info(t("discord.completeAuth"));

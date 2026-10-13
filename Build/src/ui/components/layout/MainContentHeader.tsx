@@ -75,7 +75,7 @@ export function MainContentHeader({
     switch (navState.view) {
       case "home":
       case "songs":
-        return "HTMLPlayer";
+        return "Muzari";
       case "artist":
         return `Artist: ${navState.artist}`;
       case "album":

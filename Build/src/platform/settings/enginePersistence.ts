@@ -15,7 +15,7 @@ import { deserializeVersionedJson, serializeVersioned } from "../validators";
 
 const logger = createLogger("engineSettingsPersistence");
 
-const ENGINE_SETTINGS_KEY = "htmlplayer-engine-settings";
+const ENGINE_SETTINGS_KEY = "muzari-engine-settings";
 
 function clampVolume(value: unknown): number | undefined {
   if (typeof value !== "number" || !Number.isFinite(value)) return undefined;

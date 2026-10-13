@@ -279,10 +279,11 @@ export function useKomorebi(
       if (shouldSync && userId) {
         discord.setUserId(userId);
         discordActive = true;
-        void discord.updatePresence(
-          track,
-          engine.getState().state === "playing",
-        );
+        // A crossfade reports `transitioning` while audio is still playing.
+        const playbackState = engine.getState().state;
+        const isPlaying =
+          playbackState === "playing" || playbackState === "transitioning";
+        void discord.updatePresence(track, isPlaying);
       } else if (discordActive) {
         discordActive = false;
         void discord.clearPresence();

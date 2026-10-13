@@ -20,7 +20,7 @@ const isDesktop = buildTarget === "desktop";
 const isWeb = buildTarget === "web";
 
 const RAW_BASE_PATH =
-  process.env.BASE_PATH ?? (isDesktop ? "/" : "/beta/HTMLPlayer/");
+  process.env.BASE_PATH ?? (isDesktop ? "/" : "/Muzari/");
 const BASE_PATH = RAW_BASE_PATH.endsWith("/")
   ? RAW_BASE_PATH
   : `${RAW_BASE_PATH}/`;
@@ -68,9 +68,9 @@ if (isWeb && !isSingleFile) {
       },
 
       manifest: {
-        id: "htmlplayer",
-        name: "HTMLPlayer (beta)",
-        short_name: "HTMLPlayer(beta)",
+        id: "muzari",
+        name: "Muzari",
+        short_name: "Muzari",
         description:
           "A modern music player interface with playlists, song management, visualizers, and offline support.",
         categories: ["music", "audio", "entertainment", "tools"],

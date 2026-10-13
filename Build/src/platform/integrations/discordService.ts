@@ -14,7 +14,7 @@ interface PresenceResponse {
 
 export class DiscordService {
   private static readonly API_BASE_URL =
-    "https://htmlplayer-backend.onrender.com";
+    "https://muzari-backend.onrender.com";
   private static instance: DiscordService | null = null;
 
   private constructor() {}

@@ -1,16 +1,16 @@
-# HTMLPlayer
+# Muzari
 
 Modern local-first audio player for the browser and for desktop (via Tauri) with a full playlist workflow, rich metadata pipeline, and deep customization options.
 
-[![All Contributors](https://img.shields.io/github/all-contributors/HTMLToolkit/HTMLPlayer?color=ee8449&style=flat-square)](#contributors)
-![Version](https://img.shields.io/badge/version-2.0.0-blue?style=flat-square)
-![License](https://img.shields.io/github/license/HTMLToolkit/HTMLPlayer?style=flat-square)
-![Build Status](https://img.shields.io/github/actions/workflow/status/HTMLToolkit/HTMLPlayer/build.yml?style=flat-square)
+[![All Contributors](https://img.shields.io/github/all-contributors/Audiflo/Muzari?color=ee8449&style=flat-square)](#contributors)
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
+![License](https://img.shields.io/github/license/Audiflo/Muzari?style=flat-square)
+![Build Status](https://img.shields.io/github/actions/workflow/status/Audiflo/Muzari/build.yml?style=flat-square)
 
 ![Alt](https://repobeats.axiom.co/api/embed/29883a69034cdc74979defb46de1f9a1de895288.svg "Repobeats analytics image")
 
 <!-- markdownlint-disable MD033 -->
-<a href="https://htmltoolkit.github.io/HTMLPlayer">
+<a href="https://audiflo.github.io/Muzari">
   <picture>
     <source srcset="https://chromeos.dev/badges/en/dark.svg" media="(prefers-color-scheme: dark)">
     <img src="https://chromeos.dev/badges/en/primary.svg" alt="Add to Chromebook"/>
@@ -40,7 +40,7 @@ Modern local-first audio player for the browser and for desktop (via Tauri) with
 
 ## Why v2.0
 
-HTMLPlayer started as a single HTML file in v1.0. Version 2.0 is a ground-up rewrite using React, TypeScript, Vite, Zustand, and a modular helper layer under `Build/src`. The new stack unlocks desktop builds through Tauri, dramatically improves metadata handling, adds a smart shuffle and caching engine, and exposes personalization controls (themes, wallpapers, icon packs, keyboard shortcuts, languages). Everything still runs locally: no cloud backend is required, and your library is persisted in IndexedDB.
+Muzari started as a single HTML file in v1.0. Version 2.0 is a ground-up rewrite using React, TypeScript, Vite, Zustand, and a modular helper layer under `Build/src`. The new stack unlocks desktop builds through Tauri, dramatically improves metadata handling, adds a smart shuffle and caching engine, and exposes personalization controls (themes, wallpapers, icon packs, keyboard shortcuts, languages). Everything still runs locally: no cloud backend is required, and your library is persisted in IndexedDB.
 
 ## Feature Overview
 
@@ -80,11 +80,11 @@ HTMLPlayer started as a single HTML file in v1.0. Version 2.0 is a ground-up rew
 * IndexedDB keeps three stores (`LIBRARY`, `SETTINGS`, `AUDIO_DATA`) so metadata, preferences, and raw audio are isolated. Clearing or exporting one does not nuke the others.
 * Dialog dismissal choices (delete confirmation, import warnings) are saved per key and can be reset in Settings.
 * A beta panel enables Discord presence logging and an `Eruda` mobile console for debugging on-device.
-* The optional backend (`Backend/`) exposes OAuth login and token storage when you want Discord Rich Presence to update your user status. Currently in progress and unused as Discord, especially for web apps like HTMLPlayer, needs to specially approve updating rich prescence.
+* The optional backend (`Backend/`) exposes OAuth login and token storage when you want Discord Rich Presence to update your user status. Currently in progress and unused as Discord, especially for web apps like Muzari, needs to specially approve updating rich prescence.
 
 #### Tiny note
 
-> One way to speed this up would be to star the repository, as it would help let me show that HTMLPlayer has a lot of users!
+> One way to speed this up would be to star the repository, as it would help let me show that Muzari has a lot of users!
 
 ### Platform reach
 
@@ -118,8 +118,8 @@ HTMLPlayer started as a single HTML file in v1.0. Version 2.0 is a ground-up rew
 ### Clone and install
 
 ```bash
-git clone https://github.com/HTMLToolkit/HTMLPlayer.git
-cd HTMLPlayer/Build
+git clone https://github.com/Audiflo/Muzari.git
+cd Muzari/Build
 npm install
 ```
 
@@ -194,7 +194,7 @@ Run `npm start` to boot the Express server locally. The front-end will log reque
 * **Audio Controls**: master volume, tempo, pitch in semitones, crossfade length, gapless toggle, and Safari-specific notifications.
 * **Playback Defaults**: shuffle on start, smart shuffle, repeat mode, autoplay, and session restore.
 * **Interface**: color themes, icon sets, wallpapers (or no wallpaper), theme mode (light, dark, auto), compact layout, album art visibility, lyrics default, UI language, cache clearing, and dialog reset.
-* **Shortcuts**: configure every keyboard shortcut (play/pause, prev/next, volume, mute, shuffle, repeat, lyrics, visualizer, global search, open settings). Values are validated to avoid collisions and saved in `HTMLPlayerShortcuts`.
+* **Shortcuts**: configure every keyboard shortcut (play/pause, prev/next, volume, mute, shuffle, repeat, lyrics, visualizer, global search, open settings). Values are validated to avoid collisions and saved in `MuzariShortcuts`.
 * **Experimental**: enable Discord presence logging, paste a manual user ID if you bypass OAuth, and toggle the Eruda debug console when testing on phones.
 
 All switches immediately persist through `helpers/musicIndexedDbHelper.ts`, so refreshing the tab or relaunching the desktop build keeps your preferences.

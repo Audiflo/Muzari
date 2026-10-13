@@ -107,28 +107,29 @@ export class MediaSessionIntegration extends BaseIntegration {
       album: track.album,
     };
 
-    let albumArtUrl = track.albumArt;
-    if (!albumArtUrl) {
-      albumArtUrl =
-        albumArtStorage.get(track.id) ??
-        (await albumArtStorage.load(track.id)) ??
-        undefined;
-    }
+    // Prefer the storage-managed object URL: the cache keeps it alive and can
+    // refresh it, whereas `track.albumArt` may point at a revoked blob (for
+    // example the upcoming track during a crossfade, whose artwork was never
+    // rendered and may have been evicted from the cache).
+    const albumArtUrl =
+      albumArtStorage.get(track.id) ??
+      (await albumArtStorage.load(track.id)) ??
+      track.albumArt ??
+      undefined;
 
     if (albumArtUrl) {
+      const artwork: MediaImage = { src: albumArtUrl, sizes: "512x512" };
       try {
         const response = await fetch(albumArtUrl);
         const blob = await response.blob();
-        metadata.artwork = [
-          {
-            src: albumArtUrl,
-            sizes: "512x512",
-            type: blob.type || "image/jpeg",
-          },
-        ];
+        if (blob.type) {
+          artwork.type = blob.type;
+        }
       } catch {
-        logger.warn("Failed to load album art for MediaSession");
+        // Publish the artwork regardless; only its MIME type is unknown.
+        logger.warn("Failed to determine album art type for MediaSession");
       }
+      metadata.artwork = [artwork];
     }
 
     this.session.metadata = new MediaMetadata(metadata);

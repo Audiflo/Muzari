@@ -1,13 +1,11 @@
 # Todo
 
-## HTMLPlayer v2
-
 - [ ] Open Search should open a global search modal overlay, similar to Spotlight Search
 
 - [X] Add TS/TSX support and wallpapers for interactivity
   - [X] Start with built-in wallpapers using TS/TSX components, loaded via a wallpaper loader (similar to themeLoader)
-  - [ ] Use sandboxed iframe with postMessage for API access to HTMLPlayer internals (playback state, settings, etc.)
-  - [ ] Eventually have an NPM module (@htmlplayer/api) (using above postmessage system and validation/abstraction) for external wallpaper development, allowing user-created interactive wallpapers
+  - [ ] Use sandboxed iframe with postMessage for API access to Muzari internals (playback state, settings, etc.)
+  - [ ] Eventually have an NPM module (@audiflo/muzari-api) (using above postmessage system and validation/abstraction) for external wallpaper development, allowing user-created interactive wallpapers
 
 - [ ] Add showDirectoryPicker API and ponyfil
   - but `showDirectoryPicker` is not supported in all browsers (e.g., Safari).
@@ -42,7 +40,7 @@
 
 - [ ] Animated album art transitions, like fade/zoom/warp album art between songs.
 
-- [ ] 🔼 I'll need to add some sort of quick guide and help menu or something to HTMLPlayer. (extensive and interactive ig)
+- [ ] 🔼 I'll need to add some sort of quick guide and help menu or something to Muzari. (extensive and interactive ig)
 
 - [ ] 🔼 custom theme builder with options for custom picture backgrounds
 
@@ -67,12 +65,12 @@
 
 ### LocalDataDB (workshop name)
 
-- Basically all your data (which songs played, how much, etc. ) but local, and gets smarter the more you use HTMLPlayer
+- Basically all your data (which songs played, how much, etc. ) but local, and gets smarter the more you use Muzari
 
 - [ ] PointPerSong: All songs are assigned a value, which is increased by inverse play count (to prevent overplaying), similarity to current song, time of day, season even if relevant, etc. and decreased by opposites. This is essentially like an weighted scoring system for which song to play next.
   - **freshness**
   - powers shuffle algorithm (will replace both Smart Shuffle and Shuffle)
-  - [ ] Make a choose for me/auto start/something button so that htmlplayer auto chooses what to play first, and use a REALLY good algorithm using PointPerSong so that it's **perfect** every **single** time
+  - [ ] Make a choose for me/auto start/something button so that Muzari auto chooses what to play first, and use a REALLY good algorithm using PointPerSong so that it's **perfect** every **single** time
     - Instead of picking the absolute highest score (which can be too predictable), use a Weighted Random Algorithm like Vose's Alias Method for peak
   - [ ] Play more/less often dropdown in SongActionsDropdown that manually influences PointPerSong
 
@@ -87,9 +85,9 @@
 
 - [ ] 🔼 a Whisper based, fully in browser, Live Lyrics thing
 
-- [ ] 🔼 (when HTMLPlayer is almost ready) add HTMLPlayer Store (below)
+- [ ] 🔼 (when Muzari is almost ready) add Muzari Store (below)
 
-### HTMLPlayer Store
+### Muzari Store
 
 - [ ] a basic store for Themes, Icons, and Visualizers
 
@@ -104,7 +102,7 @@
 
 #### UI
 
-- [ ] a similar UI style to HTMLPlayer for sure
+- [ ] a similar UI style to Muzari for sure
   - but maybe more white themed
   - clicking/tapping on name (ex NellowTCS) causes artist page to open
 
@@ -128,7 +126,7 @@
 - [ ] Smart playlists (maybe)
 
 - [ ] scrobbling using Last.fm or other services
-  - maybe even a htmlplayer one :D
+  - maybe even a Muzari one :D
 
 - [ ] Discord Integration
   - Implemented and theoretically works but requires Discord approval for Rich Presence API (via server) access. Need to submit Discord app for verification to enable it.
@@ -139,8 +137,6 @@
     Improvement: Add a equalizer using the Web Audio API or an external library.
 
 ## Done
-
-### v2.0.0
 
 - [X] A versioning system, linked with `send-beta-build.yml` and the `links.json` but different file, supporting both git commits (for beta/dev stuff) and github latest releases for normal people use
   - maybe this isn't needed (note to self, read *all* of the docs first): <https://vite-pwa-org.netlify.app/frameworks/react.html#react>
@@ -183,7 +179,7 @@
 
 - [X] Slide out settings menu on close
 
-- [X] Prevent/recover from Failed to play song so that HTMLPlayer and system don't get unsynced
+- [X] Prevent/recover from Failed to play song so that Muzari and system don't get unsynced
   - (`The play() request was interrupted by a new load request. https://goo.gl/LdLk22`)
 
 - [X] fix the UI of the 'Repeat Once' button
@@ -255,7 +251,7 @@
 
 - [X] Add `Don't show again? [ ]` to all modals
 
-- [X] add htmlplayer to system right click menu (file_handler)
+- [X] add Muzari to system right click menu (file_handler)
 
 - [X] Design a custom icon abstraction layer inspired by i18n
   - [X] Must be easily configurable and swappable
@@ -281,9 +277,9 @@
   - ~~[PitchShift](https://tonejs.github.io/docs/15.1.22/classes/PitchShift.html)~~
     - used custom approach instead
 
-- [X] add Update HTMLPlayer button in settings.tsx that clears page cache (but not local storage or indexeddb) and clears i18n cache
+- [X] add Update Muzari button in settings.tsx that clears page cache (but not local storage or indexeddb) and clears i18n cache
 
-- [X] replace white screen on load with cool "Loading HTMLPlayer..." thing
+- [X] replace white screen on load with cool "Loading Muzari..." thing
 
 - [X] Make all 3-dot menus also open on right click
 
@@ -386,13 +382,13 @@
 
 - [X] And I think that the album art is messed up by either the format, or that the title is in a diff language
 
-- [X] ⏫ I originally, (in [v1](https://htmltoolkit.github.io/HTMLPlayer/)) just added a checkbox to the songs and you could select as many as you wanted. Reimplement this for v2.
+- [X] ⏫ I originally, (in [v1](https://audiflo.github.io/Muzari/)) just added a checkbox to the songs and you could select as many as you wanted. Reimplement this.
 
 - [X] 🔼 A "select all" button would solve the folder issue altogether as well
 
 - [X] 🔽 I should probably add a hours counter for time
 
-- [X] ⏫ HTMLPlayer batch upload is wayyyy too slow right now, so I'll have to test to find the sweet spot
+- [X] ⏫ Muzari batch upload is wayyyy too slow right now, so I'll have to test to find the sweet spot
 
 - [X] Deleting or adding songs doesn't update the UI
 

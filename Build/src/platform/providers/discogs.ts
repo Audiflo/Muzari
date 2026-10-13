@@ -22,7 +22,7 @@ export class DiscogsProvider extends BaseProvider implements AlbumArtProvider {
 
     try {
       const headers: Record<string, string> = {
-        "User-Agent": "HTMLPlayer/2.0",
+        "User-Agent": "Muzari/1.0",
       };
 
       if (this.token) {
