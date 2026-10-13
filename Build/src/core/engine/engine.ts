@@ -73,6 +73,7 @@ export class KomorebiEngine {
   private scheduledTransitionId: number | null = null;
   private crossfadeTimer: number | null = null;
   private crossfadeSource: CrossfadeSource | null = null;
+  private crossfadeFinish: (() => void) | null = null;
 
   private readonly loadOp = new AsyncOp();
   private readonly trackResolver:
@@ -283,6 +284,7 @@ export class KomorebiEngine {
 
   pause(): void {
     if (this.stateMachine.isPlaying()) {
+      this.crossfadeFinish?.();
       this.backend.pause();
       this.stateMachine.transition("paused");
       this.stopTimeUpdates();
@@ -910,6 +912,28 @@ export class KomorebiEngine {
     const durationMs = Math.max(50, this.settings.crossfade * SECONDS_TO_MS);
     const startTime = performance.now();
 
+    const finish = (): void => {
+      if (this.crossfadeSource !== source) return;
+
+      if (this.crossfadeTimer !== null) {
+        clearTimeout(this.crossfadeTimer);
+        this.crossfadeTimer = null;
+      }
+      this.crossfadeSource = null;
+      this.crossfadeFinish = null;
+      commit(source);
+
+      const committedDuration = this.backend.getDuration();
+      if (committedDuration > 0 && committedDuration !== this.duration) {
+        this.duration = committedDuration;
+        this.events.emit("durationchange", { duration: this.duration });
+      }
+      this.currentTime = this.backend.getCurrentTime();
+      this.syncMediaSession();
+    };
+
+    this.crossfadeFinish = finish;
+
     const step = (): void => {
       if (this.crossfadeSource !== source) return;
 
@@ -926,17 +950,7 @@ export class KomorebiEngine {
         return;
       }
 
-      this.crossfadeTimer = null;
-      this.crossfadeSource = null;
-      commit(source);
-
-      const committedDuration = this.backend.getDuration();
-      if (committedDuration > 0 && committedDuration !== this.duration) {
-        this.duration = committedDuration;
-        this.events.emit("durationchange", { duration: this.duration });
-      }
-      this.currentTime = this.backend.getCurrentTime();
-      this.syncMediaSession();
+      finish();
     };
 
     this.crossfadeTimer = window.setTimeout(step, 0);
@@ -952,6 +966,7 @@ export class KomorebiEngine {
       this.crossfadeSource = null;
       source.dispose();
     }
+    this.crossfadeFinish = null;
   }
 
   private cancelScheduledTransition(): void {

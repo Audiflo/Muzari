@@ -773,6 +773,51 @@ describe("KomorebiEngine", () => {
     expect(committed.currentTime).toBeCloseTo(5.5);
   });
 
+  it("commits the in-flight crossfade when paused mid-fade", async () => {
+    let now = 0;
+    const xfadeBackend = createMockBackend();
+    xfadeBackend.getCurrentTime = () => now;
+    const source = {
+      setOutputGain: jest.fn(),
+      getCurrentTime: () => 3,
+      getDuration: () => 200,
+      dispose: jest.fn(),
+    };
+    const commitCrossfadeSource = jest.fn();
+    xfadeBackend.createCrossfadeSource = jest.fn().mockImplementation(() => {
+      now = 0;
+      return Promise.resolve(source);
+    });
+    xfadeBackend.commitCrossfadeSource = commitCrossfadeSource;
+    xfadeBackend.setOutputGain = jest.fn();
+    xfadeBackend.getDuration = () => 200;
+
+    engine = new KomorebiEngine(xfadeBackend, {
+      crossfade: { duration: 2, shape: "linear" },
+      gapless: { enabled: false },
+      smartShuffle: true,
+      autoPlayNext: true,
+    });
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    now = 179.9;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(commitCrossfadeSource).not.toHaveBeenCalled();
+    expect(engine.getState().state).toBe("playing");
+
+    engine.pause();
+    expect(engine.getState().state).toBe("paused");
+    expect(commitCrossfadeSource).toHaveBeenCalledTimes(1);
+    expect(commitCrossfadeSource).toHaveBeenCalledWith(source);
+    expect(xfadeBackend.pause).toHaveBeenCalledTimes(1);
+
+    await new Promise((resolve) => setTimeout(resolve, 2600));
+    expect(commitCrossfadeSource).toHaveBeenCalledTimes(1);
+  });
+
   it("drives the fade for the configured second-valued duration", async () => {
     let now = 0;
     const xfadeBackend = createMockBackend();

@@ -106,6 +106,7 @@ export const Icon: React.FC<IconProps> = ({
     const cacheKey = `${name}::${setId ?? ""}::${currentSetId ?? ""}::${fallbackOrder?.join(",") ?? ""}`;
 
     if (cacheKey === lastFetchedKeyRef.current && resolvedIcon !== null) {
+      setIsLoading(false);
       return;
     }
 

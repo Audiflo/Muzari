@@ -233,8 +233,10 @@ export const selectCurrentPlaylist = (
   store: KomorebiStoreState,
 ): EngineState["currentPlaylist"] => store.snapshot?.currentPlaylist ?? null;
 
-export const selectIsPlaying = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.state === "playing";
+export const selectIsPlaying = (store: KomorebiStoreState): boolean => {
+  const state = store.snapshot?.state;
+  return state === "playing" || state === "transitioning";
+};
 
 export const selectVolume = (store: KomorebiStoreState): number =>
   store.snapshot?.settings.volume ?? DEFAULT_ENGINE_SETTINGS.volume;

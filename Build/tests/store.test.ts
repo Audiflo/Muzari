@@ -226,6 +226,31 @@ describe("useKomorebiStore", () => {
     });
   });
 
+  describe("selectIsPlaying", () => {
+    const withState = (state: EngineState["state"]): void => {
+      useKomorebiStore.setState({ snapshot: makeState({ state }) });
+    };
+
+    it("returns false without a snapshot", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectIsPlaying(store)).toBe(false);
+    });
+
+    it("returns true only while the engine is playing", () => {
+      withState("paused");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(false);
+      withState("loading");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(false);
+      withState("playing");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(true);
+    });
+
+    it("treats the crossfade sub-state as playing", () => {
+      withState("transitioning");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(true);
+    });
+  });
+
   describe("attachEngine", () => {
     it("loads the initial snapshot and derives loading", () => {
       const fake = new FakeEngine();
