@@ -42,9 +42,9 @@ export class StreamingDecoderBackend {
     return this.graph?.getAnalyser() ?? null;
   }
 
-  onTimeUpdate(_callback: (time: number) => void): void {}
+  onDurationChange(_callback: (duration: number) => void): void {}
 
-  offTimeUpdate(_callback: (time: number) => void): void {}
+  offDurationChange(_callback: (duration: number) => void): void {}
 
   onEnded(_callback: () => void): void {}
 

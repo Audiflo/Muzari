@@ -16,10 +16,6 @@ export interface MediaActionHandlers {
 
 type MediaPlaybackState = "playing" | "paused" | "none";
 
-interface MediaSessionWithPlaybackState extends MediaSession {
-  setPlaybackState?(state: MediaPlaybackState): void;
-}
-
 export class MediaSessionIntegration extends BaseIntegration {
   name = "Media Session";
   private session: MediaSession | null = null;
@@ -140,8 +136,7 @@ export class MediaSessionIntegration extends BaseIntegration {
 
   setPlaybackState(state: MediaPlaybackState): void {
     if (!this.session) return;
-    const session = this.session as MediaSessionWithPlaybackState;
-    session.setPlaybackState?.(state);
+    this.session.playbackState = state;
   }
 
   setPositionState(duration: number, position: number, playbackRate = 1): void {

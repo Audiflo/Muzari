@@ -42,9 +42,9 @@ describe("HTMLAudioBackend", () => {
     backend.setPlaybackRate(0.1);
   });
 
-  it("should register time update callback", () => {
+  it("should register duration change callback", () => {
     const callback = jest.fn();
-    backend.onTimeUpdate(callback);
+    backend.onDurationChange(callback);
     backend.onEnded(() => {});
     backend.onError(() => {});
   });

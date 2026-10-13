@@ -1,10 +1,15 @@
 import type { EngineSettings } from "../../core/engine/types";
-import { isPlainObject, isRepeatMode } from "../../core/engine/validators";
+import {
+  isPlainObject,
+  isRepeatMode,
+  isReplayGainMode,
+} from "../../core/engine/validators";
 import {
   clampVolume as sharedClampVolume,
   clampRate as sharedClampRate,
   clampCrossfade as sharedClampCrossfade,
 } from "../audio/clamp";
+import { MAX_REPLAY_GAIN_DB } from "../audio/replayGain";
 import { createLogger } from "../../helpers/logger";
 import { deserializeVersionedJson, serializeVersioned } from "../validators";
 
@@ -27,14 +32,14 @@ function clampSemitones(value: unknown): number | undefined {
   return Math.min(12, Math.max(-12, value));
 }
 
-function clampNonNegative(value: unknown): number | undefined {
-  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
-  return Math.max(0, value);
-}
-
 function clampCrossfadeSeconds(value: unknown): number | undefined {
   if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
   return sharedClampCrossfade(value);
+}
+
+function clampReplayGainPreamp(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return Math.max(-MAX_REPLAY_GAIN_DB, Math.min(MAX_REPLAY_GAIN_DB, value));
 }
 
 function toOptionalBoolean(value: unknown): boolean | undefined {
@@ -47,22 +52,20 @@ export function sanitizeEngineSettings(raw: unknown): Partial<EngineSettings> {
   const candidate = raw as Record<string, unknown>;
   const volume = clampVolume(candidate.volume);
   const crossfade = clampCrossfadeSeconds(candidate.crossfade);
-  const crossfadeBeforeGapless = clampNonNegative(
-    candidate.crossfadeBeforeGapless,
-  );
   const tempo = clampRate(candidate.tempo);
   const pitch = clampSemitones(candidate.pitch);
   const autoPlayNext = toOptionalBoolean(candidate.autoPlayNext);
   const gaplessPlayback = toOptionalBoolean(candidate.gaplessPlayback);
   const smartShuffle = toOptionalBoolean(candidate.smartShuffle);
   const defaultShuffle = toOptionalBoolean(candidate.defaultShuffle);
+  const replayGainEnabled = toOptionalBoolean(candidate.replayGainEnabled);
+  const replayGainPreampDb = clampReplayGainPreamp(
+    candidate.replayGainPreampDb,
+  );
 
   const result: Partial<EngineSettings> = {};
   if (volume !== undefined) result.volume = volume;
   if (crossfade !== undefined) result.crossfade = crossfade;
-  if (crossfadeBeforeGapless !== undefined) {
-    result.crossfadeBeforeGapless = crossfadeBeforeGapless;
-  }
   if (autoPlayNext !== undefined) result.autoPlayNext = autoPlayNext;
   if (tempo !== undefined) result.tempo = tempo;
   if (pitch !== undefined) result.pitch = pitch;
@@ -72,6 +75,15 @@ export function sanitizeEngineSettings(raw: unknown): Partial<EngineSettings> {
   if (defaultShuffle !== undefined) result.defaultShuffle = defaultShuffle;
   if (isRepeatMode(candidate.defaultRepeat)) {
     result.defaultRepeat = candidate.defaultRepeat;
+  }
+  if (replayGainEnabled !== undefined) {
+    result.replayGainEnabled = replayGainEnabled;
+  }
+  if (replayGainPreampDb !== undefined) {
+    result.replayGainPreampDb = replayGainPreampDb;
+  }
+  if (isReplayGainMode(candidate.replayGainMode)) {
+    result.replayGainMode = candidate.replayGainMode;
   }
 
   return result;

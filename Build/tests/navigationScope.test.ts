@@ -1,5 +1,6 @@
 import { describe, it, expect } from "@jest/globals";
 import {
+  allSongsPlaylist,
   queueForNavigation,
   songsForNavigation,
   type NavigationScope,
@@ -168,6 +169,18 @@ describe("songsForNavigation", () => {
     const scope = scopeWith([track("a"), track("b")]);
 
     expect(songsForNavigation(nav({ view: "home" }), scope)).toHaveLength(2);
+  });
+});
+
+describe("allSongsPlaylist", () => {
+  it("builds the whole-library queue under the canonical all-songs id", () => {
+    const songs = [track("a"), track("b"), track("c")];
+
+    expect(allSongsPlaylist(songs, "All Songs")).toEqual({
+      id: "all-songs",
+      name: "All Songs",
+      songs,
+    });
   });
 });
 

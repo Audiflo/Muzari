@@ -1,9 +1,14 @@
 import type {
-  IconSet,
+  IconDefinition,
+  IconDefinitionMap,
+  IconLibraryConfig,
+  IconLibraryConfigMap,
   IconLibraryMap,
-  ResolvedIcon,
+  IconPropTransformer,
   ResolvedComponentIcon,
-} from "../types";
+  ResolvedIcon,
+} from "../../../types/icons";
+import type { IconSet } from "../types";
 import type { ThemingEvents } from "../events";
 import { createLogger, throwError } from "../../../helpers/logger";
 
@@ -11,15 +16,20 @@ const logger = createLogger("icon");
 
 const ICON_STORAGE_KEY = "selected-icon-set";
 
-interface IconSetModule {
+interface ThemeJsonModule {
   default: {
     id: string;
     label: string;
     themeName: string;
     icons?: Record<string, unknown>;
     cssFile?: string;
-    libraries?: IconLibraryMap;
   };
+}
+
+interface IconModule {
+  default: IconDefinitionMap;
+  libraries?: IconLibraryMap;
+  libraryConfig?: IconLibraryConfigMap;
 }
 
 const iconJsonFiles = import.meta.glob(
@@ -75,6 +85,18 @@ const builtinLibraries: Record<string, () => Promise<Record<string, unknown>>> =
     },
   };
 
+function asIconComponent(
+  value: unknown,
+): React.ComponentType<React.SVGProps<SVGSVGElement>> | null {
+  if (typeof value === "function") {
+    return value as React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }
+  if (typeof value === "object" && value !== null && "$$typeof" in value) {
+    return value as React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }
+  return null;
+}
+
 export class IconEngine {
   private iconSets: IconSet[] = [];
   private currentSet: IconSet | null = null;
@@ -90,7 +112,7 @@ export class IconEngine {
     const loaded: IconSet[] = [];
 
     for (const [path, module] of Object.entries(iconJsonFiles)) {
-      const json = (module as IconSetModule).default || module;
+      const json = (module as ThemeJsonModule).default || module;
 
       if (json.icons || !json.cssFile) {
         const iconSet: IconSet = {
@@ -158,59 +180,26 @@ export class IconEngine {
     }
 
     try {
-      const module = await iconModuleFiles[this.currentSet.path]!();
-      const icons = (module as { default?: IconLibraryMap }).default;
-
-      if (icons && icons[this.currentSet.id]?.[name]) {
-        const icon = icons[this.currentSet.id]![name];
-        if (icon && typeof icon === "object" && "type" in icon) {
-          const def = icon as { type: string; library: string; icon: string };
-          if (def.type === "library" && def.library === "lucide") {
-            if (!this.loadedLibraries.has("lucide")) {
-              const lucideLoader = builtinLibraries["lucide"];
-              if (lucideLoader) {
-                this.loadedLibraries.set("lucide", await lucideLoader());
-              }
-            }
-            const lib = this.loadedLibraries.get("lucide") as Record<
-              string,
-              React.ComponentType<{ size?: number; color?: string }>
-            >;
-            const iconComponent = lib[def.icon];
-            if (iconComponent) {
-              const resolved: ResolvedComponentIcon = {
-                type: "component",
-                Component: iconComponent,
-                component: iconComponent,
-              };
-              this.loadedIcons.set(cacheKey, resolved);
-              return resolved;
-            }
-          }
-        }
-        this.loadedIcons.set(cacheKey, icon);
-        return icon as ResolvedIcon;
+      const module = (await iconModuleFiles[this.currentSet.path]!()) as
+        | IconModule
+        | undefined;
+      if (!module) {
+        return null;
       }
 
-      for (const [libName, loader] of Object.entries(builtinLibraries)) {
-        if (!this.loadedLibraries.has(libName)) {
-          this.loadedLibraries.set(libName, await loader());
-        }
-        const lib = this.loadedLibraries.get(libName) as Record<
-          string,
-          React.ComponentType<{ size?: number; color?: string }>
-        >;
-        const exactName = name.charAt(0).toUpperCase() + name.slice(1);
-        const iconComponent = lib[name] || lib[exactName];
-        if (iconComponent) {
-          const resolved: ResolvedComponentIcon = {
-            type: "component",
-            Component: iconComponent,
-            component: iconComponent,
-          };
-          this.loadedIcons.set(cacheKey, resolved);
-          return resolved;
-        }
+      const definition = module.default?.[name];
+      const resolved = definition
+        ? await this.resolveDefinition(definition, module)
+        : null;
+      if (resolved) {
+        this.loadedIcons.set(cacheKey, resolved);
+        return resolved;
+      }
+
+      const fallback = await this.resolveFromBuiltin(name);
+      if (fallback) {
+        this.loadedIcons.set(cacheKey, fallback);
+        return fallback;
       }
 
       return null;
@@ -220,6 +209,120 @@ export class IconEngine {
       });
       return null;
     }
+  }
+
+  private async resolveDefinition(
+    definition: IconDefinition,
+    module: IconModule,
+  ): Promise<ResolvedIcon | null> {
+    switch (definition.type) {
+      case "library": {
+        const component = await this.resolveLibraryComponent(
+          definition.library,
+          definition.icon,
+          module,
+        );
+        if (!component) {
+          return null;
+        }
+        return {
+          type: "component",
+          Component: component,
+          propTransformer: this.getPropTransformer(module, definition.library),
+          title: definition.title,
+        };
+      }
+      case "component":
+        return {
+          type: "component",
+          Component: definition.component,
+          defaultProps: definition.props,
+          title: definition.title,
+        };
+      case "image":
+        return {
+          type: "image",
+          src: definition.src,
+          alt: definition.alt,
+          title: definition.title,
+        };
+      case "svg-inline":
+        return {
+          type: "svg-inline",
+          content: definition.content,
+          viewBox: definition.viewBox,
+          alt: definition.alt,
+          title: definition.title,
+        };
+      default:
+        return null;
+    }
+  }
+
+  private async resolveLibraryComponent(
+    libraryName: string,
+    iconName: string,
+    module: IconModule,
+  ): Promise<React.ComponentType<React.SVGProps<SVGSVGElement>> | null> {
+    const library = await this.getLibrary(libraryName, module);
+    return asIconComponent(library?.[iconName]);
+  }
+
+  private async getLibrary(
+    libraryName: string,
+    module: IconModule,
+  ): Promise<Record<string, unknown> | null> {
+    const declared = module.libraries?.[libraryName];
+    if (declared) {
+      const setId = this.currentSet?.id ?? "unknown";
+      return this.loadLibraryModule(`set:${setId}:${libraryName}`, declared);
+    }
+
+    const builtinLoader = builtinLibraries[libraryName];
+    if (!builtinLoader) {
+      return null;
+    }
+    return this.loadLibraryModule(`builtin:${libraryName}`, builtinLoader);
+  }
+
+  private async loadLibraryModule(
+    cacheKey: string,
+    source: IconLibraryMap[string],
+  ): Promise<Record<string, unknown>> {
+    if (typeof source !== "function") {
+      return source;
+    }
+    const cached = this.loadedLibraries.get(cacheKey);
+    if (cached) {
+      return cached as Record<string, unknown>;
+    }
+    const loaded = await source();
+    this.loadedLibraries.set(cacheKey, loaded);
+    return loaded as Record<string, unknown>;
+  }
+
+  private getPropTransformer(
+    module: IconModule,
+    libraryName: string,
+  ): IconPropTransformer | undefined {
+    const config = module.libraryConfig?.[libraryName] as
+      | IconLibraryConfig
+      | undefined;
+    return config?.propTransformer;
+  }
+
+  private async resolveFromBuiltin(
+    name: string,
+  ): Promise<ResolvedComponentIcon | null> {
+    const exactName = name.charAt(0).toUpperCase() + name.slice(1);
+    for (const [libName, loader] of Object.entries(builtinLibraries)) {
+      const library = await this.loadLibraryModule(`builtin:${libName}`, loader);
+      const iconComponent = asIconComponent(library[name] ?? library[exactName]);
+      if (iconComponent) {
+        return { type: "component", Component: iconComponent };
+      }
+    }
+    return null;
   }
 
   getStored(): string | null {

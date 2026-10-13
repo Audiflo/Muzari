@@ -1,15 +1,8 @@
 # Bugs
 
 - [ ] when the visualizer is open, something UI bugs out and transparency and it flickers sometimes
-- [ ] iOS/Safari crossfade: worked once, but now the element swap raises a "not allowed to play" error (`NotAllowedError`)
-  - the new audio element never inherits the user-gesture/autoplay grant, so playback stalls after the fade
-  - the ramp was also inaudible on iOS once and rarely triggers; suspect `HTMLBackend.routeAudioElement`
-    - probs swallows the `createSlot`/`connectMediaElement` error (`HTMLBackend.ts:149`), leaving `outputGain` null so gain changes are no-ops
-  - macOS Safari uses the same html path, so check it too
 - [ ] Visualizer overlay `left` bug on mobile: both media queries position the overlay wrong (`Player.module.css:443` and `Player.module.css:602`)
-- [ ] Crossfade doesn't work (general; desktop Chrome path was reworked, needs reengineering everywhere to be agnostic and perfect everywhere)
-
-- [ ] so like keeping track of state when user repeatedly does actions (like for example switching songs fast) does nothing and like weirds out state (the eternal problem with this appppppp ugh)
+- [ ] Decoder backpressure is improved but not strictly bounded as the 8s "hard cap" still accepts overflow and `pendingChunks` has no upper limit (needs a bounded queue with a drop-or-stall thing)
 
 - [ ] Add tour to inline
 
@@ -29,19 +22,14 @@
 
 - [ ] Fix top bar on mobile
 
-- [ ] The app is using 400 MB RAM by default, but it should use more like 200 MB
-  - now 290 MB
-  - around 320-330 MB when playing a song
-
 - [ ] fix some themes' visibility issues
   - light mode mostly fixed, re-check all
 
 - [ ] some missed text that's supposed to be in i18n
   - Run `npm run i18n-check` or `node i18n-izer.cjs -I "visualizers"  --ignore-console`
-
-  - [X] **Priority 1**: User-visible UI text (buttons, labels, user-facing error messages)
-  - [X] **Priority 2**: Status messages and user notifications
-    - [X] Processing status messages ("Processing X/Y songs...")
+  - [ ] **Priority 1**: User-visible UI text (buttons, labels, user-facing error messages)
+  - [ ] **Priority 2**: Status messages and user notifications
+    - [ ] Processing status messages ("Processing X/Y songs...")
   - [ ] **Priority 3**: Debug/console logs (maybe leave in English or something)
     - [ ] Success notifications (cache operations, theme applications)
     - [ ] File picker warnings (unsupported formats, skipped files)

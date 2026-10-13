@@ -58,6 +58,8 @@ export interface ReplayGainInfo {
   referenceLoudness?: number;
 }
 
+export type ReplayGainMode = "track" | "album" | "auto";
+
 export interface Playlist {
   id: string;
   name: string;
@@ -96,6 +98,7 @@ export {
   isPlaylistItem,
   isPlayHistory,
   isRepeatMode,
+  isReplayGainMode,
   isEngineSettings,
   isPlainObject,
 } from "./validators";
@@ -103,7 +106,6 @@ export {
 export interface EngineSettings {
   volume: number;
   crossfade: number;
-  crossfadeBeforeGapless: number;
   autoPlayNext: boolean;
   tempo: number;
   pitch: number;
@@ -112,6 +114,9 @@ export interface EngineSettings {
   repeat: RepeatMode;
   defaultShuffle: boolean;
   defaultRepeat: RepeatMode;
+  replayGainEnabled: boolean;
+  replayGainPreampDb: number;
+  replayGainMode: ReplayGainMode;
 }
 
 export type RepeatMode = "off" | "one" | "all";

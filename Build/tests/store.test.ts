@@ -5,6 +5,7 @@ import type {
   Track,
 } from "../src/core/engine/types";
 import type { KomorebiEngine } from "../src/core/engine/engine";
+import { DEFAULT_ENGINE_SETTINGS } from "../src/core/engine/settings";
 import {
   EMPTY_CURSOR,
   EMPTY_QUEUE_STATE,
@@ -45,7 +46,6 @@ function makeState(overrides: Partial<EngineState>): EngineState {
     settings: {
       volume: 1,
       crossfade: 0,
-      crossfadeBeforeGapless: 3000,
       autoPlayNext: true,
       tempo: 1,
       pitch: 0,
@@ -54,6 +54,9 @@ function makeState(overrides: Partial<EngineState>): EngineState {
       repeat: "off",
       defaultShuffle: false,
       defaultRepeat: "off",
+      replayGainEnabled: true,
+      replayGainPreampDb: 0,
+      replayGainMode: "auto",
     },
     currentTime: 0,
     duration: 0,
@@ -142,12 +145,18 @@ describe("useKomorebiStore", () => {
 
     it("audio settings selectors fall back to engine defaults", () => {
       const store = useKomorebiStore.getState();
-      expect(selectTempo(store)).toBe(1);
-      expect(selectPitch(store)).toBe(0);
-      expect(selectCrossfade(store)).toBe(0);
-      expect(selectGapless(store)).toBe(true);
-      expect(selectSmartShuffle(store)).toBe(false);
-      expect(selectAutoPlayNext(store)).toBe(true);
+      expect(selectTempo(store)).toBe(DEFAULT_ENGINE_SETTINGS.tempo);
+      expect(selectPitch(store)).toBe(DEFAULT_ENGINE_SETTINGS.pitch);
+      expect(selectCrossfade(store)).toBe(DEFAULT_ENGINE_SETTINGS.crossfade);
+      expect(selectGapless(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.gaplessPlayback,
+      );
+      expect(selectSmartShuffle(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.smartShuffle,
+      );
+      expect(selectAutoPlayNext(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.autoPlayNext,
+      );
     });
 
     it("audio settings selectors read from the snapshot settings", () => {
@@ -156,7 +165,6 @@ describe("useKomorebiStore", () => {
           settings: {
             volume: 0.7,
             crossfade: 4,
-            crossfadeBeforeGapless: 3000,
             autoPlayNext: false,
             tempo: 1.25,
             pitch: 3,
@@ -165,6 +173,9 @@ describe("useKomorebiStore", () => {
             repeat: "one",
             defaultShuffle: true,
             defaultRepeat: "all",
+            replayGainEnabled: true,
+            replayGainPreampDb: 0,
+            replayGainMode: "auto",
           },
         }),
       });

@@ -9,9 +9,9 @@ interface StoredAction {
 
 interface FakeMediaSession {
   metadata: MediaMetadata | null;
+  playbackState: string;
   setActionHandler: jest.Mock;
   setPositionState: jest.Mock;
-  setPlaybackState: jest.Mock;
 }
 
 const createTrack = (overrides: Partial<Track> = {}): Track => ({
@@ -49,6 +49,7 @@ describe("MediaSessionIntegration", () => {
     actions = new Map();
     session = {
       metadata: null,
+      playbackState: "none",
       setActionHandler: jest.fn((action: string, handler: unknown) => {
         if (handler === null) {
           actions.delete(action);
@@ -57,7 +58,6 @@ describe("MediaSessionIntegration", () => {
         }
       }),
       setPositionState: jest.fn(),
-      setPlaybackState: jest.fn(),
     };
 
     originalMediaSession = Object.getOwnPropertyDescriptor(
@@ -217,14 +217,14 @@ describe("MediaSessionIntegration", () => {
     expect(session.metadata).toBeNull();
   });
 
-  it("writes playback state and tolerates an unsupported setter", async () => {
+  it("writes the playback state attribute", async () => {
     await integration.initialize();
 
     integration.setPlaybackState("playing");
-    expect(session.setPlaybackState).toHaveBeenCalledWith("playing");
+    expect(session.playbackState).toBe("playing");
 
-    session.setPlaybackState = undefined as unknown as jest.Mock;
-    expect(() => integration.setPlaybackState("paused")).not.toThrow();
+    integration.setPlaybackState("paused");
+    expect(session.playbackState).toBe("paused");
   });
 
   it("clamps position and rejects invalid durations", async () => {

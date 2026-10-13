@@ -8,6 +8,7 @@ import { useNavigation } from "../../navigation";
 import type { Track, Playlist } from "../../../core/engine/types";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import { flattenPlaylists } from "../../../platform/library";
+import { allSongsPlaylist } from "../../navigation/scope";
 import { selectCurrentTrack, useKomorebiStore } from "../../../store";
 
 interface HomeProps {
@@ -118,8 +119,8 @@ export const Home: React.FC<HomeProps> = ({
     v < 1 ? `${Math.round(v * 60)}m` : `${v.toFixed(1)}h`;
 
   const handlePlaySong = useCallback(
-    (song: Track) => playSong(song),
-    [playSong],
+    (song: Track) => playSong(song, allSongsPlaylist(songs, t("allSongs"))),
+    [playSong, songs, t],
   );
 
   const handleSmartStart = useCallback(() => {
@@ -130,14 +131,14 @@ export const Home: React.FC<HomeProps> = ({
     const pool = favoriteSongs.length ? favoriteSongs : songs;
     const randomSong = pool[Math.floor(Math.random() * pool.length)];
     if (!randomSong) return;
-    const playlist = favoriteSongs.length
+    const playlist: Playlist = favoriteSongs.length
       ? {
           id: "favorites-quickstart",
           name: t("favorites.favorites"),
           songs: favoriteSongs,
         }
-      : null;
-    playSong(randomSong, playlist || undefined);
+      : allSongsPlaylist(songs, t("allSongs"));
+    playSong(randomSong, playlist);
   }, [songs, favoriteSongs, playSong, onAddMusic, t]);
 
   const handlePlayFavorites = useCallback(() => {
@@ -253,7 +254,13 @@ export const Home: React.FC<HomeProps> = ({
           <div className={styles.heroActions}>
             {heroSong && hasContent ? (
               <>
-                <Button onClick={() => handlePlaySong(heroSong)}>
+                <Button
+                  onClick={() =>
+                    currentTrack
+                      ? playSong(currentTrack)
+                      : handlePlaySong(heroSong)
+                  }
+                >
                   <Icon name="play" size={16} decorative />
                   {currentTrack ? t("home.resume") : t("home.startListening")}
                 </Button>

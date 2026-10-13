@@ -1,6 +1,7 @@
 import { Equalizer } from "./equalizer";
 import { clampVolume } from "./clamp";
 import { gainDbToLinear } from "./replayGain";
+import { MediaElementPool } from "./backends/mediaElementPool";
 import { createLogger } from "../../helpers/logger";
 const logger = createLogger("audioGraph");
 
@@ -8,6 +9,8 @@ const ANALYSER_FFT_SIZE = 2048;
 const MAX_PITCH_SEMITONES = 48;
 
 export class AudioGraph {
+  readonly mediaElementPool = new MediaElementPool();
+
   private context: AudioContext | null = null;
   private chainInput: GainNode | null = null;
   private replayGainNode: GainNode | null = null;
@@ -46,12 +49,17 @@ export class AudioGraph {
     audio: HTMLMediaElement,
     slot?: GainNode,
   ): MediaElementAudioSourceNode {
+    const target = slot ?? this.ensureChainInput();
     const cached = this.mediaElementSources.get(audio);
-    if (cached) return cached;
+    if (cached) {
+      cached.disconnect();
+      cached.connect(target);
+      return cached;
+    }
 
     const context = this.ensureContext();
     const source = context.createMediaElementSource(audio);
-    source.connect(slot ?? this.ensureChainInput());
+    source.connect(target);
     this.mediaElementSources.set(audio, source);
     return source;
   }
@@ -191,6 +199,7 @@ export class AudioGraph {
     this.disposed = true;
 
     this.mediaElementSources = new WeakMap();
+    this.mediaElementPool.dispose();
 
     this.removePitchShift();
 

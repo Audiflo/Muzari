@@ -6,6 +6,7 @@ import type {
   QueueCursor,
   QueueState,
   RepeatMode,
+  ReplayGainMode,
   Track,
 } from "./types";
 
@@ -109,12 +110,24 @@ export function isRepeatMode(value: unknown): value is RepeatMode {
   );
 }
 
+const REPLAY_GAIN_MODES: readonly ReplayGainMode[] = [
+  "track",
+  "album",
+  "auto",
+];
+
+export function isReplayGainMode(value: unknown): value is ReplayGainMode {
+  return (
+    typeof value === "string" &&
+    (REPLAY_GAIN_MODES as readonly string[]).includes(value)
+  );
+}
+
 export function isEngineSettings(value: unknown): value is EngineSettings {
   if (!isPlainObject(value)) return false;
   return (
     typeof value.volume === "number" &&
     typeof value.crossfade === "number" &&
-    typeof value.crossfadeBeforeGapless === "number" &&
     typeof value.autoPlayNext === "boolean" &&
     typeof value.tempo === "number" &&
     typeof value.pitch === "number" &&
@@ -122,6 +135,9 @@ export function isEngineSettings(value: unknown): value is EngineSettings {
     typeof value.smartShuffle === "boolean" &&
     isRepeatMode(value.repeat) &&
     typeof value.defaultShuffle === "boolean" &&
-    isRepeatMode(value.defaultRepeat)
+    isRepeatMode(value.defaultRepeat) &&
+    typeof value.replayGainEnabled === "boolean" &&
+    typeof value.replayGainPreampDb === "number" &&
+    isReplayGainMode(value.replayGainMode)
   );
 }
