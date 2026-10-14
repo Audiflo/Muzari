@@ -9,6 +9,9 @@ on:
       - "rust-toolchain.toml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: "verify-wasm-${{ github.ref }}"
   cancel-in-progress: true

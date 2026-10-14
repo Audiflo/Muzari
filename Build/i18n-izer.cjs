@@ -14,13 +14,17 @@ const COLORS = {
 };
 
 const args = process.argv.slice(2);
-let ignorePatterns = [];
+// -I values are matched as literal path substrings rather than compiled into a
+// RegExp: the argument comes from the command line, and building a pattern from
+// it would allow regex injection (catastrophic backtracking) if ever driven by
+// untrusted input. Substring matching covers the documented file/folder usage.
+let ignorePaths = [];
 let ignoreConsole = false;
 let ignoreThrows = false;
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "-I" && args[i + 1]) {
-    ignorePatterns.push(new RegExp(args[i + 1]));
+    ignorePaths.push(args[i + 1]);
     i++;
   } else if (args[i] === "--ignore-console") {
     ignoreConsole = true;
@@ -37,7 +41,7 @@ const jsxTextRegex = />\s*([A-Z][^<>{}]{2,})\s*</g;
 let candidateCount = 0;
 
 function scanFile(filePath) {
-  if (ignorePatterns.some((r) => r.test(filePath))) return;
+  if (ignorePaths.some((entry) => filePath.includes(entry))) return;
 
   const content = fs.readFileSync(filePath, "utf-8");
   const lines = content.split("\n");
@@ -124,7 +128,7 @@ function report(file, line, text, type) {
 }
 
 function scanDir(dir) {
-  if (ignorePatterns.some((r) => r.test(dir))) return;
+  if (ignorePaths.some((entry) => dir.includes(entry))) return;
 
   for (const entry of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, entry);
