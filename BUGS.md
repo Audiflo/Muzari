@@ -1,7 +1,6 @@
 # Bugs
 
 - [ ] when the visualizer is open, something UI bugs out and transparency and it flickers sometimes
-- [ ] Visualizer overlay `left` bug on mobile: both media queries position the overlay wrong (`Player.module.css:443` and `Player.module.css:602`)
 - [ ] Decoder backpressure is improved but not strictly bounded as the 8s "hard cap" still accepts overflow and `pendingChunks` has no upper limit (needs a bounded queue with a drop-or-stall thing)
 
 - [ ] Add tour to inline
