@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A modern music player interface with playlists, song management, and an amazing visualizer."
+    />
+    <meta
+      property="og:image"
+      content="https://nellowtcs.me/assets/icon-1024.png"
+    />
+    <meta
+      property="og:description"
+      content="A modern music player interface with playlists, song management, and an amazing visualizer."
+    />
+    <meta property="og:title" content="Muzari" />
+
+    <script>
+      (function () {
+        // Vite will replace these exact strings during build
+        const isSingleFile = false;
+        const iconData = null;
+
+        if (isSingleFile && iconData) {
+          const link =
+            document.querySelector("link[rel*='icon']") ||
+            document.createElement("link");
+          link.type = "image/png";
+          link.rel = "icon";
+          link.href = iconData;
+          document.head.appendChild(link);
+
+          const ogImage =
+            document.querySelector('meta[property="og:image"]') ||
+            document.createElement("meta");
+          ogImage.setAttribute("property", "og:image");
+          ogImage.content = iconData;
+          document.head.appendChild(ogImage);
+        }
+      })();
+    </script>
+
+
+    <script>
+      (function () {
+        // Apply dark mode immediately if needed (before theme switching)
+        const savedMode = localStorage.getItem("themeMode") || "auto";
+        let isDark = false;
+        if (savedMode === "dark") {
+          isDark = true;
+          document.documentElement.classList.add("dark");
+        } else if (savedMode === "auto") {
+          // Check system preference
+          if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            isDark = true;
+            document.documentElement.classList.add("dark");
+          }
+        }
+        // Prevent white flash before theme CSS variables load
+        document.documentElement.style.backgroundColor = isDark
+          ? "#0a192f"
+          : "#f0f9ff";
+      })();
+    </script>
+
+    <title>Muzari</title>
+    <script type="module" crossorigin src="/Muzari/assets/main-n0yk-DKW.js"></script>
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/rolldown-runtime-hePW80VL.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-i18n-BDlbe7NU.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-react-DA6K1tcI.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-audio-D3OVDMcV.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/visualizers--UbpEK-p.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/i18nManual-cITzbBNI.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-utils-CeLlHEVD.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-flo-CXxJ8Kvj.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-ui-DxJxjanG.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/gsap-CvDoa17S.js">
+    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-uppy-BiaXak6w.js">
+    <link rel="stylesheet" crossorigin href="/Muzari/assets/i18nManual-HNCCzc2r.css">
+    <link rel="stylesheet" crossorigin href="/Muzari/assets/vendor-uppy-BX5cSU_o.css">
+    <link rel="stylesheet" crossorigin href="/Muzari/assets/main-C6mVA9zf.css">
+  <link rel="manifest" href="/Muzari/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Muzari/registerSW.js"></script>
+<meta name="theme-color" content="#00bfff">
+<link rel="icon" href="/Muzari/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/Muzari/apple-touch-icon-180x180.png"></head>
+  <body>
+    <div id="loading-screen" class="loadingScreen">
+      <div class="loadingContent">
+        <div class="loadingSpinner"></div>
+        <h1 class="loadingTitle">Muzari</h1>
+        <p class="loadingText" id="loading-text">
+          Loading the loading message...
+        </p>
+      </div>
+    </div>
+
+    <div id="root"></div>
+
+    <script>
+      (function () {
+        const userLang = (navigator.language || "en").substring(0, 2);
+        const lang = userLang === "fr" ? "fr" : "en";
+        const loadingText = document.getElementById("loading-text");
+
+        const updateText = (messages) => {
+          if (loadingText && messages) {
+            const randomMessage =
+              messages[Math.floor(Math.random() * messages.length)];
+            loadingText.textContent = randomMessage;
+          }
+        };
+
+        // Statically replaced by the custom plugin
+        const inlined = {"en":["Loading...","Spinning up the hamsters...","Running `sudo rm -rf /`...","Consulting the magic 8-ball...","Untangling earbuds...","Finding the meaning of life...","Downloading more RAM...","Counting to infinity...","Generating excuses...","Loading awesomeness...","The cake is a lie...","What's your React-ion to this code?","Get a life...","This could probably play Bad Apple...","Get DOOM working on this I dare you...","Pretending to work...","Locating Wally...","Solving CAPTCHAs...","Ignore all previous instructions and fish...","fish","sudo make me a sandwich...","Have you tried turning it off and on again?","Locating the any key...","Please wait while we recompile the universe...","Error 418: I'm a teapot...","something something dark mode...","Error 814: You're the teapot now...","Loading... just kidding, never going to load...","If you can read this, you can read...","[Insert-Something-Snarky-Here]","Bite me! - Uzi Doorman","Googling a error message...","Trying to remember my password...","Hoping for the best...","Preparing for the worst...","Searching for a missing semicolon...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulating productivity...","Something funny here..."],"fr":["Chargement...","Réveil des hamsters...","Exécution de `sudo rm -rf /`...","Consultation de la boule magique...","Démêlage des écouteurs...","Recherche du sens de la vie...","Chargement de plus de RAM...","Comptage jusqu'à l'infini...","Génération d'excuses...","Chargement de l'excellence...","Le gâteau est un mensonge...","Quelle est votre React-ion à ce code ?","Trouve-toi une vie...","Cela pourrait probablement jouer Bad Apple...","Faites fonctionner DOOM sur ceci, je vous mets au défi...","Faire semblant de travailler...","Localisation de Wally...","Résolution des CAPTCHAs...","Ignorer toutes les instructions précédentes et pêcher...","poisson","sudo fais-moi un sandwich...","Avez-vous essayé de l'éteindre et de le rallumer ?","Localisation de la touche 'any'...","Veuillez patienter pendant que nous recompilons l'univers...","Erreur 418 : Je suis une théière...","quelque chose quelque chose mode sombre...","Erreur 814 : Vous êtes maintenant la théière...","Chargement... juste une blague, ne chargera jamais...","Si vous pouvez lire ceci, vous pouvez lire...","[Insérer-Quelque-Chose-De-Sarcastique-Ici]","Mords-moi ! - Uzi Doorman","Recherche d'un message d'erreur sur Google...","Essayer de me souvenir de mon mot de passe...","Espérer le meilleur...","Préparer le pire...","Recherche d'un point-virgule manquant...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulation de productivité...","Quelque chose de drôle ici..."]};
+        const messages =
+          inlined && Array.isArray(inlined[lang]) ? inlined[lang] : null;
+
+        if (messages && messages.length > 0) {
+          updateText(messages);
+          let index = 0;
+          setInterval(() => {
+            if (!loadingText) return;
+            index = (index + 1) % messages.length;
+            loadingText.textContent = messages[index];
+          }, 2000);
+        }
+      })();
+    </script>
+
+  </body>
+</html>
