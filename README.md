@@ -19,11 +19,11 @@ Modern local-first audio player for the browser and for desktop (via Tauri).
 
 | Desktop | Custom Theme | Lyrics and Visualizer | Settings |
 | --- | --- | --- | --- |
-| <img width="1858" height="927" alt="Screenshot 2025-10-09 1 35 11 PM" src="./Build/public/screenshots/MainUI.png" /> | <img width="1858" height="927" alt="Screenshot 2025-10-09 1 35 01 PM" src="./Build/public/screenshots/CustomizedUI.png" /> | <img width="1858" height="920" alt="Screenshot 2025-10-09 1 36 29 PM" src="./Build/public/screenshots/LyricsandVisualizer.png" /> | <img width="1858" height="920" alt="image" src="https://github.com/user-attachments/assets/c68be0af-aa12-4737-b217-f8dbb29246d6" /> |
+| <img width="1920" height="1080" alt="Main player UI" src="./Build/public/screenshots/MainUI.png" /> | <img width="1920" height="1080" alt="Player customized with the Nebula theme and Phosphor icons" src="./Build/public/screenshots/CustomizedUI.png" /> | <img width="1920" height="1080" alt="Lyrics and visualizer view" src="./Build/public/screenshots/LyricsandVisualizer.png" /> | <img width="1920" height="1080" alt="Settings" src="./Build/public/screenshots/Settings.png" /> |
 
 | Mobile | Custom Theme | Lyrics and Visualizer | Settings |
 | --- | --- | --- | --- |
-| <img width="621" height="927" alt="Screenshot 2025-10-09 1 35 40 PM" src="./Build/public/screenshots/MainUI-Mobile.png" /> | <img width="621" height="927" alt="Screenshot 2025-10-09 1 35 53 PM" src="./Build/public/screenshots/CustomizedUI-Mobile.png" /> | <img width="621" height="927" alt="Screenshot 2025-10-09 1 36 04 PM" src="./Build/public/screenshots/LyricsandVisualizer-Mobile.png" /> | <img width="623" height="927" alt="image" src="https://github.com/user-attachments/assets/26975e12-22a1-4e5a-93f8-31a4d8c806bd" /> |
+| <img width="390" height="844" alt="Main player UI on mobile" src="./Build/public/screenshots/MainUI-Mobile.png" /> | <img width="390" height="844" alt="Player customized with the Nebula theme and Phosphor icons on mobile" src="./Build/public/screenshots/CustomizedUI-Mobile.png" /> | <img width="390" height="844" alt="Lyrics and visualizer view on mobile" src="./Build/public/screenshots/LyricsandVisualizer-Mobile.png" /> | <img width="390" height="844" alt="Settings on mobile" src="./Build/public/screenshots/Settings-Mobile.png" /> |
 
 ## Features
 
