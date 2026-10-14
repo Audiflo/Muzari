@@ -7,6 +7,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import wasm from "vite-plugin-wasm";
+import mkcert from "vite-plugin-mkcert";
 
 import enMessages from "./src/locales/en/loading-messages-en.json" with { type: "json" };
 import frMessages from "./src/locales/fr/loading-messages-fr.json" with { type: "json" };
@@ -18,10 +19,8 @@ const isSingleFile = process.env.SINGLE_FILE === "true";
 const isDesktop = buildTarget === "desktop";
 const isWeb = buildTarget === "web";
 
-// Deployments that are not served from the /beta/HTMLPlayer/ prefix (Netlify
-// deploy previews, local static hosting) override this with BASE_PATH=/.
 const RAW_BASE_PATH =
-  process.env.BASE_PATH ?? (isDesktop ? "/" : "/beta/HTMLPlayer/");
+  process.env.BASE_PATH ?? (isDesktop ? "/" : "/Muzari/");
 const BASE_PATH = RAW_BASE_PATH.endsWith("/")
   ? RAW_BASE_PATH
   : `${RAW_BASE_PATH}/`;
@@ -31,6 +30,7 @@ const iconBase64 = isSingleFile
   : null;
 
 const plugins = [
+  isWeb && mkcert(),
   react(),
   wasm(),
   isSingleFile &&
@@ -68,9 +68,9 @@ if (isWeb && !isSingleFile) {
       },
 
       manifest: {
-        id: "htmlplayer",
-        name: "HTMLPlayer (beta)",
-        short_name: "HTMLPlayer(beta)",
+        id: "muzari",
+        name: "Muzari",
+        short_name: "Muzari",
         description:
           "A modern music player interface with playlists, song management, visualizers, and offline support.",
         categories: ["music", "audio", "entertainment", "tools"],
@@ -237,13 +237,6 @@ export default defineConfig({
 
   resolve: {
     alias: [
-      {
-        find: "music-metadata",
-        replacement: path.resolve(
-          import.meta.dirname,
-          "vendor/music-metadata/dist/core.js",
-        ),
-      },
       ...(isWeb && !isSingleFile
         ? []
         : [
@@ -280,6 +273,16 @@ export default defineConfig({
   },
 
   optimizeDeps: {
+    include: [
+      "lucide-react",
+      "react-icons/bs",
+      "react-icons/cg",
+      "react-icons/md",
+      "react-icons/pi",
+      "react-icons/ri",
+      "react-icons/sl",
+      "react-icons/tb",
+    ],
     exclude: ["@audiflo/libflo"],
   },
 

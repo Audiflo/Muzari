@@ -20,12 +20,6 @@ export {
 export type {
   Palette,
   IconSet,
-  IconDefinition,
-  IconDefinitionMap,
-  IconLibraryConfig,
-  IconLibraryConfigMap,
-  IconLibraryMap,
-  ResolvedIcon,
   Wallpaper,
   WallpaperProps,
   WallpaperComponent,
@@ -33,6 +27,15 @@ export type {
   ThemingState,
   ThemingSettings,
 } from "./types";
+
+export type {
+  IconDefinition,
+  IconDefinitionMap,
+  IconLibraryConfig,
+  IconLibraryConfigMap,
+  IconLibraryMap,
+  ResolvedIcon,
+} from "../../types/icons";
 
 let _themeEngine: ThemeEngine | null = null;
 

@@ -141,6 +141,9 @@ MockAudio.prototype.play = function(): Promise<void> {
 };
 MockAudio.prototype.pause = function(): void {};
 MockAudio.prototype.load = function(): void {};
+MockAudio.prototype.removeAttribute = function(name: string): void {
+  if (name === "src") this.src = "";
+};
 
 MockAudio.prototype.addEventListener = function(event: string, callback: any): void {
   if (!listeners.has(event)) listeners.set(event, new Set());

@@ -1,8 +1,8 @@
 {
-  "title": "HTMLPlayer",
+  "title": "Muzari",
   "update": {
     "available": "Mise à jour disponible",
-    "description": "Une nouvelle version de HTMLPlayer est prête à être installée.",
+    "description": "Une nouvelle version de Muzari est prête à être installée.",
     "now": "Mettre à jour",
     "later": "Plus tard"
   },
@@ -225,7 +225,7 @@
     "browseLibrary": "Aller à la bibliothèque",
     "quickActions": "Actions rapides",
     "smartStart": "Lire quelque chose",
-    "smartStartDescription": "HTMLPlayer choisit un excellent prochain titre.",
+    "smartStartDescription": "Muzari choisit un excellent prochain titre.",
     "libraryDescription": "Accédez à la liste complète des titres.",
     "favorites": "Lire les favoris",
     "favoritesDescription": "Faites tourner les morceaux que vous aimez le plus.",
@@ -272,8 +272,8 @@
   "menu": "Menu",
   "playlists": "Playlists",
   "aboutMenu": "À propos",
-  "aboutHTMLPlayer": "À propos de HTMLPlayer",
-  "aboutHTMLPlayerDesc": "HTMLPlayer v2.0 - Une interface moderne de streaming musical construite avec React.",
+  "aboutMuzari": "À propos de Muzari",
+  "aboutMuzariDesc": "Muzari - Une app moderne de streaming musical construite avec React.",
   "visualizers": {
     "bars": {
       "name": "Barres",
@@ -421,6 +421,7 @@
   },
   "discord": {
     "connection": "Connexion Discord",
+    "enableIntegration": "Activer l'intégration Discord (en panne)",
     "connected": "Connecté en tant qu'ID utilisateur Discord : {{userId}}",
     "notConnected": "Non connecté à Discord",
     "disconnected": "Déconnecté de Discord",

@@ -7,6 +7,8 @@ import type {
   EngineEventMap,
   EngineError,
   RepeatMode,
+  ReplayGainMode,
+  CrossfadeShape,
 } from "./types";
 import { KomorebiEvents } from "./events";
 import { StateMachine } from "./state";
@@ -18,47 +20,40 @@ import {
 import { Scheduler } from "./scheduler";
 import { AsyncOp } from "./asyncOp";
 import { assertNever } from "./invariants";
-import type { IAudioBackend } from "../../platform/audio";
-import type { PreloadManager } from "../../platform/audio/preloader";
+import type { CrossfadeSource, IAudioBackend } from "../../platform/audio";
+import { PreloadManager } from "../../platform/audio/preloader";
+import { MAX_REPLAY_GAIN_DB } from "../../platform/audio/replayGain";
+import {
+  createMediaSessionIntegration,
+  type MediaSessionIntegration,
+} from "../../platform/integrations/mediaSession";
+import type { Equalizer, EqualizerState } from "../../platform/audio/equalizer";
 import {
   clampCrossfade as clampCrossfadeSeconds,
   clampRate,
   clampVolume,
 } from "../../platform/audio/clamp";
 import { createLogger } from "../../helpers/logger";
+import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
+
+export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
 
 const logger = createLogger("engine");
 
 export interface IAudioEngineConfig {
-  crossfade: {
-    enabled: boolean;
+  crossfade?: {
     duration: number;
-    shape: "none" | "linear" | "equalpower";
+    shape: CrossfadeShape;
   };
-  gapless: {
+  gapless?: {
     enabled: boolean;
   };
-  smartShuffle: boolean;
-  autoPlayNext: boolean;
+  smartShuffle?: boolean;
+  autoPlayNext?: boolean;
   trackResolver?: (track: Track) => Promise<Track>;
-  preloadManager?: PreloadManager;
 }
 
 const SECONDS_TO_MS = 1000;
-
-export const DEFAULT_ENGINE_SETTINGS: EngineSettings = {
-  volume: 1,
-  crossfade: 0,
-  crossfadeBeforeGapless: 3000,
-  autoPlayNext: true,
-  tempo: 1,
-  pitch: 0,
-  gaplessPlayback: true,
-  smartShuffle: true,
-  repeat: "off",
-  defaultShuffle: false,
-  defaultRepeat: "off",
-};
 
 export class KomorebiEngine {
   private events = new KomorebiEvents();
@@ -68,6 +63,7 @@ export class KomorebiEngine {
 
   private backend: IAudioBackend;
   private settings: EngineSettings = { ...DEFAULT_ENGINE_SETTINGS };
+  private crossfadeShape: CrossfadeShape = DEFAULT_CROSSFADE_SHAPE;
   private currentTime = 0;
   private duration = 0;
   private currentError: EngineError | null = null;
@@ -75,38 +71,39 @@ export class KomorebiEngine {
 
   private timeUpdateInterval: number | null = null;
   private scheduledTransitionId: number | null = null;
+  private crossfadeTimer: number | null = null;
+  private crossfadeSource: CrossfadeSource | null = null;
+  private crossfadeFinish: (() => void) | null = null;
 
   private readonly loadOp = new AsyncOp();
   private readonly trackResolver:
     ((track: Track) => Promise<Track>) | undefined;
   private readonly preloadManager: PreloadManager | null;
+  private readonly mediaSession: MediaSessionIntegration | null;
   private prefetchSentinel = false;
 
   constructor(backend: IAudioBackend, config?: Partial<IAudioEngineConfig>) {
     this.backend = backend;
     this.trackResolver = config?.trackResolver;
-    this.preloadManager = config?.preloadManager ?? null;
-    this.backend.onTimeUpdate((time) => {
-      this.handleTimeUpdate(time);
-    });
+    this.preloadManager = config?.trackResolver
+      ? new PreloadManager({}, { resolveTrack: config.trackResolver })
+      : null;
     this.backend.onEnded(() => {
       this.handleTrackEnded();
     });
     this.backend.onError((error) => {
       this.handleError(error);
     });
+    this.backend.onDurationChange?.((duration) => {
+      this.handleDurationChange(duration);
+    });
 
     if (config?.crossfade) {
-      this.scheduler.setCrossfadeConfig({
-        enabled: config.crossfade.enabled,
-        duration: config.crossfade.duration,
-        shape: config.crossfade.shape,
-      });
       this.settings.crossfade = config.crossfade.duration;
+      this.crossfadeShape = config.crossfade.shape;
     }
 
     if (config?.gapless) {
-      this.scheduler.setGaplessConfig({ enabled: config.gapless.enabled });
       this.settings.gaplessPlayback = config.gapless.enabled;
     }
 
@@ -116,6 +113,30 @@ export class KomorebiEngine {
 
     if (config?.autoPlayNext !== undefined) {
       this.settings.autoPlayNext = config.autoPlayNext;
+    }
+
+    this.applySchedulerSettings();
+
+    this.mediaSession =
+      typeof navigator !== "undefined" && "mediaSession" in navigator
+        ? createMediaSessionIntegration()
+        : null;
+    if (this.mediaSession) {
+      void this.mediaSession.initialize();
+      this.mediaSession.setActionHandlers({
+        play: () => void this.play(),
+        pause: () => this.pause(),
+        next: () => void this.next(),
+        previous: () => void this.previous(),
+        stop: () => this.stop(),
+        seek: (time) => this.seek(time),
+      });
+      this.on("statechange", this.syncMediaSession);
+      this.on("durationchange", this.syncMediaSession);
+      this.on("timeupdate", this.syncMediaSession);
+      this.on("trackchange", this.handleMediaTrackChange);
+      void this.mediaSession.updateMetadata(this.queue.getCurrentTrack());
+      this.syncMediaSession();
     }
   }
 
@@ -263,6 +284,7 @@ export class KomorebiEngine {
 
   pause(): void {
     if (this.stateMachine.isPlaying()) {
+      this.crossfadeFinish?.();
       this.backend.pause();
       this.stateMachine.transition("paused");
       this.stopTimeUpdates();
@@ -281,6 +303,7 @@ export class KomorebiEngine {
     this.currentTime = 0;
     this.currentError = null;
     this.stopTimeUpdates();
+    this.emitTimeUpdate();
     this.emitStateChange();
   }
 
@@ -348,6 +371,11 @@ export class KomorebiEngine {
   }
 
   seek(time: number): void {
+    if (this.crossfadeFinish) {
+      this.crossfadeFinish();
+    } else {
+      this.cancelCrossfadeLoop();
+    }
     const clampedTime = Math.max(0, Math.min(time, this.duration));
     this.backend.seek(clampedTime);
     this.currentTime = clampedTime;
@@ -427,16 +455,50 @@ export class KomorebiEngine {
   setCrossfade(durationSeconds: number): void {
     const duration = clampCrossfadeSeconds(durationSeconds);
     this.settings.crossfade = duration;
-    this.scheduler.setCrossfadeConfig({ enabled: duration > 0, duration });
+    this.applySchedulerSettings();
     this.events.emit("settingschange", { settings: { crossfade: duration } });
   }
 
   setGapless(enabled: boolean): void {
     this.settings.gaplessPlayback = enabled;
-    this.scheduler.setGaplessConfig({ enabled });
+    this.applySchedulerSettings();
     this.events.emit("settingschange", {
       settings: { gaplessPlayback: enabled },
     });
+  }
+
+  private applySchedulerSettings(): void {
+    this.scheduler.setCrossfadeConfig({
+      enabled: this.settings.crossfade > 0,
+      duration: this.settings.crossfade,
+      shape: this.crossfadeShape,
+    });
+    this.scheduler.setGaplessConfig({ enabled: this.settings.gaplessPlayback });
+  }
+
+  setReplayGainEnabled(enabled: boolean): void {
+    this.settings.replayGainEnabled = enabled;
+    this.refreshReplayGain();
+    this.events.emit("settingschange", {
+      settings: { replayGainEnabled: enabled },
+    });
+  }
+
+  setReplayGainPreampDb(preampDb: number): void {
+    const clamped = Number.isFinite(preampDb)
+      ? Math.max(-MAX_REPLAY_GAIN_DB, Math.min(MAX_REPLAY_GAIN_DB, preampDb))
+      : 0;
+    this.settings.replayGainPreampDb = clamped;
+    this.refreshReplayGain();
+    this.events.emit("settingschange", {
+      settings: { replayGainPreampDb: clamped },
+    });
+  }
+
+  setReplayGainMode(mode: ReplayGainMode): void {
+    this.settings.replayGainMode = mode;
+    this.refreshReplayGain();
+    this.events.emit("settingschange", { settings: { replayGainMode: mode } });
   }
 
   updateSettings(newSettings: Partial<EngineSettings>): void {
@@ -462,6 +524,15 @@ export class KomorebiEngine {
     }
     if (newSettings.repeat !== undefined) {
       this.setRepeat(newSettings.repeat);
+    }
+    if (newSettings.replayGainEnabled !== undefined) {
+      this.setReplayGainEnabled(newSettings.replayGainEnabled);
+    }
+    if (newSettings.replayGainPreampDb !== undefined) {
+      this.setReplayGainPreampDb(newSettings.replayGainPreampDb);
+    }
+    if (newSettings.replayGainMode !== undefined) {
+      this.setReplayGainMode(newSettings.replayGainMode);
     }
 
     this.events.emit("settingschange", { settings: newSettings });
@@ -500,6 +571,24 @@ export class KomorebiEngine {
     return this.backend.getAnalyser?.() ?? null;
   }
 
+  getEqualizer(): Equalizer | null {
+    return this.backend.getEqualizer?.() ?? null;
+  }
+
+  applyEqualizer(state: EqualizerState): void {
+    const equalizer = this.backend.getEqualizer?.();
+    if (!equalizer) return;
+
+    const wasEnabled = equalizer.isEnabled();
+    equalizer.setBands(state.bands);
+
+    if (wasEnabled !== state.enabled) {
+      this.backend.setEqualizer?.(state.enabled);
+    } else {
+      this.backend.updateEqualizer?.();
+    }
+  }
+
   getScheduler(): Scheduler {
     return this.scheduler;
   }
@@ -521,10 +610,41 @@ export class KomorebiEngine {
   dispose(): void {
     this.stopTimeUpdates();
     this.cancelScheduledTransition();
+    this.mediaSession?.dispose();
     this.backend.dispose();
     this.events.removeAllListeners();
     this.stateMachine.reset();
   }
+
+  private readonly handleMediaTrackChange = (data: {
+    from: Track | null;
+    to: Track | null;
+  }): void => {
+    void this.mediaSession?.updateMetadata(data.to);
+    this.syncMediaSession();
+  };
+
+  private readonly syncMediaSession = (): void => {
+    const mediaSession = this.mediaSession;
+    if (!mediaSession) return;
+
+    const state = this.stateMachine.getState();
+    mediaSession.setPlaybackState(
+      state === "playing" || state === "transitioning"
+        ? "playing"
+        : state === "paused"
+          ? "paused"
+          : "none",
+    );
+
+    if (this.duration > 0) {
+      mediaSession.setPositionState(
+        this.duration,
+        this.currentTime,
+        this.settings.tempo,
+      );
+    }
+  };
 
   private async loadAndPlay(track: Track): Promise<void> {
     await this.load(track);
@@ -617,16 +737,33 @@ export class KomorebiEngine {
   }
 
   private replayGainForTrack(track: Track): number | null {
+    if (!this.settings.replayGainEnabled) return null;
+
     const replayGain = track.replayGain;
     if (!replayGain) return null;
 
-    const gainDb = replayGain.trackGain ?? replayGain.albumGain;
-    return typeof gainDb === "number" && Number.isFinite(gainDb)
-      ? gainDb
-      : null;
+    const mode = this.settings.replayGainMode;
+    const gainDb =
+      mode === "track"
+        ? replayGain.trackGain
+        : mode === "album"
+          ? replayGain.albumGain
+          : (replayGain.trackGain ?? replayGain.albumGain);
+
+    if (typeof gainDb !== "number" || !Number.isFinite(gainDb)) return null;
+    return gainDb + this.settings.replayGainPreampDb;
+  }
+
+  private refreshReplayGain(): void {
+    const track = this.queue.getCurrentTrack();
+    this.backend.setReplayGain?.(track ? this.replayGainForTrack(track) : null);
   }
 
   private checkScheduledTransition(currentTime: number): void {
+    if (this.scheduledTransitionId !== null || this.crossfadeSource !== null) {
+      return;
+    }
+
     const track = this.queue.getCurrentTrack();
     if (!track) return;
 
@@ -667,7 +804,7 @@ export class KomorebiEngine {
     const isCrossfade =
       this.scheduler.getMode() === "crossfade" &&
       this.settings.crossfade > 0 &&
-      this.backend.beginCrossfade !== undefined;
+      this.canCrossfade();
 
     if (isCrossfade) {
       const crossfaded = await this.tryCrossfade(nextTrack);
@@ -703,6 +840,12 @@ export class KomorebiEngine {
   }
 
   private async tryCrossfade(nextTrack: Track): Promise<boolean> {
+    const { createCrossfadeSource, commitCrossfadeSource, setOutputGain } =
+      this.backend;
+    if (!createCrossfadeSource || !commitCrossfadeSource || !setOutputGain) {
+      return false;
+    }
+
     let url: string;
     try {
       const target = await this.resolveSource(nextTrack);
@@ -712,27 +855,127 @@ export class KomorebiEngine {
       return false;
     }
 
-    const ok = await this.backend.beginCrossfade?.(url, nextTrack, {
-      durationMs: this.settings.crossfade * SECONDS_TO_MS,
-      shape: this.scheduler.getCrossfade().getCurve(),
-    });
-
-    if (!ok) return false;
+    let source: CrossfadeSource | null;
+    try {
+      source = await createCrossfadeSource.call(this.backend, url, nextTrack);
+    } catch (error) {
+      logger.warn("Crossfade source creation failed", {
+        error: String(error),
+      });
+      return false;
+    }
+    if (!source) return false;
 
     const previousTrack = this.queue.getCurrentTrack();
     const trackIndex = this.queue
       .getTracks()
       .findIndex((candidate) => candidate.id === nextTrack.id);
     this.queue.jumpToIndex(trackIndex >= 0 ? trackIndex : null);
+
+    this.crossfadeSource = source;
+    this.duration = source.getDuration?.() || nextTrack.duration;
+    this.currentTime = 0;
+
     this.emitTrackChange(previousTrack, nextTrack);
     this.prefetchSentinel = false;
-    this.duration = this.backend.getDuration() ?? nextTrack.duration;
     this.events.emit("durationchange", { duration: this.duration });
     this.prefetchUpcoming(nextTrack);
+
+    this.startCrossfadeLoop(
+      source,
+      commitCrossfadeSource.bind(this.backend),
+      setOutputGain.bind(this.backend),
+    );
     return true;
   }
 
+  private canCrossfade(): boolean {
+    return (
+      this.backend.createCrossfadeSource !== undefined &&
+      this.backend.commitCrossfadeSource !== undefined &&
+      this.backend.setOutputGain !== undefined
+    );
+  }
+
+  private startCrossfadeLoop(
+    source: CrossfadeSource,
+    commit: (source: CrossfadeSource) => void,
+    setOutgoingGain: (value: number) => void,
+  ): void {
+    if (this.crossfadeTimer !== null) {
+      clearTimeout(this.crossfadeTimer);
+      this.crossfadeTimer = null;
+    }
+    const stale = this.crossfadeSource;
+    if (stale && stale !== source) {
+      stale.dispose();
+    }
+    this.crossfadeSource = source;
+
+    const crossfader = this.scheduler.getCrossfade();
+    const durationMs = Math.max(50, this.settings.crossfade * SECONDS_TO_MS);
+    const startTime = performance.now();
+
+    const finish = (): void => {
+      if (this.crossfadeSource !== source) return;
+
+      if (this.crossfadeTimer !== null) {
+        clearTimeout(this.crossfadeTimer);
+        this.crossfadeTimer = null;
+      }
+      this.crossfadeSource = null;
+      this.crossfadeFinish = null;
+      commit(source);
+
+      const committedDuration = this.backend.getDuration();
+      if (committedDuration > 0 && committedDuration !== this.duration) {
+        this.duration = committedDuration;
+        this.events.emit("durationchange", { duration: this.duration });
+      }
+      this.currentTime = this.backend.getCurrentTime();
+      this.syncMediaSession();
+    };
+
+    this.crossfadeFinish = finish;
+
+    const step = (): void => {
+      if (this.crossfadeSource !== source) return;
+
+      const progress = Math.min(
+        1,
+        (performance.now() - startTime) / durationMs,
+      );
+      const { fromVolume, toVolume } = crossfader.calculateVolumes(progress);
+      setOutgoingGain(fromVolume);
+      source.setOutputGain(toVolume);
+
+      if (progress < 1) {
+        this.crossfadeTimer = window.setTimeout(step, 16);
+        return;
+      }
+
+      finish();
+    };
+
+    this.crossfadeTimer = window.setTimeout(step, 0);
+  }
+
+  private cancelCrossfadeLoop(): void {
+    if (this.crossfadeTimer !== null) {
+      clearTimeout(this.crossfadeTimer);
+      this.crossfadeTimer = null;
+    }
+    const source = this.crossfadeSource;
+    if (source) {
+      this.crossfadeSource = null;
+      source.dispose();
+    }
+    this.crossfadeFinish = null;
+  }
+
   private cancelScheduledTransition(): void {
+    this.cancelCrossfadeLoop();
+
     if (this.scheduledTransitionId !== null) {
       clearTimeout(this.scheduledTransitionId);
       this.scheduledTransitionId = null;
@@ -771,14 +1014,29 @@ export class KomorebiEngine {
     this.emitError("BACKEND_ERROR", error.message);
   }
 
+  private handleDurationChange(duration: number): void {
+    if (!Number.isFinite(duration) || duration <= 0) return;
+    if (duration === this.duration) return;
+    this.duration = duration;
+    this.events.emit("durationchange", { duration });
+  }
+
   private startTimeUpdates(): void {
     if (this.timeUpdateInterval) return;
 
     this.timeUpdateInterval = window.setInterval(() => {
-      if (this.stateMachine.isPlaying()) {
-        this.handleTimeUpdate(this.backend.getCurrentTime());
+      const state = this.stateMachine.getState();
+      if (state === "playing" || state === "transitioning") {
+        this.handleTimeUpdate(this.getPlayheadTime());
       }
     }, 100);
+  }
+
+  private getPlayheadTime(): number {
+    if (this.crossfadeSource) {
+      return this.crossfadeSource.getCurrentTime();
+    }
+    return this.backend.getCurrentTime();
   }
 
   private stopTimeUpdates(): void {

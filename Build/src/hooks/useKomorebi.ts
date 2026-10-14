@@ -9,9 +9,7 @@ import type {
 } from "../core/engine/types";
 import type { IAudioBackend } from "../platform/audio";
 import { BackendRouter } from "../platform/audio/backends";
-import { PreloadManager } from "../platform/audio/preloader";
 import {
-  createMediaSessionIntegration,
   createDiscordIntegration,
   DiscordService,
 } from "../platform/integrations";
@@ -160,6 +158,15 @@ function restoreEngineSettings(engine: KomorebiEngine): void {
   if (stored.defaultRepeat !== undefined) {
     engine.updateSettings({ defaultRepeat: stored.defaultRepeat });
   }
+  if (stored.replayGainEnabled !== undefined) {
+    engine.setReplayGainEnabled(stored.replayGainEnabled);
+  }
+  if (stored.replayGainPreampDb !== undefined) {
+    engine.setReplayGainPreampDb(stored.replayGainPreampDb);
+  }
+  if (stored.replayGainMode !== undefined) {
+    engine.setReplayGainMode(stored.replayGainMode);
+  }
 }
 
 export function useKomorebi(
@@ -186,15 +193,8 @@ export function useKomorebi(
 
     const backend = new BackendRouter();
     const engine = new KomorebiEngine(backend, {
-      crossfade: { enabled: false, duration: 0, shape: "linear" },
-      gapless: { enabled: true },
-      smartShuffle: true,
       autoPlayNext: autoPlayRef.current,
       trackResolver: (track) => trackStorage.reconstructUrl(track),
-      preloadManager: new PreloadManager(
-        {},
-        { resolveTrack: (track) => trackStorage.reconstructUrl(track) },
-      ),
     });
     restoreEngineSettings(engine);
 
@@ -262,43 +262,8 @@ export function useKomorebi(
     library.on("playlistsupdated", pushLibraryToStore);
     library.on("favoritechanged", pushLibraryToStore);
 
-    const mediaSession = createMediaSessionIntegration();
     const discord = createDiscordIntegration();
-    void mediaSession.initialize();
     void discord.initialize();
-
-    mediaSession.setActionHandlers({
-      play: () => {
-        void engine.play();
-      },
-      pause: () => engine.pause(),
-      next: () => {
-        void engine.next();
-      },
-      previous: () => {
-        void engine.previous();
-      },
-      stop: () => engine.stop(),
-      seek: (time) => engine.seek(time),
-    });
-
-    const syncMediaSession = () => {
-      const engineState = engine.getState();
-      mediaSession.setPlaybackState(
-        engineState.state === "playing"
-          ? "playing"
-          : engineState.state === "paused"
-            ? "paused"
-            : "none",
-      );
-      if (engineState.duration > 0) {
-        mediaSession.setPositionState(
-          engineState.duration,
-          engineState.currentTime,
-          engineState.settings.tempo,
-        );
-      }
-    };
 
     let discordActive = false;
     const updateDiscordPresence = (track: Track | null) => {
@@ -314,10 +279,10 @@ export function useKomorebi(
       if (shouldSync && userId) {
         discord.setUserId(userId);
         discordActive = true;
-        void discord.updatePresence(
-          track,
-          engine.getState().state === "playing",
-        );
+        const playbackState = engine.getState().state;
+        const isPlaying =
+          playbackState === "playing" || playbackState === "transitioning";
+        void discord.updatePresence(track, isPlaying);
       } else if (discordActive) {
         discordActive = false;
         void discord.clearPresence();
@@ -328,13 +293,9 @@ export function useKomorebi(
       from: Track | null;
       to: Track | null;
     }) => {
-      void mediaSession.updateMetadata(data.to);
-      syncMediaSession();
       updateDiscordPresence(data.to);
     };
     engine.on("trackchange", handleTrackChange);
-    engine.on("statechange", syncMediaSession);
-    engine.on("durationchange", syncMediaSession);
 
     const handleSettingsChange = (changes: Partial<SettingsState>) => {
       if (
@@ -378,9 +339,7 @@ export function useKomorebi(
       });
 
     const initialTrack = engine.getState().currentTrack;
-    void mediaSession.updateMetadata(initialTrack);
     updateDiscordPresence(initialTrack);
-    syncMediaSession();
 
     const loadLibrary = async () => {
       try {
@@ -439,10 +398,7 @@ export function useKomorebi(
       engine.off("settingschange", persistEngineSettings);
       engine.off("volumechange", persistEngineSettings);
       engine.off("trackchange", handleTrackChange);
-      engine.off("statechange", syncMediaSession);
-      engine.off("durationchange", syncMediaSession);
       settings.off("settingschange", handleSettingsChange);
-      mediaSession.dispose();
       discord.dispose();
     };
   }, []);
@@ -558,7 +514,8 @@ export function useKomorebi(
   const togglePlayPause = useCallback(async () => {
     const engine = engineRef.current;
     if (!engine) return;
-    if (engine.getState().state === "playing") {
+    const state = engine.getState().state;
+    if (state === "playing" || state === "transitioning") {
       engine.pause();
     } else {
       await engine.play();
@@ -669,18 +626,7 @@ export function useKomorebi(
 
   useEffect(() => {
     const applyEqualizer = (next: EqualizerState): void => {
-      const backend = backendRef.current;
-      if (!(backend instanceof BackendRouter)) return;
-
-      const equalizer = backend.getEqualizer();
-      const wasEnabled = equalizer.isEnabled();
-      equalizer.setBands(next.bands);
-
-      if (wasEnabled !== next.enabled) {
-        backend.setEqualizer(next.enabled);
-      } else {
-        backend.updateEqualizer();
-      }
+      engineRef.current?.applyEqualizer(next);
     };
 
     let saveTimer: number | null = null;

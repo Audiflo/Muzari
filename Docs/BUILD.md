@@ -1,6 +1,6 @@
 # Build System Guide
 
-HTMLPlayer builds for all platforms from a single codebase:
+Muzari builds for all platforms from a single codebase:
 
 1. **Web (PWA)** – Progressive Web App for browsers
 2. **Desktop (Tauri)** – Native desktop app via Tauri

@@ -13,7 +13,6 @@ import { createLogger } from "../../../helpers/logger";
 
 const logger = createLogger("StreamingDecoderBackend");
 
-const TIME_UPDATE_MS = 100;
 const FLUSH_MS = 120;
 const WORKLET_NAME = "flo-stream-output";
 const WORKLET_OUTPUT_CHANNELS = 2;
@@ -85,9 +84,9 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
   private bufferedFrames = 0;
   private decodeComplete = false;
   private endOfStreamSent = false;
-  private timeUpdateTimer: number | null = null;
   private flushTimer: number | null = null;
   private streamGeneration = 0;
+  private sourceLoaded = false;
 
   constructor(graph?: AudioGraph, engine: StreamDecoderEngine = "flo") {
     super();
@@ -98,6 +97,7 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
 
   async load(url: string, track?: Track): Promise<void> {
     this.cancelCurrentStream();
+    this.sourceLoaded = false;
     this.currentUrl = url;
     this.duration = track?.duration ?? 0;
     this.pausedAt = 0;
@@ -124,10 +124,13 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     if (!this.receivedAudio && !this.receivedInfo) {
       throw new Error(`${this.engine} stream contained no audio`);
     }
+    this.sourceLoaded = true;
   }
 
   async play(): Promise<void> {
-    if (!this.workletNode || !this.stream) return;
+    if (!this.sourceLoaded || !this.workletNode || !this.stream) {
+      throw new Error(`${this.engine} backend has no loaded source to play`);
+    }
     if (this.duration > 0 && this.pausedAt + 0.05 >= this.duration) {
       this.emitEnded();
       return;
@@ -141,16 +144,15 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     this.playing = false;
     this.resumeIntent = false;
     this.postWorklet({ type: "pause" });
-    this.stopTimeUpdateTimer();
   }
 
   stop(): void {
     this.cancelCurrentStream();
+    this.sourceLoaded = false;
     this.pausedAt = 0;
     this.playing = false;
     this.resumeIntent = false;
     this.stopTimers();
-    this.emitTimeUpdate(0);
   }
 
   seek(time: number): void {
@@ -160,8 +162,6 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     this.pausedAt = clamped;
     this.playing = false;
     this.resumeIntent = wasPlaying;
-    this.stopTimeUpdateTimer();
-    this.emitTimeUpdate(clamped);
 
     if (this.duration <= 0 || this.sampleRate <= 0) {
       this.resumeIntent = false;
@@ -208,6 +208,7 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
 
   dispose(): void {
     this.cancelCurrentStream();
+    this.sourceLoaded = false;
     if (this.workletNode) {
       this.postWorklet({ type: "flush" });
       this.workletNode.disconnect();
@@ -267,7 +268,6 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     this.playing = true;
     this.postWorklet({ type: "play", rate: this.playbackRate });
     this.flushPendingChunks();
-    this.startTimeUpdateTimer();
   }
 
   private handleInfo(info: FloStreamInfo, generation: number): void {
@@ -277,6 +277,7 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     this.channels = info.channels || 2;
     if (info.total_samples && info.total_samples > 0) {
       this.duration = Number(info.total_samples) / this.sampleRate;
+      this.emitDurationChange(this.duration);
     }
     this.postConfigure();
   }
@@ -326,7 +327,6 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     if (!this.playing) return;
     this.pausedAt = this.duration;
     this.playing = false;
-    this.stopTimeUpdateTimer();
     this.emitEnded();
   }
 
@@ -436,22 +436,7 @@ export class StreamingDecoderBackend extends BaseAudioBackend {
     }, FLUSH_MS);
   }
 
-  private startTimeUpdateTimer(): void {
-    if (this.timeUpdateTimer !== null) return;
-    this.timeUpdateTimer = window.setInterval(() => {
-      this.emitTimeUpdate(this.getCurrentTime());
-    }, TIME_UPDATE_MS);
-  }
-
-  private stopTimeUpdateTimer(): void {
-    if (this.timeUpdateTimer !== null) {
-      clearInterval(this.timeUpdateTimer);
-      this.timeUpdateTimer = null;
-    }
-  }
-
   private stopTimers(): void {
-    this.stopTimeUpdateTimer();
     if (this.flushTimer !== null) {
       clearInterval(this.flushTimer);
       this.flushTimer = null;

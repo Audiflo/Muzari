@@ -9,7 +9,7 @@ export class MusicBrainzProvider
   implements AlbumArtProvider
 {
   name = "MusicBrainz";
-  private userAgent = "HTMLPlayer/2.0 (nellowtcs@gmail.com)";
+  private userAgent = "Muzari/1.0 (nellowtcs@gmail.com)";
 
   async fetchAlbumArt(
     query: SearchQuery,

@@ -211,8 +211,8 @@ export const Sidebar = memo(function SidebarImpl({
         <Dialog open={showAbout} onOpenChange={setShowAbout}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("aboutHTMLPlayer")}</DialogTitle>
-              <DialogDescription>{t("aboutHTMLPlayerDesc")}</DialogDescription>
+              <DialogTitle>{t("aboutMuzari")}</DialogTitle>
+              <DialogDescription>{t("aboutMuzariDesc")}</DialogDescription>
             </DialogHeader>
             <div
               style={{
@@ -229,10 +229,6 @@ export const Sidebar = memo(function SidebarImpl({
                   fontSize: "0.875rem",
                 }}
               >
-                <span style={{ color: "var(--muted-foreground)" }}>
-                  {t("about.version")}
-                </span>
-                <span>2.0.0</span>
               </div>
               <div
                 style={{
@@ -245,7 +241,7 @@ export const Sidebar = memo(function SidebarImpl({
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    window.open("https://github.com/user/HTMLPlayer", "_blank")
+                    window.open("https://github.com/Audiflo/Muzari", "_blank")
                   }
                 >
                   <Icon name="github" size={14} decorative />

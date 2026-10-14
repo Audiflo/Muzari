@@ -264,7 +264,7 @@ const createRig = (decoder: FloStreamDecoderProtocol): Rig => {
   const restoreAudio = installFakeAudio(worklet);
 
   const engine = new KomorebiEngine(new BackendRouter(), {
-    crossfade: { enabled: false, duration: 0, shape: "none" },
+    crossfade: { duration: 0, shape: "none" },
     gapless: { enabled: true, startOffset: 0, endOffset: 0 },
     smartShuffle: false,
     autoPlayNext: false,

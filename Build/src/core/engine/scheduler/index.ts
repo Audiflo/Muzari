@@ -1,23 +1,12 @@
 import type { CrossfadeConfig, GaplessConfig, Track } from "../types";
-
-export interface ScheduledTransition {
-  type: "crossfade" | "gapless";
-  fromTrack: Track;
-  toTrack: Track;
-  triggerTime: number;
-  duration: number;
-}
-
-export type TransitionCurve = "linear" | "equalpower";
+import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "../settings";
 
 export class CrossfadeScheduler {
   private config: CrossfadeConfig = {
-    enabled: false,
-    duration: 3,
-    shape: "equalpower",
+    enabled: DEFAULT_ENGINE_SETTINGS.crossfade > 0,
+    duration: DEFAULT_ENGINE_SETTINGS.crossfade,
+    shape: DEFAULT_CROSSFADE_SHAPE,
   };
-
-  private activeTransition: ScheduledTransition | null = null;
 
   setConfig(config: Partial<CrossfadeConfig>): void {
     this.config = { ...this.config, ...config };
@@ -49,64 +38,21 @@ export class CrossfadeScheduler {
     return currentTime >= triggerPoint;
   }
 
-  getCurve(): TransitionCurve {
-    return this.config.shape === "none" ? "linear" : this.config.shape;
-  }
-
   calculateVolumes(progress: number): { fromVolume: number; toVolume: number } {
-    const { shape } = this.config;
-    const p = progress;
-
-    let fromVolume: number;
-    let toVolume: number;
-
-    switch (shape) {
-      case "equalpower":
-        fromVolume = Math.cos((p * Math.PI) / 2);
-        toVolume = Math.sin((p * Math.PI) / 2);
-        break;
-      case "linear":
-        fromVolume = 1 - p;
-        toVolume = p;
-        break;
-      default:
-        fromVolume = 1;
-        toVolume = 1;
+    const p = Math.max(0, Math.min(1, progress));
+    if (this.config.shape === "equalpower") {
+      return {
+        fromVolume: Math.cos((p * Math.PI) / 2),
+        toVolume: Math.sin((p * Math.PI) / 2),
+      };
     }
-
-    return { fromVolume, toVolume };
-  }
-
-  createTransition(
-    fromTrack: Track,
-    toTrack: Track,
-    duration: number,
-  ): ScheduledTransition {
-    return {
-      type: "crossfade",
-      fromTrack,
-      toTrack,
-      triggerTime: Date.now(),
-      duration,
-    };
-  }
-
-  setActiveTransition(transition: ScheduledTransition | null): void {
-    this.activeTransition = transition;
-  }
-
-  getActiveTransition(): ScheduledTransition | null {
-    return this.activeTransition;
-  }
-
-  clearActiveTransition(): void {
-    this.activeTransition = null;
+    return { fromVolume: 1 - p, toVolume: p };
   }
 }
 
 export class GaplessScheduler {
   private config: GaplessConfig = {
-    enabled: true,
+    enabled: DEFAULT_ENGINE_SETTINGS.gaplessPlayback,
     startOffset: 0,
     endOffset: 0,
   };
@@ -222,24 +168,6 @@ export class Scheduler {
         return this.gapless.shouldTransition(currentTime, track);
       default:
         return false;
-    }
-  }
-
-  getTransitionParams(track: Track): {
-    triggerTime: number;
-    duration: number;
-  } | null {
-    switch (this.currentMode) {
-      case "crossfade":
-        const triggerTime = this.crossfade.calculateTriggerTime(track.duration);
-        return triggerTime !== null
-          ? { triggerTime, duration: this.crossfade.getConfig().duration }
-          : null;
-      case "gapless":
-        const playEnd = this.gapless.calculatePlayEnd(track);
-        return { triggerTime: playEnd - 10, duration: 0 };
-      default:
-        return null;
     }
   }
 

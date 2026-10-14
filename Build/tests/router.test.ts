@@ -43,8 +43,12 @@ class StubBackend implements IAudioBackend {
   volume = 1;
   rate = 1;
   pitch: number | undefined;
+  gain = 1;
+  gainCapable = true;
   failLoad = false;
-  private timeUpdateCallbacks = new Set<(time: number) => void>();
+  stopCalls = 0;
+  emitEndedOnStop = false;
+  private durationChangeCallbacks = new Set<(duration: number) => void>();
   private endedCallbacks = new Set<() => void>();
   private errorCallbacks = new Set<(error: Error) => void>();
   private disposed = false;
@@ -58,7 +62,10 @@ class StubBackend implements IAudioBackend {
 
   async play(): Promise<void> {}
   pause(): void {}
-  stop(): void {}
+  stop(): void {
+    this.stopCalls += 1;
+    if (this.emitEndedOnStop) this.emitEnded();
+  }
   seek(_time: number): void {}
 
   setVolume(volume: number): void {
@@ -73,6 +80,15 @@ class StubBackend implements IAudioBackend {
     this.pitch = semitones;
   }
 
+  setOutputGain(value: number): void {
+    this.gain = value;
+  }
+
+  canSetOutputGain(): boolean {
+    return this.gainCapable;
+  }
+
+
   getCurrentTime(): number {
     return 0;
   }
@@ -85,12 +101,12 @@ class StubBackend implements IAudioBackend {
     return null;
   }
 
-  onTimeUpdate(callback: (time: number) => void): void {
-    this.timeUpdateCallbacks.add(callback);
+  onDurationChange(callback: (duration: number) => void): void {
+    this.durationChangeCallbacks.add(callback);
   }
 
-  offTimeUpdate(callback: (time: number) => void): void {
-    this.timeUpdateCallbacks.delete(callback);
+  offDurationChange(callback: (duration: number) => void): void {
+    this.durationChangeCallbacks.delete(callback);
   }
 
   onEnded(callback: () => void): void {
@@ -117,8 +133,8 @@ class StubBackend implements IAudioBackend {
     return this.disposed;
   }
 
-  emitTime(time: number): void {
-    this.timeUpdateCallbacks.forEach((cb) => cb(time));
+  emitDuration(duration: number): void {
+    this.durationChangeCallbacks.forEach((cb) => cb(duration));
   }
 
   emitEnded(): void {
@@ -356,12 +372,25 @@ describe("BackendRouter", () => {
   it("declines crossfade when no partner backend can be created", async () => {
     const track = makeTrack({ hasStoredAudio: true, mimeType: "audio/mpeg" });
     await expect(
-      router.beginCrossfade("blob:alac-url", track, {
-        durationMs: 3000,
-        shape: "linear",
-      }),
-    ).resolves.toBe(false);
+      router.createCrossfadeSource("blob:alac-url", track),
+    ).resolves.toBeNull();
     expect(symphonia.calls).toHaveLength(0);
+  });
+
+  it("declines crossfade when the active backend cannot apply output gain", async () => {
+    html.gainCapable = false;
+    await router.load("blob:mp3-url", makeTrack({ mimeType: "audio/mpeg" }));
+
+    const result = await router.createCrossfadeSource(
+      "blob:next-url",
+      makeTrack({ mimeType: "audio/mpeg" }),
+    );
+
+    expect(result).toBeNull();
+    expect(routerLog.warn).toHaveBeenCalledWith(
+      "Crossfade declined",
+      expect.objectContaining({ currentHasOutputGain: false }),
+    );
   });
 
   it("falls back through Symphonia to HTML", async () => {
@@ -433,12 +462,26 @@ describe("BackendRouter", () => {
     expect(flo.pitch).toBe(3);
   });
 
-  it("bridges timeupdate, ended, and error from the active backend", async () => {
-    const times: number[] = [];
+  it("forwards output gain to the active backend and reports gain capability", async () => {
+    await router.load(
+      "blob:flo-url",
+      makeTrack({ mimeType: "audio/x-flo" }),
+    );
+
+    router.setOutputGain(0.25);
+    expect(flo.gain).toBe(0.25);
+    expect(router.canSetOutputGain()).toBe(true);
+
+    flo.gainCapable = false;
+    expect(router.canSetOutputGain()).toBe(false);
+  });
+
+  it("bridges durationchange, ended, and error from the active backend", async () => {
+    const durations: number[] = [];
     const ended: boolean[] = [];
     const errors: string[] = [];
 
-    router.onTimeUpdate((t) => times.push(t));
+    router.onDurationChange((d) => durations.push(d));
     router.onEnded(() => ended.push(true));
     router.onError((e) => errors.push(e.message));
 
@@ -447,13 +490,37 @@ describe("BackendRouter", () => {
       makeTrack({ mimeType: "audio/x-flo" }),
     );
 
-    flo.emitTime(12.5);
+    flo.emitDuration(12.5);
     flo.emitEnded();
     flo.emitError(new Error("boom"));
 
-    expect(times).toEqual([12.5]);
+    expect(durations).toEqual([12.5]);
     expect(ended).toEqual([true]);
     expect(errors).toEqual(["boom"]);
+  });
+
+  it("silences the outgoing sink when switching backends", async () => {
+    await router.load("blob:flo-url", makeTrack({ mimeType: "audio/x-flo" }));
+    expect(flo.stopCalls).toBe(0);
+    expect(html.stopCalls).toBe(1);
+
+    await router.load("blob:mp3-url", makeTrack({ mimeType: "audio/mpeg" }));
+    expect(html.stopCalls).toBe(1);
+    expect(flo.stopCalls).toBe(1);
+  });
+
+  it("does not forward an ended emitted while stopping the outgoing sink", async () => {
+    const ended: boolean[] = [];
+    router.onEnded(() => ended.push(true));
+
+    await router.load("blob:mp3-url", makeTrack({ mimeType: "audio/mpeg" }));
+    html.emitEndedOnStop = true;
+
+    await router.load("blob:flo-url", makeTrack({ mimeType: "audio/x-flo" }));
+
+    expect(ended).toEqual([]);
+    expect(html.stopCalls).toBe(1);
+    expect(flo.calls).toHaveLength(1);
   });
 
   it("delegates playback control to the active backend", async () => {
@@ -480,5 +547,94 @@ describe("BackendRouter", () => {
     expect(html.isDisposed()).toBe(true);
     expect(flo.isDisposed()).toBe(true);
     expect(symphonia.isDisposed()).toBe(true);
+  });
+});
+
+describe("BackendRouter crossfade source", () => {
+  it("returns a silent partner source that commits as the active backend", async () => {
+    const html = new StubBackend();
+    const partner = new StubBackend();
+    partner.getDuration = () => 42;
+    let releaseLoad: () => void = () => {};
+    const pendingLoad = new Promise<void>((resolve) => {
+      releaseLoad = resolve;
+    });
+    partner.load = async (url, track) => {
+      partner.calls.push({ url, track });
+      await pendingLoad;
+    };
+
+    const router = new BackendRouter(undefined, {
+      html,
+      flo: new StubBackend(),
+      symphonia: new StubBackend(),
+      createPartner: () => partner,
+    });
+
+    const track = makeTrack({ mimeType: "audio/mpeg" });
+    const crossfade = router.createCrossfadeSource("blob:next-url", track);
+
+    await Promise.resolve();
+    expect(partner.gain).toBe(0);
+    expect(html.gain).toBe(1);
+
+    releaseLoad();
+    const source = await crossfade;
+    if (!source) throw new Error("expected a crossfade source");
+
+    router.commitCrossfadeSource(source);
+    expect(partner.gain).toBe(1);
+    expect(html.gain).toBe(0);
+    expect(html.isDisposed()).toBe(true);
+    expect(router.getDuration()).toBe(42);
+
+    router.dispose();
+  });
+
+  it("aborts a pending source and restores the outgoing gain", async () => {
+    const html = new StubBackend();
+    const partner = new StubBackend();
+    const router = new BackendRouter(undefined, {
+      html,
+      flo: new StubBackend(),
+      symphonia: new StubBackend(),
+      createPartner: () => partner,
+    });
+
+    const source = await router.createCrossfadeSource(
+      "blob:next-url",
+      makeTrack({ mimeType: "audio/mpeg" }),
+    );
+    if (!source) throw new Error("expected a crossfade source");
+
+    source.dispose();
+    expect(partner.isDisposed()).toBe(true);
+    expect(html.gain).toBe(1);
+
+    router.dispose();
+  });
+
+  it("ignores a commit for a source it does not own", async () => {
+    const html = new StubBackend();
+    const partner = new StubBackend();
+    const router = new BackendRouter(undefined, {
+      html,
+      flo: new StubBackend(),
+      symphonia: new StubBackend(),
+      createPartner: () => partner,
+    });
+
+    const source = await router.createCrossfadeSource(
+      "blob:next-url",
+      makeTrack({ mimeType: "audio/mpeg" }),
+    );
+    if (!source) throw new Error("expected a crossfade source");
+
+    router.commitCrossfadeSource(source);
+    router.commitCrossfadeSource(source);
+    expect(partner.gain).toBe(1);
+    expect(html.gain).toBe(0);
+
+    router.dispose();
   });
 });

@@ -4,7 +4,8 @@ import { StreamingDecoderBackend } from "./StreamingDecoderBackend";
 import { AudioGraph } from "../graph";
 import { isSafari } from "../../utils/safari";
 import { chooseBackendFor, identifyFormat, type BackendKind } from "../formats";
-import type { IAudioBackend } from "../index";
+import { sniffAudioFailure, trackCodecFailure } from "../playability";
+import type { CrossfadeSource, IAudioBackend } from "../index";
 import type { Track } from "../../../core/engine/types";
 import { createLogger, describeError } from "../../../helpers/logger";
 
@@ -14,6 +15,7 @@ export interface BackendRouterBackends {
   html: IAudioBackend;
   flo: IAudioBackend;
   symphonia: IAudioBackend;
+  createPartner?: (kind: BackendKind) => IAudioBackend | null;
 }
 
 export type { BackendKind };
@@ -56,8 +58,16 @@ export class BackendRouter extends BaseAudioBackend {
   private pitch = 0;
   private replayGain: number | null = null;
 
-  private crossfadePartner: IAudioBackend | null = null;
-  private crossfadeTimeout: number | null = null;
+  private pendingCrossfade: {
+    source: CrossfadeSource;
+    partner: IAudioBackend;
+    kind: BackendKind;
+    outgoing: IAudioBackend;
+  } | null = null;
+  private crossfadeGeneration = 0;
+  private readonly partnerFactory?: (
+    kind: BackendKind,
+  ) => IAudioBackend | null;
 
   constructor(graph?: AudioGraph, backends?: Partial<BackendRouterBackends>) {
     super();
@@ -70,10 +80,12 @@ export class BackendRouter extends BaseAudioBackend {
       backends?.symphonia ??
       new StreamingDecoderBackend(this.graph, "symphonia");
     this.current = this.htmlBackend;
+    this.partnerFactory = backends?.createPartner;
+    this.subscribe(this.current);
   }
 
   async load(url: string, track?: Track): Promise<void> {
-    this.cancelCrossfade();
+    this.discardPendingCrossfade();
 
     switch (chooseBackendKind(track, url)) {
       case "flo":
@@ -89,6 +101,7 @@ export class BackendRouter extends BaseAudioBackend {
             error: describeError(symphoniaError),
           });
           try {
+            await this.assertHtmlPlayable(url, track);
             await this.switchTo(this.htmlBackend, url, track);
           } catch (htmlError) {
             throw new Error(
@@ -99,6 +112,7 @@ export class BackendRouter extends BaseAudioBackend {
         }
         break;
       case "html":
+        await this.assertHtmlPlayable(url, track);
         await this.switchTo(this.htmlBackend, url, track);
         break;
     }
@@ -113,12 +127,12 @@ export class BackendRouter extends BaseAudioBackend {
   }
 
   stop(): void {
-    this.cancelCrossfade();
+    this.discardPendingCrossfade();
     this.current.stop();
   }
 
   seek(time: number): void {
-    this.cancelCrossfade();
+    this.discardPendingCrossfade();
     this.current.seek(time);
   }
 
@@ -132,6 +146,14 @@ export class BackendRouter extends BaseAudioBackend {
     this.current.setPlaybackRate(rate);
   }
 
+  setOutputGain(value: number): void {
+    this.current.setOutputGain?.(value);
+  }
+
+  canSetOutputGain(): boolean {
+    return this.supportsOutputGain(this.current);
+  }
+
   setPitch(semitones: number): void {
     this.pitch = semitones;
     void this.graph.setPitch(semitones);
@@ -142,175 +164,108 @@ export class BackendRouter extends BaseAudioBackend {
     this.graph.setReplayGain(gainDb);
   }
 
-  beginCrossfade(
+  async createCrossfadeSource(
     url: string,
-    track: Track | undefined,
-    options: { durationMs: number; shape: "linear" | "equalpower" },
-  ): Promise<boolean> {
-    this.cancelCrossfade();
-
-    const kinds = crossfadePartnerKinds(track, url, this.currentKind());
-
-    const currentHasOutputGain = Boolean(this.current.setOutputGain);
-    if (!currentHasOutputGain) {
-      logger.warn("Crossfade declined", { kinds, currentHasOutputGain });
-      return Promise.resolve(false);
-    }
-
-    let partner: IAudioBackend | null = null;
-    let kind: BackendKind | null = null;
-    for (const candidate of kinds) {
-      const attempt = this.createPartner(candidate);
-      if (attempt) {
-        partner = attempt;
-        kind = candidate;
-        break;
-      }
-    }
-    if (!partner || !kind) {
-      logger.warn("Crossfade declined", { kinds, currentHasOutputGain });
-      return Promise.resolve(false);
-    }
+    track?: Track,
+  ): Promise<CrossfadeSource | null> {
+    this.discardPendingCrossfade();
+    const generation = this.crossfadeGeneration;
 
     const outgoing = this.current;
-    const startTime = performance.now();
-    const durationMs = Math.max(50, options.durationMs);
-    const shape = options.shape;
-
-    const configurePartner = (target: IAudioBackend): void => {
-      target.setVolume(this.volume);
-      target.setPlaybackRate(this.playbackRate);
-      target.setPitch?.(this.pitch);
-      target.setReplayGain?.(this.replayGain);
-      target.setOutputGain?.(0);
-      target.onTimeUpdate((time) => this.emitTimeUpdate(time));
-      target.onError((error) => this.emitError(error));
-    };
-    configurePartner(partner);
+    const kinds = crossfadePartnerKinds(track, url, this.currentKind());
+    if (!this.supportsOutputGain(outgoing)) {
+      logger.warn("Crossfade declined", { kinds, currentHasOutputGain: false });
+      return null;
+    }
 
     outgoing.offEnded(this.forwardEnded);
 
-    this.crossfadePartner = partner;
-
-    const finish = (): void => {
-      if (this.crossfadePartner !== partner) return;
-      if (!partner || !kind) return;
-      outgoing.offTimeUpdate(this.forwardTimeUpdate);
-      outgoing.offEnded(this.forwardEnded);
-      outgoing.offError(this.forwardError);
-      partner.onEnded(this.forwardEnded);
-      partner.setOutputGain?.(1);
-      outgoing.setOutputGain?.(0);
-      this.current = partner;
-      this.replacePrimary(kind, partner);
-      logger.debug("Using backend", {
-        kind: this.kindOf(partner),
-        switched: true,
-        via: "crossfade",
-        track: track?.title,
-      });
-      this.crossfadePartner = null;
-      this.crossfadeTimeout = null;
-      outgoing.dispose();
-    };
-
-    const step = (): void => {
-      if (this.crossfadePartner !== partner || this.crossfadeTimeout === null) {
-        return;
+    for (const kind of kinds) {
+      const partner = this.createPartner(kind);
+      if (!partner) continue;
+      if (!this.supportsOutputGain(partner)) {
+        partner.dispose();
+        continue;
       }
-      if (!partner) return;
-      const progress = Math.min(
-        1,
-        (performance.now() - startTime) / durationMs,
-      );
-      const { fromVolume, toVolume } =
-        shape === "equalpower"
-          ? {
-              fromVolume: Math.cos((progress * Math.PI) / 2),
-              toVolume: Math.sin((progress * Math.PI) / 2),
-            }
-          : { fromVolume: 1 - progress, toVolume: progress };
-      outgoing.setOutputGain?.(fromVolume);
-      partner.setOutputGain?.(toVolume);
 
-      if (progress < 1) {
-        this.crossfadeTimeout = window.setTimeout(step, 16);
-      } else {
-        this.crossfadeTimeout = null;
-        finish();
-      }
-    };
-
-    const abandon = (): void => {
-      if (this.crossfadePartner) {
-        this.crossfadePartner.dispose();
-        this.crossfadePartner = null;
-      }
-      outgoing.offEnded(this.forwardEnded);
-      outgoing.onEnded(this.forwardEnded);
-    };
-
-    return (async () => {
-      for (const candidate of kinds) {
-        if (kind !== candidate) {
-          partner?.dispose();
-          const attempt = this.createPartner(candidate);
-          if (!attempt) break;
-          partner = attempt;
-          kind = candidate;
-          this.crossfadePartner = partner;
-          configurePartner(partner);
+      this.configurePartner(partner);
+      try {
+        await partner.load(url, track);
+        if (this.crossfadeGeneration !== generation) {
+          partner.dispose();
+          break;
         }
-
-        try {
-          await partner!.load(url, track);
-          if (this.crossfadePartner !== partner) {
-            partner!.dispose();
-            return false;
-          }
-          partner!.setOutputGain?.(0);
-          await partner!.play();
-          if (this.crossfadePartner !== partner) {
-            partner!.dispose();
-            return false;
-          }
-        } catch (error) {
-          if (kinds[kinds.length - 1] === candidate) {
-            logger.warn("Crossfade partner load/play failed", {
-              kind: candidate,
-              error: String(error),
-            });
-            break;
-          }
-          partner?.dispose();
-          partner = null;
-          this.crossfadePartner = null;
-          continue;
+        partner.seek(0);
+        partner.setOutputGain?.(0);
+        await partner.play();
+        if (this.crossfadeGeneration !== generation) {
+          partner.dispose();
+          break;
         }
-
-        logger.debug("Crossfade engaged", { kind, durationMs });
-        this.crossfadeTimeout = window.setTimeout(step, 0);
-        return true;
+      } catch (error) {
+        logger.warn("Crossfade partner load/play failed", {
+          kind,
+          error: String(error),
+        });
+        partner.dispose();
+        continue;
       }
 
-      abandon();
-      logger.warn("Crossfade failed, no partner available", { kinds });
-      return false;
-    })();
+      const source: CrossfadeSource = {
+        setOutputGain: (value) => partner.setOutputGain?.(value),
+        getCurrentTime: () => partner.getCurrentTime(),
+        getDuration: () => partner.getDuration(),
+        dispose: () => this.discardPendingCrossfade(),
+      };
+      this.pendingCrossfade = { source, partner, kind, outgoing };
+      logger.debug("Crossfade engaged", { kind });
+      return source;
+    }
+
+    outgoing.onEnded(this.forwardEnded);
+    logger.warn("Crossfade failed, no partner available", { kinds });
+    return null;
   }
 
-  cancelCrossfade(): void {
-    if (this.crossfadeTimeout !== null) {
-      clearTimeout(this.crossfadeTimeout);
-      this.crossfadeTimeout = null;
-    }
-    if (this.crossfadePartner) {
-      const partner = this.crossfadePartner;
-      this.crossfadePartner = null;
-      this.current.setOutputGain?.(1);
-      this.current.onEnded(this.forwardEnded);
-      partner.dispose();
-    }
+  commitCrossfadeSource(source: CrossfadeSource): void {
+    const pending = this.pendingCrossfade;
+    if (!pending || pending.source !== source) return;
+    this.pendingCrossfade = null;
+
+    const { partner, kind, outgoing } = pending;
+    this.unsubscribe(outgoing);
+    this.subscribe(partner);
+    partner.setOutputGain?.(1);
+    outgoing.setOutputGain?.(0);
+    this.current = partner;
+    this.replacePrimary(kind, partner);
+    logger.debug("Using backend", {
+      kind: this.kindOf(partner),
+      switched: true,
+      via: "crossfade",
+    });
+    outgoing.dispose();
+  }
+
+  private discardPendingCrossfade(): void {
+    this.crossfadeGeneration += 1;
+
+    const pending = this.pendingCrossfade;
+    if (!pending) return;
+    this.pendingCrossfade = null;
+
+    const { partner, outgoing } = pending;
+    partner.dispose();
+    outgoing.setOutputGain?.(1);
+    outgoing.onEnded(this.forwardEnded);
+  }
+
+  private configurePartner(target: IAudioBackend): void {
+    target.setVolume(this.volume);
+    target.setPlaybackRate(this.playbackRate);
+    target.setPitch?.(this.pitch);
+    target.setReplayGain?.(this.replayGain);
+    target.setOutputGain?.(0);
   }
 
   getEqualizer(): import("../equalizer").Equalizer {
@@ -337,9 +292,34 @@ export class BackendRouter extends BaseAudioBackend {
     return this.graph.getAnalyser();
   }
 
-  private readonly forwardTimeUpdate = (time: number) => {
-    this.emitTimeUpdate(time);
+  private readonly forwardDurationChange = (duration: number) => {
+    this.emitDurationChange(duration);
   };
+
+  private subscribe(backend: IAudioBackend): void {
+    backend.onEnded(this.forwardEnded);
+    backend.onError(this.forwardError);
+    backend.onDurationChange?.(this.forwardDurationChange);
+  }
+
+  private unsubscribe(backend: IAudioBackend): void {
+    backend.offEnded(this.forwardEnded);
+    backend.offError(this.forwardError);
+    backend.offDurationChange?.(this.forwardDurationChange);
+  }
+
+  private async assertHtmlPlayable(url: string, track?: Track): Promise<void> {
+    const failure =
+      (track ? trackCodecFailure(track) : null) ??
+      (await sniffAudioFailure(url, {
+        hasStoredAudio: track?.hasStoredAudio === true,
+      }));
+    if (failure) {
+      throw new Error(
+        `Cannot play "${track?.title ?? "this track"}": ${failure.codecName} is not supported by ${failure.browser}. Convert the file to FLAC, MP3, or AAC, or use Safari.`,
+      );
+    }
+  }
 
   private kindOf(backend: IAudioBackend): BackendKind {
     if (backend === this.htmlBackend) return "html";
@@ -348,11 +328,16 @@ export class BackendRouter extends BaseAudioBackend {
     return "html";
   }
 
+  private supportsOutputGain(backend: IAudioBackend): boolean {
+    return backend.canSetOutputGain?.() ?? Boolean(backend.setOutputGain);
+  }
+
   private currentKind(): BackendKind {
     return this.kindOf(this.current);
   }
 
   private createPartner(kind: BackendKind): IAudioBackend | null {
+    if (this.partnerFactory) return this.partnerFactory(kind);
     if (kind === "flo") {
       if (this.floBackend instanceof StreamingDecoderBackend) {
         return new StreamingDecoderBackend(this.graph, "flo");
@@ -398,13 +383,7 @@ export class BackendRouter extends BaseAudioBackend {
     const kind = this.kindOf(backend);
     const switched = backend !== this.current;
     if (switched) {
-      this.current.offTimeUpdate(this.forwardTimeUpdate);
-      this.current.offEnded(this.forwardEnded);
-      this.current.offError(this.forwardError);
-      this.current = backend;
-      backend.onTimeUpdate(this.forwardTimeUpdate);
-      backend.onEnded(this.forwardEnded);
-      backend.onError(this.forwardError);
+      this.activate(backend);
     }
 
     backend.setVolume(this.volume);
@@ -422,8 +401,38 @@ export class BackendRouter extends BaseAudioBackend {
     await backend.load(url, track);
   }
 
+  private activate(backend: IAudioBackend): void {
+    const previous = this.current;
+    this.unsubscribe(previous);
+    this.safeStop(previous);
+
+    for (const sink of this.primaries()) {
+      if (sink !== backend && sink !== previous) {
+        this.safeStop(sink);
+      }
+    }
+
+    this.current = backend;
+    this.subscribe(backend);
+  }
+
+  private primaries(): IAudioBackend[] {
+    return [this.htmlBackend, this.floBackend, this.symphoniaBackend];
+  }
+
+  private safeStop(backend: IAudioBackend): void {
+    try {
+      backend.stop();
+    } catch (error) {
+      logger.warn("Backend stop failed during switch", {
+        kind: this.kindOf(backend),
+        error: describeError(error),
+      });
+    }
+  }
+
   dispose(): void {
-    this.cancelCrossfade();
+    this.discardPendingCrossfade();
     this.htmlBackend.dispose();
     this.floBackend.dispose();
     this.symphoniaBackend.dispose();

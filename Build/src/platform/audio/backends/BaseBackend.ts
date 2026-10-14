@@ -2,7 +2,7 @@ import type { IAudioBackend } from "../../audio/index";
 import type { Track } from "../../../core/engine/types";
 
 export abstract class BaseAudioBackend implements IAudioBackend {
-  protected timeUpdateCallbacks: Set<(time: number) => void> = new Set();
+  protected durationChangeCallbacks: Set<(duration: number) => void> = new Set();
   protected endedCallbacks: Set<() => void> = new Set();
   protected errorCallbacks: Set<(error: Error) => void> = new Set();
 
@@ -17,17 +17,17 @@ export abstract class BaseAudioBackend implements IAudioBackend {
   abstract getDuration(): number;
 
   dispose(): void {
-    this.timeUpdateCallbacks.clear();
+    this.durationChangeCallbacks.clear();
     this.endedCallbacks.clear();
     this.errorCallbacks.clear();
   }
 
-  onTimeUpdate(callback: (time: number) => void): void {
-    this.timeUpdateCallbacks.add(callback);
+  onDurationChange(callback: (duration: number) => void): void {
+    this.durationChangeCallbacks.add(callback);
   }
 
-  offTimeUpdate(callback: (time: number) => void): void {
-    this.timeUpdateCallbacks.delete(callback);
+  offDurationChange(callback: (duration: number) => void): void {
+    this.durationChangeCallbacks.delete(callback);
   }
 
   onEnded(callback: () => void): void {
@@ -46,8 +46,8 @@ export abstract class BaseAudioBackend implements IAudioBackend {
     this.errorCallbacks.delete(callback);
   }
 
-  protected emitTimeUpdate(time: number): void {
-    this.timeUpdateCallbacks.forEach((cb) => cb(time));
+  protected emitDurationChange(duration: number): void {
+    this.durationChangeCallbacks.forEach((cb) => cb(duration));
   }
 
   protected emitEnded(): void {

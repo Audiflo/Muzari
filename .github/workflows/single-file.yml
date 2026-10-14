@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -41,11 +39,11 @@ jobs:
 
       - name: Rename for distribution
         working-directory: Build/dist
-        run: mv index.html HTMLPlayer-v2.html
+        run: mv index.html Muzari.html
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: HTMLPlayer-Standalone
-          path: Build/dist/HTMLPlayer-v2.html
+          name: Muzari-Standalone
+          path: Build/dist/Muzari.html
           if-no-files-found: error

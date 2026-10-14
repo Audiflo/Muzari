@@ -1,4 +1,12 @@
 import type { Track } from "../../core/engine/types";
+import type { Equalizer } from "./equalizer";
+
+export interface CrossfadeSource {
+  setOutputGain(value: number): void;
+  getCurrentTime(): number;
+  getDuration?(): number;
+  dispose(): void;
+}
 
 export interface IAudioBackend {
   /**
@@ -14,20 +22,23 @@ export interface IAudioBackend {
   seek(time: number): void;
   setVolume(volume: number): void;
   setPlaybackRate(rate: number): void;
+  canSetOutputGain?(): boolean;
   setOutputGain?(value: number): void;
-  beginCrossfade?(
+  createCrossfadeSource?(
     url: string,
-    track: Track | undefined,
-    options: { durationMs: number; shape: "linear" | "equalpower" },
-  ): Promise<boolean>;
-  cancelCrossfade?(): void;
+    track?: Track,
+  ): Promise<CrossfadeSource | null>;
+  commitCrossfadeSource?(source: CrossfadeSource): void;
   getAnalyser?: () => AnalyserNode | null;
+  getEqualizer?(): Equalizer;
+  setEqualizer?(enabled: boolean): void;
+  updateEqualizer?(): void;
   setPitch?(semitones: number): void | Promise<void>;
   setReplayGain?(gainDb: number | null): void;
   getCurrentTime(): number;
   getDuration(): number;
-  onTimeUpdate(callback: (time: number) => void): void;
-  offTimeUpdate(callback: (time: number) => void): void;
+  onDurationChange?(callback: (duration: number) => void): void;
+  offDurationChange?(callback: (duration: number) => void): void;
   onEnded(callback: () => void): void;
   offEnded(callback: () => void): void;
   onError(callback: (error: Error) => void): void;

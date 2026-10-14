@@ -23,7 +23,6 @@ class FuzzBackend implements IAudioBackend {
   private readonly loadFailRate: number;
   private readonly playFailRate: number;
 
-  private timeHandler: ((time: number) => void) | null = null;
   private endedHandler: (() => void) | null = null;
   private errorHandler: ((error: Error) => void) | null = null;
 
@@ -86,13 +85,9 @@ class FuzzBackend implements IAudioBackend {
     return 600;
   }
 
-  onTimeUpdate(callback: (time: number) => void): void {
-    this.timeHandler = callback;
-  }
+  onDurationChange(_callback: (duration: number) => void): void {}
 
-  offTimeUpdate(_callback: (time: number) => void): void {
-    this.timeHandler = null;
-  }
+  offDurationChange(_callback: (duration: number) => void): void {}
 
   onEnded(callback: () => void): void {
     this.endedHandler = callback;
@@ -111,11 +106,6 @@ class FuzzBackend implements IAudioBackend {
   }
 
   dispose(): void {}
-
-  fireTimeUpdate(time: number): void {
-    this.internalTime = time;
-    this.timeHandler?.(time);
-  }
 
   fireEnded(): void {
     this.endedHandler?.();
@@ -293,7 +283,7 @@ function flushMicrotasks(times = 8): Promise<void> {
 
 function createFuzzEngine(backend: FuzzBackend): KomorebiEngine {
   const config: Partial<IAudioEngineConfig> = {
-    crossfade: { enabled: false, duration: 0, shape: "none" },
+    crossfade: { duration: 0, shape: "none" },
     gapless: { enabled: false },
     smartShuffle: false,
   };

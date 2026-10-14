@@ -283,8 +283,8 @@ function createMockBackend(): IAudioBackend {
     getCurrentTime: () => 0,
     getDuration: () => 180,
     getAnalyser: () => null,
-    onTimeUpdate: jest.fn(),
-    offTimeUpdate: jest.fn(),
+    onDurationChange: jest.fn(),
+    offDurationChange: jest.fn(),
     onEnded: jest.fn(),
     offEnded: jest.fn(),
     onError: jest.fn(),
@@ -315,24 +315,29 @@ describe("engine preload wiring", () => {
     jest.clearAllMocks();
   });
 
-  it("resolves the cached preload url before handing the track to the backend", async () => {
-    const manager = new PreloadManager();
-    const track = createTrack("a");
-    await manager.preload(track);
-
+  it("preloads the upcoming track and serves it from the cache", async () => {
     const engine = new KomorebiEngine(backend, {
-      crossfade: { enabled: false, duration: 0, shape: "none" },
+      crossfade: { duration: 0, shape: "none" },
       gapless: { enabled: false },
       smartShuffle: false,
-      preloadManager: manager,
+      trackResolver: async (track) => track,
     } as Partial<IAudioEngineConfig>);
 
+    const playlist = {
+      id: "playlist",
+      name: "Playlist",
+      songs: [createTrack("a"), createTrack("b")],
+    };
+    engine.setPlaylist(playlist);
+
     try {
-      await engine.load(track);
-      expect(backend.load).toHaveBeenCalledTimes(1);
-      expect(backend.load).toHaveBeenCalledWith(
+      await engine.load(playlist.songs[0]);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await engine.load(playlist.songs[1]);
+
+      expect(backend.load).toHaveBeenLastCalledWith(
         "blob:0",
-        expect.objectContaining({ id: "a", url: "blob:0" }),
+        expect.objectContaining({ id: "b", url: "blob:0" }),
       );
     } finally {
       engine.dispose();
@@ -340,15 +345,13 @@ describe("engine preload wiring", () => {
   });
 
   it("falls back to the original url when nothing was preloaded", async () => {
-    const manager = new PreloadManager();
-    const track = createTrack("a");
-
     const engine = new KomorebiEngine(backend, {
-      crossfade: { enabled: false, duration: 0, shape: "none" },
+      crossfade: { duration: 0, shape: "none" },
       gapless: { enabled: false },
       smartShuffle: false,
-      preloadManager: manager,
     } as Partial<IAudioEngineConfig>);
+
+    const track = createTrack("a");
 
     try {
       await engine.load(track);

@@ -36,6 +36,7 @@ import {
 } from "../../../platform/storage/directoryHandle";
 import { playlistFileName } from "../../../platform/library/m3u";
 import { useNavigation } from "../../navigation";
+import { allSongsPlaylist } from "../../navigation/scope";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import type { Playlist, PlaylistFolder } from "../../../core/engine/types";
 import styles from "./Playlist.module.css";
@@ -266,11 +267,7 @@ export const PlaylistView = memo(function PlaylistView({
 
   const handleAllSongsClick = useCallback(() => {
     goToSongs();
-    const allSongs: Playlist = {
-      id: "all-songs",
-      name: t("allSongs"),
-      songs,
-    };
+    const allSongs = allSongsPlaylist(songs, t("allSongs"));
     const song = allSongs.songs[0];
     if (song) playSong(song, allSongs);
   }, [songs, playSong, goToSongs, t]);

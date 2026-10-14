@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { KomorebiEngine } from "../core/engine/engine";
+import { DEFAULT_ENGINE_SETTINGS } from "../core/engine/settings";
 import {
   clampBand,
   createInitialEqualizerState,
@@ -30,19 +31,7 @@ export const EMPTY_ENGINE_STATE: EngineState = {
   currentTrack: null,
   currentPlaylist: null,
   queue: EMPTY_QUEUE_STATE,
-  settings: {
-    volume: 1,
-    crossfade: 0,
-    crossfadeBeforeGapless: 3000,
-    autoPlayNext: true,
-    tempo: 1,
-    pitch: 0,
-    gaplessPlayback: true,
-    smartShuffle: false,
-    repeat: "off",
-    defaultShuffle: false,
-    defaultRepeat: "off",
-  },
+  settings: { ...DEFAULT_ENGINE_SETTINGS },
   currentTime: 0,
   duration: 0,
   volume: 1,
@@ -244,36 +233,40 @@ export const selectCurrentPlaylist = (
   store: KomorebiStoreState,
 ): EngineState["currentPlaylist"] => store.snapshot?.currentPlaylist ?? null;
 
-export const selectIsPlaying = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.state === "playing";
+export const selectIsPlaying = (store: KomorebiStoreState): boolean => {
+  const state = store.snapshot?.state;
+  return state === "playing" || state === "transitioning";
+};
 
 export const selectVolume = (store: KomorebiStoreState): number =>
-  store.snapshot?.settings.volume ?? 1;
+  store.snapshot?.settings.volume ?? DEFAULT_ENGINE_SETTINGS.volume;
 
 export const selectTempo = (store: KomorebiStoreState): number =>
-  store.snapshot?.settings.tempo ?? 1;
+  store.snapshot?.settings.tempo ?? DEFAULT_ENGINE_SETTINGS.tempo;
 
 export const selectPitch = (store: KomorebiStoreState): number =>
-  store.snapshot?.settings.pitch ?? 0;
+  store.snapshot?.settings.pitch ?? DEFAULT_ENGINE_SETTINGS.pitch;
 
 export const selectCrossfade = (store: KomorebiStoreState): number =>
-  store.snapshot?.settings.crossfade ?? 0;
+  store.snapshot?.settings.crossfade ?? DEFAULT_ENGINE_SETTINGS.crossfade;
 
 export const selectGapless = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.settings.gaplessPlayback ?? true;
+  store.snapshot?.settings.gaplessPlayback ??
+  DEFAULT_ENGINE_SETTINGS.gaplessPlayback;
 
 export const selectSmartShuffle = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.settings.smartShuffle ?? false;
+  store.snapshot?.settings.smartShuffle ?? DEFAULT_ENGINE_SETTINGS.smartShuffle;
 
 export const selectAutoPlayNext = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.settings.autoPlayNext ?? true;
+  store.snapshot?.settings.autoPlayNext ?? DEFAULT_ENGINE_SETTINGS.autoPlayNext;
 
 export const selectShuffle = (store: KomorebiStoreState): boolean =>
-  store.snapshot?.queue.shuffled ?? false;
+  store.snapshot?.queue.shuffled ?? EMPTY_QUEUE_STATE.shuffled;
 
 export const selectRepeat = (
   store: KomorebiStoreState,
-): "off" | "one" | "all" => store.snapshot?.settings.repeat ?? "off";
+): "off" | "one" | "all" =>
+  store.snapshot?.settings.repeat ?? DEFAULT_ENGINE_SETTINGS.repeat;
 
 export const selectEqualizer = (store: KomorebiStoreState): EqualizerState =>
   store.equalizer;

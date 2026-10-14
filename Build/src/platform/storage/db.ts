@@ -3,10 +3,10 @@ import { saveAudio } from "./opfs";
 
 const logger = createLogger("db");
 
-const DB_NAME = "HTMLPlayer";
+const DB_NAME = "Muzari";
 const DB_VERSION = 3;
 
-const LEGACY_DB_NAMES = ["HTMLPlayerDB", "HTMLPlayerShortcuts"];
+const LEGACY_DB_NAMES = ["MuzariDB", "MuzariShortcuts"];
 const LEGACY_TRACKS_STORE = "tracks";
 
 export const STORES = {
@@ -111,7 +111,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
     request.onerror = () => reject(request.error);
     request.onblocked = () =>
-      reject(new Error("HTMLPlayer database upgrade blocked by another tab"));
+      reject(new Error("Muzari database upgrade blocked by another tab"));
 
     request.onsuccess = async () => {
       dbInstance = request.result;

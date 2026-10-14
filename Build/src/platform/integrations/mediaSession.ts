@@ -16,10 +16,6 @@ export interface MediaActionHandlers {
 
 type MediaPlaybackState = "playing" | "paused" | "none";
 
-interface MediaSessionWithPlaybackState extends MediaSession {
-  setPlaybackState?(state: MediaPlaybackState): void;
-}
-
 export class MediaSessionIntegration extends BaseIntegration {
   name = "Media Session";
   private session: MediaSession | null = null;
@@ -111,28 +107,24 @@ export class MediaSessionIntegration extends BaseIntegration {
       album: track.album,
     };
 
-    let albumArtUrl = track.albumArt;
-    if (!albumArtUrl) {
-      albumArtUrl =
-        albumArtStorage.get(track.id) ??
-        (await albumArtStorage.load(track.id)) ??
-        undefined;
-    }
+    const albumArtUrl =
+      albumArtStorage.get(track.id) ??
+      (await albumArtStorage.load(track.id)) ??
+      track.albumArt ??
+      undefined;
 
     if (albumArtUrl) {
+      const artwork: MediaImage = { src: albumArtUrl, sizes: "512x512" };
       try {
         const response = await fetch(albumArtUrl);
         const blob = await response.blob();
-        metadata.artwork = [
-          {
-            src: albumArtUrl,
-            sizes: "512x512",
-            type: blob.type || "image/jpeg",
-          },
-        ];
+        if (blob.type) {
+          artwork.type = blob.type;
+        }
       } catch {
-        logger.warn("Failed to load album art for MediaSession");
+        logger.warn("Failed to determine album art type for MediaSession");
       }
+      metadata.artwork = [artwork];
     }
 
     this.session.metadata = new MediaMetadata(metadata);
@@ -140,8 +132,7 @@ export class MediaSessionIntegration extends BaseIntegration {
 
   setPlaybackState(state: MediaPlaybackState): void {
     if (!this.session) return;
-    const session = this.session as MediaSessionWithPlaybackState;
-    session.setPlaybackState?.(state);
+    this.session.playbackState = state;
   }
 
   setPositionState(duration: number, position: number, playbackRate = 1): void {

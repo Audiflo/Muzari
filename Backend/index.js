@@ -11,7 +11,7 @@ app.use(express.json());
 const userTokens = {};
 
 app.get("/", (req, res) => {
-  res.send("HTMLPlayer Backend is running");
+  res.send("Muzari Backend is running");
 });
 
 app.get("/oauth/callback", async (req, res) => {
@@ -37,8 +37,8 @@ app.get("/oauth/callback", async (req, res) => {
           <h2>Successfully connected to Discord!</h2>
           <p>Logged in as: <strong>${user.username}#${user.discriminator || '0000'}</strong></p>
           <p>Your Discord User ID: <strong>${user.id}</strong></p>
-          <p>You can now close this tab and return to HTMLPlayer.</p>
-          <p><em>Copy your User ID above and paste it into HTMLPlayer settings.</em></p>
+          <p>You can now close this tab and return to Muzari.</p>
+          <p><em>Copy your User ID above and paste it into Muzari settings.</em></p>
         </body>
       </html>
     `);

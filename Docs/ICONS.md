@@ -33,7 +33,7 @@ export const libraries: IconLibraryMap = {
   // tabler: () => import("@tabler/icons-react"),
 };
 
-// (Optional) Teach HTMLPlayer how to translate the generic icon props into
+// (Optional) Teach Muzari how to translate the generic icon props into
 // library-specific props. One transformer per library.
 const lucidePropTransformer: IconPropTransformer = (props) => ({
   size: props.size,

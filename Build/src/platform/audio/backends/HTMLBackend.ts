@@ -1,68 +1,69 @@
 import { BaseAudioBackend } from "./BaseBackend";
 import { AudioGraph } from "../graph";
-import { clampRate } from "../clamp";
-import { throwError } from "../../../helpers/logger";
-import { sniffAudioFailure, trackCodecFailure } from "../playability";
-import type { Track } from "../../../core/engine/types";
+import { clampRate, clampVolume } from "../clamp";
+import { createLogger, describeError } from "../../../helpers/logger";
+
+const logger = createLogger("htmlBackend");
+
+const SEEK_SETTLE_TOLERANCE = 0.25;
 
 export class HTMLAudioBackend extends BaseAudioBackend {
   private audio: HTMLAudioElement;
   private graph: AudioGraph;
   private ownsGraph: boolean;
   private outputGain: GainNode | null = null;
-  private boundOnTimeUpdate: () => void;
   private boundOnEnded: () => void;
   private boundOnError: () => void;
   private boundOnLoadedMetadata: () => void;
+  private boundOnSeeked: () => void;
+  private boundOnDurationChange: () => void;
   private duration = 0;
+  private pendingSeek: number | null = null;
+  private pendingLoadCleanup: (() => void) | null = null;
 
   constructor(graph?: AudioGraph) {
     super();
     this.graph = graph ?? new AudioGraph();
     this.ownsGraph = !graph;
 
-    this.audio = new Audio();
-    this.audio.preload = "auto";
-    this.audio.volume = 1;
+    this.audio = this.graph.mediaElementPool.acquire();
 
     this.routeAudioElement();
 
-    this.boundOnTimeUpdate = this.handleTimeUpdate.bind(this);
     this.boundOnEnded = this.handleEnded.bind(this);
     this.boundOnError = this.handleError.bind(this);
     this.boundOnLoadedMetadata = this.handleLoadedMetadata.bind(this);
+    this.boundOnSeeked = this.handleSeeked.bind(this);
+    this.boundOnDurationChange = this.handleDurationChange.bind(this);
 
-    this.audio.addEventListener("timeupdate", this.boundOnTimeUpdate);
     this.audio.addEventListener("ended", this.boundOnEnded);
     this.audio.addEventListener("error", this.boundOnError);
     this.audio.addEventListener("loadedmetadata", this.boundOnLoadedMetadata);
+    this.audio.addEventListener("seeked", this.boundOnSeeked);
+    this.audio.addEventListener("durationchange", this.boundOnDurationChange);
   }
 
-  async load(url: string, track?: Track): Promise<void> {
-    const failure =
-      (track ? trackCodecFailure(track) : null) ??
-      (await sniffAudioFailure(url, {
-        hasStoredAudio: track?.hasStoredAudio === true,
-      }));
-    if (failure) {
-      throw new Error(
-        `Cannot play "${track?.title ?? "this track"}": ${failure.codecName} is not supported by ${failure.browser}. Convert the file to FLAC, MP3, or AAC, or use Safari.`,
-      );
-    }
-
+  async load(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const onCanPlayThrough = () => {
+      this.pendingSeek = 0;
+
+      const cleanup = () => {
         this.audio.removeEventListener("canplaythrough", onCanPlayThrough);
         this.audio.removeEventListener("error", onError);
+        this.pendingLoadCleanup = null;
+      };
+
+      const onCanPlayThrough = () => {
+        cleanup();
         resolve();
       };
 
       const onError = () => {
-        this.audio.removeEventListener("canplaythrough", onCanPlayThrough);
-        this.audio.removeEventListener("error", onError);
+        cleanup();
         reject(new Error(`Failed to load audio: ${url}`));
       };
 
+      this.pendingLoadCleanup = cleanup;
       this.audio.addEventListener("canplaythrough", onCanPlayThrough);
       this.audio.addEventListener("error", onError);
 
@@ -77,7 +78,10 @@ export class HTMLAudioBackend extends BaseAudioBackend {
       try {
         await this.audio.play();
       } catch (error) {
-        return throwError(`Play failed: ${(error as Error).message}`);
+        logger.warn("HTML audio playback rejected", {
+          error: describeError(error),
+        });
+        throw new Error(`Play failed: ${(error as Error).message}`);
       }
     }
   }
@@ -90,19 +94,26 @@ export class HTMLAudioBackend extends BaseAudioBackend {
 
   stop(): void {
     this.audio.pause();
+    this.pendingSeek = 0;
     this.audio.currentTime = 0;
   }
 
   seek(time: number): void {
     const wasPlaying = !this.audio.paused;
-    this.audio.currentTime = time;
+    const target = this.clampToSeekable(Math.max(0, time));
+    this.pendingSeek = target;
+    this.audio.currentTime = target;
     if (wasPlaying) {
       this.audio.play().catch(() => {});
     }
   }
 
   setVolume(volume: number): void {
-    this.graph.setVolume(volume);
+    if (this.outputGain) {
+      this.graph.setVolume(volume);
+      return;
+    }
+    this.audio.volume = clampVolume(volume);
   }
 
   setOutputGain(value: number): void {
@@ -111,11 +122,22 @@ export class HTMLAudioBackend extends BaseAudioBackend {
     }
   }
 
+  canSetOutputGain(): boolean {
+    return this.outputGain !== null;
+  }
+
   setPlaybackRate(rate: number): void {
     this.audio.playbackRate = clampRate(rate);
   }
 
   getCurrentTime(): number {
+    if (this.pendingSeek !== null) {
+      if (Math.abs(this.audio.currentTime - this.pendingSeek) < SEEK_SETTLE_TOLERANCE) {
+        this.pendingSeek = null;
+      } else {
+        return this.pendingSeek;
+      }
+    }
     return this.audio.currentTime;
   }
 
@@ -128,17 +150,23 @@ export class HTMLAudioBackend extends BaseAudioBackend {
   }
 
   dispose(): void {
-    this.audio.removeEventListener("timeupdate", this.boundOnTimeUpdate);
+    this.pendingLoadCleanup?.();
     this.audio.removeEventListener("ended", this.boundOnEnded);
     this.audio.removeEventListener("error", this.boundOnError);
     this.audio.removeEventListener(
       "loadedmetadata",
       this.boundOnLoadedMetadata,
     );
+    this.audio.removeEventListener("seeked", this.boundOnSeeked);
+    this.audio.removeEventListener(
+      "durationchange",
+      this.boundOnDurationChange,
+    );
 
     this.audio.pause();
     this.audio.src = "";
     this.audio.load();
+    this.graph.mediaElementPool.release(this.audio);
 
     if (this.ownsGraph) {
       this.graph.dispose();
@@ -150,11 +178,12 @@ export class HTMLAudioBackend extends BaseAudioBackend {
     try {
       this.outputGain = this.graph.createSlot();
       this.graph.connectMediaElement(this.audio, this.outputGain);
-    } catch {}
-  }
-
-  private handleTimeUpdate(): void {
-    this.emitTimeUpdate(this.audio.currentTime);
+    } catch (error) {
+      this.outputGain = null;
+      logger.warn("Media element routing failed; output gain unavailable", {
+        error: describeError(error),
+      });
+    }
   }
 
   private handleEnded(): void {
@@ -168,9 +197,40 @@ export class HTMLAudioBackend extends BaseAudioBackend {
 
   private handleLoadedMetadata(): void {
     this.duration = this.audio.duration;
+    this.emitDurationChange(this.getDuration());
   }
-}
 
-export function createHTMLBackend(): HTMLAudioBackend {
-  return new HTMLAudioBackend();
+  private handleDurationChange(): void {
+    this.duration = this.audio.duration;
+    this.emitDurationChange(this.getDuration());
+  }
+
+  private handleSeeked(): void {
+    this.pendingSeek = null;
+  }
+
+  private clampToSeekable(time: number): number {
+    const { seekable } = this.audio;
+    if (!seekable || seekable.length === 0) return time;
+
+    let nearest = time;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < seekable.length; index += 1) {
+      const start = seekable.start(index);
+      const end = seekable.end(index);
+      if (time >= start && time <= end) return time;
+
+      const startDistance = Math.abs(time - start);
+      if (startDistance < nearestDistance) {
+        nearest = start;
+        nearestDistance = startDistance;
+      }
+      const endDistance = Math.abs(time - end);
+      if (endDistance < nearestDistance) {
+        nearest = end;
+        nearestDistance = endDistance;
+      }
+    }
+    return nearest;
+  }
 }

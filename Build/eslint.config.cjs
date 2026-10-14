@@ -72,4 +72,38 @@ module.exports = [
       },
     },
   },
+  {
+    files: ["src/core/**/*.ts", "src/core/**/*.tsx", "src/platform/audio/**/*.ts", "src/platform/audio/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "react",
+                "react/**",
+                "react-dom",
+                "react-dom/**",
+                "zustand",
+                "zustand/**",
+                "@tauri-apps",
+                "@tauri-apps/**",
+                "**/ui",
+                "**/ui/**",
+                "**/store",
+                "**/store/**",
+                "**/hooks",
+                "**/hooks/**",
+                "**/platform/pip",
+                "**/platform/pip/**",
+              ],
+              message:
+                "The audio engine and backend layer must stay UI-agnostic.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

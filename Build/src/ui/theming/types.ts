@@ -15,42 +15,6 @@ export interface IconSet {
   path: string;
 }
 
-export interface IconDefinition {
-  name: string;
-  path: string;
-  viewBox?: string;
-}
-
-export interface IconDefinitionMap {
-  [key: string]: IconDefinition;
-}
-
-export interface IconLibraryConfig {
-  transform?: (props: Record<string, unknown>) => Record<string, unknown>;
-}
-
-export interface IconLibraryConfigMap {
-  [key: string]: IconLibraryConfig;
-}
-
-export interface IconLibraryMap {
-  [key: string]: Record<string, unknown>;
-}
-
-export interface ResolvedIcon {
-  component: React.ComponentType<{ size?: number; color?: string }>;
-  viewBox?: string;
-}
-
-export interface ResolvedComponentIcon {
-  type: "component";
-  Component: React.ComponentType<{ size?: number; color?: string }>;
-  component: React.ComponentType<{ size?: number; color?: string }>;
-  defaultProps?: Record<string, unknown>;
-  propTransformer?: (props: Record<string, unknown>) => Record<string, unknown>;
-  title?: string;
-}
-
 export interface Wallpaper {
   name: string;
   author: string;

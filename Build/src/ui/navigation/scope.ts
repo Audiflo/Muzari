@@ -54,6 +54,10 @@ export function songsForNavigation(
   }
 }
 
+export function allSongsPlaylist(songs: Track[], name: string): Playlist {
+  return { id: "all-songs", name, songs };
+}
+
 export function queueForNavigation(
   state: NavigationState,
   scope: NavigationScope,
@@ -80,7 +84,7 @@ export function queueForNavigation(
     case "search":
       return { id: "search", name: state.searchQuery ?? "", songs };
     case "songs":
-      return { id: "all-songs", name: labels.allSongs, songs };
+      return allSongsPlaylist(songs, labels.allSongs);
     default:
       return undefined;
   }

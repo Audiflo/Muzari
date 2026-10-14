@@ -5,11 +5,11 @@ import {
 } from "../src/platform/settings/enginePersistence";
 import type { EngineSettings } from "../src/core/engine/types";
 import { MAX_CROSSFADE_SECONDS } from "../src/platform/audio/clamp";
+import { MAX_REPLAY_GAIN_DB } from "../src/platform/audio/replayGain";
 
 const DEFAULT: EngineSettings = {
   volume: 1,
   crossfade: 0,
-  crossfadeBeforeGapless: 3000,
   autoPlayNext: true,
   tempo: 1,
   pitch: 0,
@@ -18,6 +18,9 @@ const DEFAULT: EngineSettings = {
   repeat: "off",
   defaultShuffle: false,
   defaultRepeat: "off",
+  replayGainEnabled: true,
+  replayGainPreampDb: 0,
+  replayGainMode: "auto",
 };
 
 function fullSettings(overrides: Partial<EngineSettings>): EngineSettings {
@@ -53,21 +56,21 @@ describe("engineSettingsPersistence", () => {
 
   it("returns null for an unversioned legacy blob", () => {
     localStorage.setItem(
-      "htmlplayer-engine-settings",
+      "muzari-engine-settings",
       JSON.stringify({ volume: 0.4 }),
     );
     expect(engineSettingsPersistence.load()).toBeNull();
   });
 
   it("ignores the corrupted blob and returns null", () => {
-    localStorage.setItem("htmlplayer-engine-settings", "{not json");
+    localStorage.setItem("muzari-engine-settings", "{not json");
     expect(engineSettingsPersistence.load()).toBeNull();
   });
 
   it("clears the stored settings", () => {
     engineSettingsPersistence.save(fullSettings({}));
     engineSettingsPersistence.clear();
-    expect(localStorage.getItem("htmlplayer-engine-settings")).toBeNull();
+    expect(localStorage.getItem("muzari-engine-settings")).toBeNull();
   });
 
   it("does not throw when localStorage is unavailable", () => {
@@ -139,5 +142,27 @@ describe("engineSettingsPersistence", () => {
     expect(sanitizeEngineSettings(null)).toEqual({});
     expect(sanitizeEngineSettings("volume: 1")).toEqual({});
     expect(sanitizeEngineSettings([1, 2])).toEqual({});
+  });
+
+  it("sanitizeEngineSettings clamps ReplayGain preamp and validates mode", () => {
+    const clamped = sanitizeEngineSettings({
+      replayGainEnabled: true,
+      replayGainPreampDb: 999,
+      replayGainMode: "album",
+    } as unknown as Record<string, unknown>);
+
+    expect(clamped).toEqual({
+      replayGainEnabled: true,
+      replayGainPreampDb: MAX_REPLAY_GAIN_DB,
+      replayGainMode: "album",
+    });
+
+    const invalid = sanitizeEngineSettings({
+      replayGainEnabled: "yes",
+      replayGainPreampDb: -999,
+      replayGainMode: "bogus",
+    } as unknown as Record<string, unknown>);
+
+    expect(invalid).toEqual({ replayGainPreampDb: -MAX_REPLAY_GAIN_DB });
   });
 });

@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { logger } from "../../helpers/logger";
 import { getCurrentThemeCSS } from "../../ui/theming";
-import { useKomorebiStore } from "../../store";
+import { selectIsPlaying, useKomorebiStore } from "../../store";
 import type { QueueCursor, Track } from "../../core/engine/types";
 import {
   PIP_WINDOW_WIDTH,
@@ -160,7 +160,7 @@ export async function toggleMiniplayer(
                 state.snapshot?.queue.cursor ??
                 ({ kind: "empty" } as QueueCursor),
               tracks: state.snapshot?.queue.tracks ?? [],
-              isPlaying: state.snapshot?.state === "playing",
+              isPlaying: selectIsPlaying(state),
             },
             togglePlayPause: controls.togglePlayPause,
             next: controls.next,

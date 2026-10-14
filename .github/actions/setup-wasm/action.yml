@@ -31,7 +31,6 @@ runs:
         "$BIN" --version
         echo "$(dirname "$BIN")" >> "$GITHUB_PATH"
 
-    # Cached against the lockfile so editing lib.rs reuses every dependency build
     - name: Restore Cargo build cache
       uses: actions/cache@v4
       with:

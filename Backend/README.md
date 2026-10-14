@@ -1,4 +1,4 @@
-# HTMLPlayer Backend
+# Muzari Backend
 
 This is deployed on Render, but currently isn't used at all.
 
