@@ -1,0 +1,309 @@
+import { KomorebiEvents } from "../src/core/engine/events";
+import type {
+  EngineEventMap,
+  EngineState,
+  Track,
+} from "../src/core/engine/types";
+import type { KomorebiEngine } from "../src/core/engine/engine";
+import { DEFAULT_ENGINE_SETTINGS } from "../src/core/engine/settings";
+import {
+  EMPTY_CURSOR,
+  EMPTY_QUEUE_STATE,
+  useKomorebiStore,
+  selectQueueCursor,
+  selectQueueTracks,
+  selectCurrentTrack,
+  selectCurrentPlaylist,
+  selectIsPlaying,
+  selectCurrentTime,
+  selectDuration,
+  selectVolume,
+  selectTempo,
+  selectPitch,
+  selectCrossfade,
+  selectGapless,
+  selectSmartShuffle,
+  selectAutoPlayNext,
+} from "../src/store";
+
+function makeTrack(id: string): Track {
+  return {
+    id,
+    title: `Track ${id}`,
+    artist: "Artist",
+    album: "Album",
+    duration: 180,
+    url: `file:///${id}.mp3`,
+  };
+}
+
+function makeState(overrides: Partial<EngineState>): EngineState {
+  return {
+    state: "idle",
+    currentTrack: null,
+    currentPlaylist: null,
+    queue: EMPTY_QUEUE_STATE,
+    settings: {
+      volume: 1,
+      crossfade: 0,
+      autoPlayNext: true,
+      tempo: 1,
+      pitch: 0,
+      gaplessPlayback: true,
+      smartShuffle: false,
+      repeat: "off",
+      defaultShuffle: false,
+      defaultRepeat: "off",
+      replayGainEnabled: true,
+      replayGainPreampDb: 0,
+      replayGainMode: "auto",
+    },
+    currentTime: 0,
+    duration: 0,
+    volume: 1,
+    playHistory: new Map(),
+    error: null,
+    ...overrides,
+  };
+}
+
+class FakeEngine {
+  private events = new KomorebiEvents();
+  snapshot: EngineState = makeState({});
+
+  setSnapshot(next: EngineState): void {
+    this.snapshot = next;
+    this.events.emit("statechange", {
+      oldState: "idle",
+      newState: next.state,
+    });
+  }
+
+  emitTimeUpdate(currentTime: number, duration: number): void {
+    this.events.emit("timeupdate", { currentTime, duration });
+  }
+
+  getState(): EngineState {
+    return this.snapshot;
+  }
+
+  on<E extends keyof EngineEventMap>(
+    event: E,
+    callback: (data: EngineEventMap[E]) => void,
+  ): void {
+    this.events.on(event, callback);
+  }
+
+  off<E extends keyof EngineEventMap>(
+    event: E,
+    callback: (data: EngineEventMap[E]) => void,
+  ): void {
+    this.events.off(event, callback);
+  }
+}
+
+const asEngine = (fake: FakeEngine): KomorebiEngine =>
+  fake as unknown as KomorebiEngine;
+
+function resetStore(): void {
+  useKomorebiStore.setState({
+    snapshot: null,
+    songs: [],
+    ready: false,
+    loading: false,
+    error: null,
+    currentTime: 0,
+    duration: 0,
+  });
+}
+
+describe("useKomorebiStore", () => {
+  beforeEach(() => {
+    resetStore();
+  });
+
+  describe("selectors with no snapshot", () => {
+    it("selectQueueCursor returns the empty cursor", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectQueueCursor(store)).toEqual(EMPTY_CURSOR);
+    });
+
+    it("selectCurrentTrack returns null for empty cursor", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectCurrentTrack(store)).toBeNull();
+    });
+
+    it("selectQueueTracks returns an empty array", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectQueueTracks(store)).toEqual([]);
+    });
+
+    it("selectVolume falls back to 1", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectVolume(store)).toBe(1);
+    });
+
+    it("audio settings selectors fall back to engine defaults", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectTempo(store)).toBe(DEFAULT_ENGINE_SETTINGS.tempo);
+      expect(selectPitch(store)).toBe(DEFAULT_ENGINE_SETTINGS.pitch);
+      expect(selectCrossfade(store)).toBe(DEFAULT_ENGINE_SETTINGS.crossfade);
+      expect(selectGapless(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.gaplessPlayback,
+      );
+      expect(selectSmartShuffle(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.smartShuffle,
+      );
+      expect(selectAutoPlayNext(store)).toBe(
+        DEFAULT_ENGINE_SETTINGS.autoPlayNext,
+      );
+    });
+
+    it("audio settings selectors read from the snapshot settings", () => {
+      useKomorebiStore.setState({
+        snapshot: makeState({
+          settings: {
+            volume: 0.7,
+            crossfade: 4,
+            autoPlayNext: false,
+            tempo: 1.25,
+            pitch: 3,
+            gaplessPlayback: false,
+            smartShuffle: true,
+            repeat: "one",
+            defaultShuffle: true,
+            defaultRepeat: "all",
+            replayGainEnabled: true,
+            replayGainPreampDb: 0,
+            replayGainMode: "auto",
+          },
+        }),
+      });
+      const store = useKomorebiStore.getState();
+      expect(selectVolume(store)).toBe(0.7);
+      expect(selectTempo(store)).toBe(1.25);
+      expect(selectPitch(store)).toBe(3);
+      expect(selectCrossfade(store)).toBe(4);
+      expect(selectGapless(store)).toBe(false);
+      expect(selectSmartShuffle(store)).toBe(true);
+      expect(selectAutoPlayNext(store)).toBe(false);
+    });
+  });
+
+  describe("selectCurrentTrack", () => {
+    it("resolves the track at the active cursor index", () => {
+      useKomorebiStore.setState({
+        snapshot: makeState({
+          state: "playing",
+          currentTrack: makeTrack("b"),
+          queue: {
+            tracks: [makeTrack("a"), makeTrack("b")],
+            cursor: { kind: "active", index: 1 },
+            shuffled: false,
+            shuffleOrder: [],
+          },
+        }),
+      });
+      const store = useKomorebiStore.getState();
+      expect(selectCurrentTrack(store)?.id).toBe("b");
+      expect(selectCurrentPlaylist(store)).toBeNull();
+      expect(selectIsPlaying(store)).toBe(true);
+    });
+
+    it("returns null when the active index is missing a track", () => {
+      useKomorebiStore.setState({
+        snapshot: makeState({
+          queue: {
+            tracks: [],
+            cursor: { kind: "active", index: 0 },
+            shuffled: false,
+            shuffleOrder: [],
+          },
+        }),
+      });
+      const store = useKomorebiStore.getState();
+      expect(selectCurrentTrack(store)).toBeNull();
+    });
+  });
+
+  describe("selectIsPlaying", () => {
+    const withState = (state: EngineState["state"]): void => {
+      useKomorebiStore.setState({ snapshot: makeState({ state }) });
+    };
+
+    it("returns false without a snapshot", () => {
+      const store = useKomorebiStore.getState();
+      expect(selectIsPlaying(store)).toBe(false);
+    });
+
+    it("returns true only while the engine is playing", () => {
+      withState("paused");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(false);
+      withState("loading");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(false);
+      withState("playing");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(true);
+    });
+
+    it("treats the crossfade sub-state as playing", () => {
+      withState("transitioning");
+      expect(selectIsPlaying(useKomorebiStore.getState())).toBe(true);
+    });
+  });
+
+  describe("attachEngine", () => {
+    it("loads the initial snapshot and derives loading", () => {
+      const fake = new FakeEngine();
+      fake.snapshot = makeState({ state: "loading" });
+
+      const detach = useKomorebiStore.getState().attachEngine(asEngine(fake));
+      const store = useKomorebiStore.getState();
+
+      expect(store.snapshot?.state).toBe("loading");
+      expect(store.loading).toBe(true);
+      expect(store.currentTime).toBe(0);
+
+      detach();
+    });
+
+    it("updates loading on statechange", () => {
+      const fake = new FakeEngine();
+      const detach = useKomorebiStore.getState().attachEngine(asEngine(fake));
+
+      fake.setSnapshot(makeState({ state: "playing" }));
+
+      const store = useKomorebiStore.getState();
+      expect(store.loading).toBe(false);
+      expect(store.snapshot?.state).toBe("playing");
+
+      fake.setSnapshot(makeState({ state: "loading" }));
+      expect(useKomorebiStore.getState().loading).toBe(true);
+
+      detach();
+    });
+
+    it("updates currentTime and duration on timeupdate", () => {
+      const fake = new FakeEngine();
+      const detach = useKomorebiStore.getState().attachEngine(asEngine(fake));
+
+      fake.emitTimeUpdate(42, 180);
+
+      const store = useKomorebiStore.getState();
+      expect(store.currentTime).toBe(42);
+      expect(store.duration).toBe(180);
+
+      detach();
+    });
+
+    it("stops updating after detach", () => {
+      const fake = new FakeEngine();
+      const detach = useKomorebiStore.getState().attachEngine(asEngine(fake));
+
+      detach();
+      fake.setSnapshot(makeState({ state: "error", error: { code: "E", message: "boom" } }));
+
+      const store = useKomorebiStore.getState();
+      expect(store.snapshot?.state).toBe("idle");
+    });
+  });
+});

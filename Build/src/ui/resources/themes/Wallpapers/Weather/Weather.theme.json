@@ -1,0 +1,10 @@
+{
+  "wallpaper": {
+    "id": "weather",
+    "label": "Weather",
+    "author": "NellowTCS",
+    "description": "Real-time weather wallpaper using Open-Meteo API",
+    "version": "1.0.0",
+    "componentFile": "Weather.wallpaper.tsx"
+  }
+}

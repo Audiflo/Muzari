@@ -1,0 +1,10 @@
+{
+  "wallpaper": {
+    "id": "clock",
+    "label": "Clock",
+    "author": "NellowTCS",
+    "description": "An interactive clock wallpaper with analog and digital modes. Click to toggle between them.",
+    "version": "1.0.0",
+    "componentFile": "Clock.wallpaper.tsx"
+  }
+}

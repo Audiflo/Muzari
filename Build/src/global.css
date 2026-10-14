@@ -1,0 +1,227 @@
+@import "@fontsource/inter";
+@import "@fontsource/poppins";
+@import "@fontsource/jetbrains-mono";
+@import "@fontsource/caveat";
+@import "./ui/theming/base-theme.css";
+
+/* prettier-ignore */
+:root {
+  --z-content-low: 10;
+  --z-content: 20;
+  --z-content-high: 30;
+  --z-nav-low: 100;
+  --z-nav: 200;
+  --z-nav-sticky: 300;
+  --z-overlay: 400;
+  --z-spotlight: 1000;
+  --z-critical: 2000;
+
+  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-family-heading: "Poppins", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  --font-family-monospace: "JetBrains Mono", SFMono-Regular, Consolas,
+    "Liberation Mono", Menlo, monospace;
+  --font-family-cursive: "Caveat", cursive;
+
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 250ms;
+  --animation-duration-slow: 350ms;
+
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  --spacing-layout: 15px;
+  --player-art-size: 115px;
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 40px;
+  --miniplayer-control-size: 2rem;
+  --miniplayer-main-control-size: 2.25rem;
+  --settings-sheet-max-width: 860px;
+  --settings-sidebar-min-width: 230px;
+  --settings-sidebar-max-width: 240px;
+
+}
+
+body {
+  font-family: var(--font-family-base);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+html {
+  overflow-y: auto;
+  background: var(--themegradient);
+  background-attachment: fixed;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.loadingScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--themegradient);
+  z-index: var(--z-critical);
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.5s ease-out,
+    visibility 0.5s ease-out;
+}
+
+.loadingScreen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.loadingSpinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--surface-transparent-2);
+  border-top: 4px solid var(--primary-foreground);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingTitle {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary-foreground);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.loadingText {
+  font-family: var(--font-family-base);
+  font-size: 1rem;
+  color: var(--foreground-muted);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+}
+
+html[data-vt-direction="forward"]::view-transition-old(root) {
+  --vt-slide-offset: -60px;
+  animation:
+    var(--animation-duration-fast) ease-in both vtFade reverse,
+    var(--animation-duration-normal) ease-in-out both vtSlide reverse;
+}
+
+html[data-vt-direction="forward"]::view-transition-new(root) {
+  --vt-slide-offset: 60px;
+  animation:
+    var(--animation-duration-fast) ease-out both vtFade,
+    var(--animation-duration-normal) ease-in-out both vtSlide;
+}
+
+html[data-vt-direction="back"]::view-transition-old(root) {
+  --vt-slide-offset: 60px;
+  animation:
+    var(--animation-duration-fast) ease-in both vtFade reverse,
+    var(--animation-duration-normal) ease-in-out both vtSlide reverse;
+}
+
+html[data-vt-direction="back"]::view-transition-new(root) {
+  --vt-slide-offset: -60px;
+  animation:
+    var(--animation-duration-fast) ease-out both vtFade,
+    var(--animation-duration-normal) ease-in-out both vtSlide;
+}
+
+@keyframes vtFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vtSlide {
+  from {
+    translate: var(--vt-slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@layer utilities {
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: var(--spacing-3);
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .search-input {
+    background: var(--surface-transparent-1);
+    border: 1px solid var(--surface-transparent-2);
+    color: var(--primary-foreground);
+    padding-left: calc(var(--spacing-3) * 2 + 16px);
+    border-radius: var(--radius);
+  }
+
+  .search-input::placeholder {
+    color: var(--primary-foreground);
+  }
+
+  .search-input:focus {
+    outline: var(--shadow);
+    border-color: var(--primary-border-strong);
+    box-shadow: 0 0 0 2px var(--primary-transparent-2);
+  }
+
+  .action-button-lift {
+    transition: transform var(--animation-duration-fast) ease;
+  }
+
+  .action-button-lift:hover {
+    transform: translateY(-1px);
+  }
+
+  .action-button-lift:active {
+    transform: translateY(0);
+  }
+}

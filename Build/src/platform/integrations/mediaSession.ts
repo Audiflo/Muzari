@@ -1,0 +1,162 @@
+import { BaseIntegration } from "./base";
+import type { Track } from "../../core/engine/types";
+import { albumArtStorage } from "../storage";
+import { createLogger } from "../../helpers/logger";
+
+const logger = createLogger("mediaSession");
+
+export interface MediaActionHandlers {
+  play(): void | Promise<void>;
+  pause(): void;
+  next(): void | Promise<void>;
+  previous(): void | Promise<void>;
+  stop(): void;
+  seek(time: number): void;
+}
+
+type MediaPlaybackState = "playing" | "paused" | "none";
+
+export class MediaSessionIntegration extends BaseIntegration {
+  name = "Media Session";
+  private session: MediaSession | null = null;
+  private currentTrack: Track | null = null;
+  private actionHandlers: MediaActionHandlers | null = null;
+
+  async initialize(): Promise<void> {
+    if (!("mediaSession" in navigator)) {
+      logger.warn("MediaSession not supported");
+      return;
+    }
+
+    this.session = navigator.mediaSession;
+
+    this.session.setActionHandler("play", () => {
+      void this.actionHandlers?.play();
+    });
+
+    this.session.setActionHandler("pause", () => {
+      this.actionHandlers?.pause();
+    });
+
+    this.session.setActionHandler("previoustrack", () => {
+      void this.actionHandlers?.previous();
+    });
+
+    this.session.setActionHandler("nexttrack", () => {
+      void this.actionHandlers?.next();
+    });
+
+    this.session.setActionHandler("seekto", (details) => {
+      if (details.seekTime !== undefined) {
+        this.actionHandlers?.seek(details.seekTime);
+      }
+    });
+
+    this.session.setActionHandler("stop", () => {
+      this.actionHandlers?.stop();
+    });
+
+    this.setInitialized(true);
+  }
+
+  dispose(): void {
+    this.disposed = true;
+
+    if (this.session) {
+      this.session.setActionHandler("play", null);
+      this.session.setActionHandler("pause", null);
+      this.session.setActionHandler("previoustrack", null);
+      this.session.setActionHandler("nexttrack", null);
+      this.session.setActionHandler("seekto", null);
+      this.session.setActionHandler("stop", null);
+    }
+
+    this.session = null;
+    this.actionHandlers = null;
+  }
+
+  isAvailable(): boolean {
+    return (
+      "mediaSession" in navigator &&
+      this.session !== null &&
+      super.isAvailable()
+    );
+  }
+
+  setActionHandlers(handlers: MediaActionHandlers): void {
+    this.actionHandlers = handlers;
+  }
+
+  clearActionHandlers(): void {
+    this.actionHandlers = null;
+  }
+
+  async updateMetadata(track: Track | null): Promise<void> {
+    this.currentTrack = track;
+
+    if (!this.session || !track) {
+      if (this.session) {
+        this.session.metadata = null;
+      }
+      return;
+    }
+
+    const metadata: MediaMetadataInit = {
+      title: track.title,
+      artist: track.artist,
+      album: track.album,
+    };
+
+    const albumArtUrl =
+      albumArtStorage.get(track.id) ??
+      (await albumArtStorage.load(track.id)) ??
+      track.albumArt ??
+      undefined;
+
+    if (albumArtUrl) {
+      const artwork: MediaImage = { src: albumArtUrl, sizes: "512x512" };
+      try {
+        const response = await fetch(albumArtUrl);
+        const blob = await response.blob();
+        if (blob.type) {
+          artwork.type = blob.type;
+        }
+      } catch {
+        logger.warn("Failed to determine album art type for MediaSession");
+      }
+      metadata.artwork = [artwork];
+    }
+
+    this.session.metadata = new MediaMetadata(metadata);
+  }
+
+  setPlaybackState(state: MediaPlaybackState): void {
+    if (!this.session) return;
+    this.session.playbackState = state;
+  }
+
+  setPositionState(duration: number, position: number, playbackRate = 1): void {
+    if (
+      !this.session ||
+      !Number.isFinite(duration) ||
+      duration <= 0 ||
+      !Number.isFinite(position)
+    ) {
+      return;
+    }
+
+    this.session.setPositionState({
+      duration,
+      position: Math.max(0, Math.min(position, duration)),
+      playbackRate,
+    });
+  }
+
+  getCurrentTrack(): Track | null {
+    return this.currentTrack;
+  }
+}
+
+export function createMediaSessionIntegration(): MediaSessionIntegration {
+  return new MediaSessionIntegration();
+}

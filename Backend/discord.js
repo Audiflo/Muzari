@@ -1,0 +1,96 @@
+import axios from "axios";
+
+const DISCORD_API = "https://discord.com/api/v10";
+
+export async function exchangeCodeForToken(code) {
+  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_REDIRECT_URI) {
+    throw new Error("Missing Discord environment variables. Check DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, and DISCORD_REDIRECT_URI");
+  }
+
+  const params = new URLSearchParams();
+  params.append("client_id", process.env.DISCORD_CLIENT_ID);
+  params.append("client_secret", process.env.DISCORD_CLIENT_SECRET);
+  params.append("grant_type", "authorization_code");
+  params.append("code", code);
+  params.append("redirect_uri", process.env.DISCORD_REDIRECT_URI);
+
+  console.log("Exchanging code for token with redirect URI:", process.env.DISCORD_REDIRECT_URI);
+
+  const res = await axios.post(`${DISCORD_API}/oauth2/token`, params, {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  });
+  
+  console.log("Token exchange successful, scopes:", res.data.scope);
+  return res.data; 
+}
+
+export async function getUserInfo(token) {
+  const res = await axios.get(`${DISCORD_API}/users/@me`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data; 
+}
+
+export async function setActivity(token, { details, state }) {
+  console.log("Setting Discord custom status:", { details, state });
+
+  try {
+    if (!details && !state) {
+      console.log("Clearing Discord custom status");
+      await axios.patch(
+        `${DISCORD_API}/users/@me/settings`,
+        {
+          custom_status: null
+        },
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+    } else {
+      console.log("Setting Discord custom status");
+      const statusText = state ? `🎵 ${details} — ${state}` : `🎵 ${details}`;
+      
+      await axios.patch(
+        `${DISCORD_API}/users/@me/settings`,
+        {
+          custom_status: {
+            text: statusText,
+            expires_at: null,
+            emoji_id: null,
+            emoji_name: "🎵"
+          }
+        },
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+    }
+    console.log("Discord status updated successfully");
+  } catch (error) {
+    const status = error.response?.status;
+    const data = error.response?.data;
+
+    console.error("Failed to update Discord status:", {
+      status,
+      data,
+      message: error.message,
+    });
+
+    const e = new Error(
+      `Discord status update failed: ${status || "unknown"} - ${
+        data ? JSON.stringify(data) : error.message
+      }`,
+    );
+    // @ts-ignore
+    e.status = status;
+    // @ts-ignore
+    e.responseData = data;
+    throw e;
+  }
+}
