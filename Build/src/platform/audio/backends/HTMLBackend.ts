@@ -16,8 +16,10 @@ export class HTMLAudioBackend extends BaseAudioBackend {
   private boundOnError: () => void;
   private boundOnLoadedMetadata: () => void;
   private boundOnSeeked: () => void;
+  private boundOnDurationChange: () => void;
   private duration = 0;
   private pendingSeek: number | null = null;
+  private pendingLoadCleanup: (() => void) | null = null;
 
   constructor(graph?: AudioGraph) {
     super();
@@ -32,28 +34,36 @@ export class HTMLAudioBackend extends BaseAudioBackend {
     this.boundOnError = this.handleError.bind(this);
     this.boundOnLoadedMetadata = this.handleLoadedMetadata.bind(this);
     this.boundOnSeeked = this.handleSeeked.bind(this);
+    this.boundOnDurationChange = this.handleDurationChange.bind(this);
 
     this.audio.addEventListener("ended", this.boundOnEnded);
     this.audio.addEventListener("error", this.boundOnError);
     this.audio.addEventListener("loadedmetadata", this.boundOnLoadedMetadata);
     this.audio.addEventListener("seeked", this.boundOnSeeked);
+    this.audio.addEventListener("durationchange", this.boundOnDurationChange);
   }
 
   async load(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.pendingSeek = 0;
-      const onCanPlayThrough = () => {
+
+      const cleanup = () => {
         this.audio.removeEventListener("canplaythrough", onCanPlayThrough);
         this.audio.removeEventListener("error", onError);
+        this.pendingLoadCleanup = null;
+      };
+
+      const onCanPlayThrough = () => {
+        cleanup();
         resolve();
       };
 
       const onError = () => {
-        this.audio.removeEventListener("canplaythrough", onCanPlayThrough);
-        this.audio.removeEventListener("error", onError);
+        cleanup();
         reject(new Error(`Failed to load audio: ${url}`));
       };
 
+      this.pendingLoadCleanup = cleanup;
       this.audio.addEventListener("canplaythrough", onCanPlayThrough);
       this.audio.addEventListener("error", onError);
 
@@ -90,8 +100,9 @@ export class HTMLAudioBackend extends BaseAudioBackend {
 
   seek(time: number): void {
     const wasPlaying = !this.audio.paused;
-    this.pendingSeek = time;
-    this.audio.currentTime = time;
+    const target = this.clampToSeekable(Math.max(0, time));
+    this.pendingSeek = target;
+    this.audio.currentTime = target;
     if (wasPlaying) {
       this.audio.play().catch(() => {});
     }
@@ -139,6 +150,7 @@ export class HTMLAudioBackend extends BaseAudioBackend {
   }
 
   dispose(): void {
+    this.pendingLoadCleanup?.();
     this.audio.removeEventListener("ended", this.boundOnEnded);
     this.audio.removeEventListener("error", this.boundOnError);
     this.audio.removeEventListener(
@@ -146,6 +158,10 @@ export class HTMLAudioBackend extends BaseAudioBackend {
       this.boundOnLoadedMetadata,
     );
     this.audio.removeEventListener("seeked", this.boundOnSeeked);
+    this.audio.removeEventListener(
+      "durationchange",
+      this.boundOnDurationChange,
+    );
 
     this.audio.pause();
     this.audio.src = "";
@@ -184,12 +200,37 @@ export class HTMLAudioBackend extends BaseAudioBackend {
     this.emitDurationChange(this.getDuration());
   }
 
+  private handleDurationChange(): void {
+    this.duration = this.audio.duration;
+    this.emitDurationChange(this.getDuration());
+  }
+
   private handleSeeked(): void {
-    if (
-      this.pendingSeek !== null &&
-      Math.abs(this.audio.currentTime - this.pendingSeek) < SEEK_SETTLE_TOLERANCE
-    ) {
-      this.pendingSeek = null;
+    this.pendingSeek = null;
+  }
+
+  private clampToSeekable(time: number): number {
+    const { seekable } = this.audio;
+    if (!seekable || seekable.length === 0) return time;
+
+    let nearest = time;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < seekable.length; index += 1) {
+      const start = seekable.start(index);
+      const end = seekable.end(index);
+      if (time >= start && time <= end) return time;
+
+      const startDistance = Math.abs(time - start);
+      if (startDistance < nearestDistance) {
+        nearest = start;
+        nearestDistance = startDistance;
+      }
+      const endDistance = Math.abs(time - end);
+      if (endDistance < nearestDistance) {
+        nearest = end;
+        nearestDistance = endDistance;
+      }
     }
+    return nearest;
   }
 }

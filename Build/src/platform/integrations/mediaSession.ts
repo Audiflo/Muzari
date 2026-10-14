@@ -107,10 +107,6 @@ export class MediaSessionIntegration extends BaseIntegration {
       album: track.album,
     };
 
-    // Prefer the storage-managed object URL: the cache keeps it alive and can
-    // refresh it, whereas `track.albumArt` may point at a revoked blob (for
-    // example the upcoming track during a crossfade, whose artwork was never
-    // rendered and may have been evicted from the cache).
     const albumArtUrl =
       albumArtStorage.get(track.id) ??
       (await albumArtStorage.load(track.id)) ??
@@ -126,7 +122,6 @@ export class MediaSessionIntegration extends BaseIntegration {
           artwork.type = blob.type;
         }
       } catch {
-        // Publish the artwork regardless; only its MIME type is unknown.
         logger.warn("Failed to determine album art type for MediaSession");
       }
       metadata.artwork = [artwork];

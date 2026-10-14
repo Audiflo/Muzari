@@ -371,7 +371,11 @@ export class KomorebiEngine {
   }
 
   seek(time: number): void {
-    this.cancelCrossfadeLoop();
+    if (this.crossfadeFinish) {
+      this.crossfadeFinish();
+    } else {
+      this.cancelCrossfadeLoop();
+    }
     const clampedTime = Math.max(0, Math.min(time, this.duration));
     this.backend.seek(clampedTime);
     this.currentTime = clampedTime;

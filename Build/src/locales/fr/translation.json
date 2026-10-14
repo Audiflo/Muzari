@@ -421,6 +421,7 @@
   },
   "discord": {
     "connection": "Connexion Discord",
+    "enableIntegration": "Activer l'intégration Discord (en panne)",
     "connected": "Connecté en tant qu'ID utilisateur Discord : {{userId}}",
     "notConnected": "Non connecté à Discord",
     "disconnected": "Déconnecté de Discord",

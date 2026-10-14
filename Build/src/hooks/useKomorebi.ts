@@ -279,7 +279,6 @@ export function useKomorebi(
       if (shouldSync && userId) {
         discord.setUserId(userId);
         discordActive = true;
-        // A crossfade reports `transitioning` while audio is still playing.
         const playbackState = engine.getState().state;
         const isPlaying =
           playbackState === "playing" || playbackState === "transitioning";
@@ -515,7 +514,8 @@ export function useKomorebi(
   const togglePlayPause = useCallback(async () => {
     const engine = engineRef.current;
     if (!engine) return;
-    if (engine.getState().state === "playing") {
+    const state = engine.getState().state;
+    if (state === "playing" || state === "transitioning") {
       engine.pause();
     } else {
       await engine.play();

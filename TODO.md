@@ -1,5 +1,7 @@
 # Todo
 
+- [ ] Firefox support 
+
 - [ ] Open Search should open a global search modal overlay, similar to Spotlight Search
 
 - [X] Add TS/TSX support and wallpapers for interactivity

@@ -107,7 +107,7 @@ export function SettingsExperimental({
       <div className={styles.settingItem}>
         <div className={styles.settingInfo}>
           <label htmlFor="discord-enabled">
-            Enable Discord Integration (Broken)
+            {t("discord.enableIntegration")}
           </label>
           <p className={styles.settingDescription}>
             Note: Discord&apos;s RPC API requires special approval. Currently

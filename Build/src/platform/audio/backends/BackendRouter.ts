@@ -64,6 +64,7 @@ export class BackendRouter extends BaseAudioBackend {
     kind: BackendKind;
     outgoing: IAudioBackend;
   } | null = null;
+  private crossfadeGeneration = 0;
   private readonly partnerFactory?: (
     kind: BackendKind,
   ) => IAudioBackend | null;
@@ -168,6 +169,7 @@ export class BackendRouter extends BaseAudioBackend {
     track?: Track,
   ): Promise<CrossfadeSource | null> {
     this.discardPendingCrossfade();
+    const generation = this.crossfadeGeneration;
 
     const outgoing = this.current;
     const kinds = crossfadePartnerKinds(track, url, this.currentKind());
@@ -189,9 +191,17 @@ export class BackendRouter extends BaseAudioBackend {
       this.configurePartner(partner);
       try {
         await partner.load(url, track);
+        if (this.crossfadeGeneration !== generation) {
+          partner.dispose();
+          break;
+        }
         partner.seek(0);
         partner.setOutputGain?.(0);
         await partner.play();
+        if (this.crossfadeGeneration !== generation) {
+          partner.dispose();
+          break;
+        }
       } catch (error) {
         logger.warn("Crossfade partner load/play failed", {
           kind,
@@ -238,6 +248,8 @@ export class BackendRouter extends BaseAudioBackend {
   }
 
   private discardPendingCrossfade(): void {
+    this.crossfadeGeneration += 1;
+
     const pending = this.pendingCrossfade;
     if (!pending) return;
     this.pendingCrossfade = null;
