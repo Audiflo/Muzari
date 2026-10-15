@@ -58,7 +58,7 @@
     "@uppy/react": "^6.0.0",
     "@web-scrobbler/metadata-filter": "^3.2.0",
     "@zag-js/marquee": "^1.44.0",
-    "@zag-js/react": "^1.44.0",
+    "@zag-js/react": "^1.46.0",
     "dompurify": "^3.4.15",
     "dsssp": "^0.8.0",
     "gsap": "^3.15.0",
