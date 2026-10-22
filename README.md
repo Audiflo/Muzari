@@ -5,8 +5,9 @@ Modern local-first audio player for the browser and for desktop (via Tauri).
 [![All Contributors](https://img.shields.io/github/all-contributors/Audiflo/Muzari?color=ee8449&style=flat-square)](#contributors)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
 ![License](https://img.shields.io/github/license/Audiflo/Muzari?style=flat-square)
-![Build Status](https://img.shields.io/github/actions/workflow/status/Audiflo/Muzari/build.yml?style=flat-square)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/1800e6c4-d6fd-4c7f-ad73-4593498ea6db/deploy-status)](https://app.netlify.com/projects/muzari/deploys)
+![CI Status](https://img.shields.io/github/actions/workflow/status/Audiflo/Muzari/ci.yml?style=flat-square)
+![Pages Status](https://img.shields.io/github/actions/workflow/status/Audiflo/Muzari/pages.yml?style=flat-square)
+![Netlify Status](https://img.shields.io/github/actions/workflow/status/Audiflo/Muzari/netlify.yml?style=flat-square)
 
 ![Alt](https://repobeats.axiom.co/api/embed/23a8fe715d513003067f59491f0e044f0182ed4c.svg "Repobeats analytics image")
 
