@@ -49,7 +49,9 @@ jobs:
 
       - name: Verify Single File
         working-directory: Build/dist
-        run: ! ls *.css *.js 2>/dev/null
+        run: |
+          ls
+          ! ls *.css *.js 2>/dev/null
 
       - name: Build
         working-directory: Build
