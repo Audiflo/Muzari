@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Build/package-lock.json 
+
+      - name: Install dependencies
+        working-directory: Build
+        run: npm ci
+
+      - name: Setup WASM toolchain
+        uses: ./.github/actions/setup-wasm
+
+      - name: Build Symphonia WASM decoder
+        uses: ./.github/actions/verify-wasm
+
+      - name: Test
+        working-directory: Build
+        run: |
+          npm run test
+          npm run test:e2e
+          npm run test:integration
+
+      - name: Lint
+        working-directory: Build
+        run: npm run lint
+       
+      - name: Build Single File
+        working-directory: Build
+        run: npm run build:single
+
+      - name: Verify Single File
+        working-directory: Build/dist
+        run: ! ls *.css *.js 2>/dev/null
+
+      - name: Build
+        working-directory: Build
+        run: npm run build     
+
+      - name: Build Desktop
+        working-directory: Build
+        run: npm run build:desktop
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Backend/package-lock.json 
+
+      - name: Install dependencies
+        working-directory: Backend
+        run: npm ci
+
+      - name: Build
+        working-directory: Backend
+        run: npm run build
