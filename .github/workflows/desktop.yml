@@ -1,1 +1,47 @@
+name: Desktop Build
 
+on:
+  push:
+    branches: ["main"]
+  pull_request: 
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Build/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Build
+        run: npm ci
+
+      - name: Setup WASM toolchain
+        uses: ./.github/actions/setup-wasm
+
+      - name: Build Symphonia WASM decoder
+        uses: ./.github/actions/verify-wasm
+        with:
+          verify: "false"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Build
+        working-directory: Build
+        run: npm run build:desktop
