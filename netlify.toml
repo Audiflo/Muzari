@@ -1,7 +1,5 @@
 [build]
-  base = "Build"
-  command = "npm run build"
-  publish = "dist"
+  publish = "."
 
 [build.environment]
   BASE_PATH = "/"
