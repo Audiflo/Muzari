@@ -61,7 +61,7 @@ jobs:
       # Re-resolving each workspace repairs Dependabot-edited changes
       - name: Sync cargo lockfiles
         run: |
-          cargo fetch --manifest-path "crates/Cargo.toml"
+          cargo fetch --manifest-path "crates/symphonia-wasm/Cargo.toml"
           cargo fetch --manifest-path "Build/src-tauri/Cargo.toml"
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
