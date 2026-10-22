@@ -1,0 +1,49 @@
+name: Deploy browser build to Netlify
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Build/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Build
+        run: npm ci
+
+      - name: Setup WASM toolchain
+        uses: ./.github/actions/setup-wasm
+
+      - name: Build Symphonia WASM decoder
+        uses: ./.github/actions/verify-wasm
+        with:
+          verify: "false"
+
+      - name: Build
+        working-directory: Build
+        run: npm run build
+
+      - name: Deploy browser build to Netlify
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: Build/dist
