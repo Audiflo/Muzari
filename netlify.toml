@@ -1,6 +1,0 @@
-[build]
-  publish = "."
-
-[build.environment]
-  BASE_PATH = "/"
-  NODE_VERSION = "22"
