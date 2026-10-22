@@ -86,7 +86,7 @@
     "@typescript-eslint/eslint-plugin": "^8.71.2",
     "@typescript-eslint/parser": "^8.70.1",
     "@vite-pwa/assets-generator": "^1.0.4",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "cloc": "^2.11.0",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.5",
