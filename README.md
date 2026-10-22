@@ -43,6 +43,8 @@ Muzari is deployed to two places:
   - Netlify: https://muzari.netlify.app/
   - GitHub Pages: https://audiflo.github.io/Muzari
 
+To build manually:
+
 ```bash
 git clone https://github.com/Audiflo/Muzari.git
 cd Muzari/Build
