@@ -110,11 +110,7 @@ export function isRepeatMode(value: unknown): value is RepeatMode {
   );
 }
 
-const REPLAY_GAIN_MODES: readonly ReplayGainMode[] = [
-  "track",
-  "album",
-  "auto",
-];
+const REPLAY_GAIN_MODES: readonly ReplayGainMode[] = ["track", "album", "auto"];
 
 export function isReplayGainMode(value: unknown): value is ReplayGainMode {
   return (

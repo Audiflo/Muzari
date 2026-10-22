@@ -132,7 +132,10 @@ export class HTMLAudioBackend extends BaseAudioBackend {
 
   getCurrentTime(): number {
     if (this.pendingSeek !== null) {
-      if (Math.abs(this.audio.currentTime - this.pendingSeek) < SEEK_SETTLE_TOLERANCE) {
+      if (
+        Math.abs(this.audio.currentTime - this.pendingSeek) <
+        SEEK_SETTLE_TOLERANCE
+      ) {
         this.pendingSeek = null;
       } else {
         return this.pendingSeek;

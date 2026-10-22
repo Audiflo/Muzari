@@ -2,7 +2,8 @@ import type { IAudioBackend } from "../../audio/index";
 import type { Track } from "../../../core/engine/types";
 
 export abstract class BaseAudioBackend implements IAudioBackend {
-  protected durationChangeCallbacks: Set<(duration: number) => void> = new Set();
+  protected durationChangeCallbacks: Set<(duration: number) => void> =
+    new Set();
   protected endedCallbacks: Set<() => void> = new Set();
   protected errorCallbacks: Set<(error: Error) => void> = new Set();
 

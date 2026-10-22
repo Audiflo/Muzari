@@ -65,9 +65,7 @@ export class BackendRouter extends BaseAudioBackend {
     outgoing: IAudioBackend;
   } | null = null;
   private crossfadeGeneration = 0;
-  private readonly partnerFactory?: (
-    kind: BackendKind,
-  ) => IAudioBackend | null;
+  private readonly partnerFactory?: (kind: BackendKind) => IAudioBackend | null;
 
   constructor(graph?: AudioGraph, backends?: Partial<BackendRouterBackends>) {
     super();

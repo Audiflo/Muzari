@@ -181,8 +181,7 @@ export class IconEngine {
 
     try {
       const module = (await iconModuleFiles[this.currentSet.path]!()) as
-        | IconModule
-        | undefined;
+        IconModule | undefined;
       if (!module) {
         return null;
       }
@@ -306,8 +305,7 @@ export class IconEngine {
     libraryName: string,
   ): IconPropTransformer | undefined {
     const config = module.libraryConfig?.[libraryName] as
-      | IconLibraryConfig
-      | undefined;
+      IconLibraryConfig | undefined;
     return config?.propTransformer;
   }
 
@@ -316,8 +314,13 @@ export class IconEngine {
   ): Promise<ResolvedComponentIcon | null> {
     const exactName = name.charAt(0).toUpperCase() + name.slice(1);
     for (const [libName, loader] of Object.entries(builtinLibraries)) {
-      const library = await this.loadLibraryModule(`builtin:${libName}`, loader);
-      const iconComponent = asIconComponent(library[name] ?? library[exactName]);
+      const library = await this.loadLibraryModule(
+        `builtin:${libName}`,
+        loader,
+      );
+      const iconComponent = asIconComponent(
+        library[name] ?? library[exactName],
+      );
       if (iconComponent) {
         return { type: "component", Component: iconComponent };
       }

@@ -228,8 +228,7 @@ export const Sidebar = memo(function SidebarImpl({
                   justifyContent: "space-between",
                   fontSize: "0.875rem",
                 }}
-              >
-              </div>
+              ></div>
               <div
                 style={{
                   display: "flex",
