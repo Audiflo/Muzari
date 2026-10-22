@@ -1,0 +1,67 @@
+name: autofix.ci
+
+on:
+  pull_request:
+    paths:
+      - "**/*.rs"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.css"
+      - "**/*.toml"
+      - "**/*.lock"
+      - "**/package.json"
+      - "**/package-lock.json"
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: autofix-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.98.1
+          components: rustfmt
+
+      - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
+            
+      # Dependency setup doubles as lockfile repair
+      - name: Set up language dependencies
+        run: |
+          cd Build
+          npm install
+          cd ../Backend
+          npm install
+
+      - name: Format every language
+        working-directory: Build
+        run: |
+          npm run make-pretty
+          npm run generate:visualizers
+
+      # Re-resolving each workspace repairs Dependabot-edited changes
+      - name: Sync cargo lockfiles
+        run: |
+          cargo fetch --manifest-path "crates/Cargo.toml"
+          cargo fetch --manifest-path "Build/src-tauri/Cargo.toml"
+
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a
