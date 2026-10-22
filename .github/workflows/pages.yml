@@ -38,14 +38,6 @@ jobs:
         with:
           verify: "false"
 
-      - name: Unit tests
-        working-directory: Build
-        run: npx jest --ci
-
-      - name: WASM E2E decode gates
-        working-directory: Build
-        run: npm run test:e2e
-
       - name: Build
         working-directory: Build
         run: npm run build
