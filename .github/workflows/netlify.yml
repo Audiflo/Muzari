@@ -47,6 +47,8 @@ jobs:
       - name: Build
         working-directory: Build
         run: npm run build
+        env:
+           BASE_PATH: /
 
       - name: Deploy browser build to Netlify
         id: netlify
