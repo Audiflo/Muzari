@@ -6,15 +6,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  deployments: write
 
 concurrency:
-  group: "pages"
+  group: "netlify"
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: netlify
+      url: ${{ steps.netlify.outputs.deploy-url }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +48,14 @@ jobs:
         run: npm run build
 
       - name: Deploy browser build to Netlify
-        uses: peaceiris/actions-gh-pages@v4
+        id: netlify
+        uses: nwtgck/actions-netlify@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: Build/dist
+          publish-dir: './Build/dist'
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
