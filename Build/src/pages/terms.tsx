@@ -5,7 +5,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       document={termsOfService}
-      backLink="/"
+      backLink="../"
       backLabel="Back to Muzari"
     />
   );
