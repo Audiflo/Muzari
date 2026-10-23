@@ -82,7 +82,7 @@ export const termsOfService: LegalDocument = {
     {
       heading: "3. Intellectual Property",
       content: `Muzari and its source code are licensed under the 
-MIT License. You may copy, modify, or redistribute the App according to the MIT License terms.`,
+MPL v2.0 License. You may copy, modify, or redistribute the App according to the MPL v2.0 License terms.`,
     },
     {
       heading: "4. Discord Integration",

@@ -90,6 +90,10 @@ Contributions are welcome. Fork the repo, make your changes under `Build/`, then
 
 ## License
 
-MIT. See [LICENSE](LICENSE) for the full text.
+MPL v2.0. See [LICENSE](LICENSE) for the full text.
+
+The Muzari name and logo are not covered by MPL. 
+
+Additionally, please contact me or file an issue if you want to redistribute this commercially.
 
 Chromebook, ChromeOS, and the ChromeOS logo are trademarks of Google LLC.
