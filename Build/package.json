@@ -53,7 +53,7 @@
     "@tauri-apps/plugin-fs": "^2.7.1",
     "@tauri-apps/plugin-notification": "^2.7.0",
     "@tauri-apps/plugin-opener": "^2.5.5",
-    "@uppy/core": "^6.0.1",
+    "@uppy/core": "^6.3.0",
     "@uppy/dashboard": "^6.0.0",
     "@uppy/react": "^6.0.0",
     "@web-scrobbler/metadata-filter": "^3.2.0",
