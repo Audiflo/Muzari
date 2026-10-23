@@ -5,7 +5,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       document={privacyPolicy}
-      backLink="../"
+      backLink="./"
       backLabel="Back to Muzari"
     />
   );
