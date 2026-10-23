@@ -52,7 +52,7 @@
     "@tauri-apps/plugin-dialog": "^2.8.3",
     "@tauri-apps/plugin-fs": "^2.7.1",
     "@tauri-apps/plugin-notification": "^2.7.0",
-    "@tauri-apps/plugin-opener": "^2.5.5",
+    "@tauri-apps/plugin-opener": "^2.7.2",
     "@uppy/core": "^6.3.0",
     "@uppy/dashboard": "^6.0.0",
     "@uppy/react": "^6.0.0",
