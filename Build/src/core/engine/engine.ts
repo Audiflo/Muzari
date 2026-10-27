@@ -72,6 +72,7 @@ export class KomorebiEngine {
 
   private timeUpdateInterval: number | null = null;
   private scheduledTransitionId: number | null = null;
+  private scheduledTransitionWraps = false;
   private crossfadeTimer: number | null = null;
   private crossfadeSource: CrossfadeSource | null = null;
   private crossfadeFinish: (() => void) | null = null;
@@ -447,11 +448,15 @@ export class KomorebiEngine {
 
   setRepeat(mode: RepeatMode): void {
     this.settings.repeat = mode;
-    if (mode === "one" && this.scheduledTransitionId !== null) {
+    if (
+      this.scheduledTransitionId !== null &&
+      (mode === "one" || (mode === "off" && this.scheduledTransitionWraps))
+    ) {
       clearTimeout(this.scheduledTransitionId);
       this.scheduledTransitionId = null;
+      this.scheduledTransitionWraps = false;
       if (this.stateMachine.isTransitioning()) {
-        this.stateMachine.transition("ready");
+        this.stateMachine.transition(mode === "one" ? "ready" : "playing");
         this.emitStateChange();
       }
     }
@@ -820,8 +825,11 @@ export class KomorebiEngine {
         ? 100
         : this.settings.crossfade * SECONDS_TO_MS;
 
+    this.scheduledTransitionWraps =
+      this.queue.getNextTrack(this.settings.smartShuffle) === null;
     this.scheduledTransitionId = window.setTimeout(() => {
       this.scheduledTransitionId = null;
+      this.scheduledTransitionWraps = false;
       void this.executeTransition(nextTrack);
     }, delay);
   }
@@ -1006,6 +1014,7 @@ export class KomorebiEngine {
     if (this.scheduledTransitionId !== null) {
       clearTimeout(this.scheduledTransitionId);
       this.scheduledTransitionId = null;
+      this.scheduledTransitionWraps = false;
     }
 
     if (this.stateMachine.isTransitioning()) {

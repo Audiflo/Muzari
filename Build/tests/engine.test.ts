@@ -664,6 +664,75 @@ describe("KomorebiEngine", () => {
       jest.useRealTimers();
     });
 
+    it.each([
+      ["setRepeat", false],
+      ["setRepeat", true],
+      ["updateSettings", false],
+      ["updateSettings", true],
+    ] as const)(
+      "%s cancels a pending wrap when repeat is turned off (shuffled: %s)",
+      async (method, shuffled) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b", "c"]);
+        engine.setPlaylist(playlist);
+        if (shuffled) {
+          engine.getQueue().setState({ shuffled: true, shuffleOrder: [1, 2, 0] });
+        }
+        const lastTrack = playlist.songs[shuffled ? 0 : 2];
+        await engine.load(lastTrack);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        const stateChange = jest.fn();
+        const ended = jest.fn();
+        engine.on("statechange", stateChange);
+        engine.on("ended", ended);
+        if (method === "setRepeat") engine.setRepeat("off");
+        else engine.updateSettings({ repeat: "off" });
+
+        expect(engine.getState().state).toBe("playing");
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "transitioning",
+          newState: "playing",
+        });
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe(lastTrack.id);
+        expect(backend.load).toHaveBeenCalledTimes(1);
+        expect(ended).not.toHaveBeenCalled();
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+        expect(engine.getState().state).toBe("ready");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each(["setRepeat", "updateSettings"] as const)(
+      "%s preserves a pending non-wrapping transition when repeat is turned off",
+      async (method) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        if (method === "setRepeat") engine.setRepeat("off");
+        else engine.updateSettings({ repeat: "off" });
+
+        expect(engine.getState().state).toBe("transitioning");
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(engine.getState().state).toBe("playing");
+        expect(backend.load).toHaveBeenCalledTimes(2);
+      },
+    );
+
     it.each(["setRepeat", "toggleRepeat"] as const)(
       "%s cancels a pending transition when switching to repeat one",
       async (method) => {
