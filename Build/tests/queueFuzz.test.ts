@@ -1,6 +1,7 @@
 import { QueueManager } from "../src/core/engine/queue";
 import { isQueueState } from "../src/core/engine/validators";
 import { createMockTrack, mulberry32, randomInt } from "./helpers";
+import { describe, it } from "@jest/globals";
 
 interface FuzzOp {
   name: string;
@@ -76,10 +77,12 @@ function expectQueueInvariants(queue: QueueManager): void {
       throw new Error("unshuffled play order must be sequential");
     }
     if (
-      queue.peekNextCursor(false).kind !== "active" ||
-      queue.peekPreviousCursor(false).kind !== "active"
+      queue.peekNextCursor(false, true).kind !== "active" ||
+      queue.peekPreviousCursor(false, true).kind !== "active"
     ) {
-      throw new Error("non-empty queue must yield active peek cursors");
+      throw new Error(
+        "non-empty queue must yield active wrap cursors",
+      );
     }
   }
 }

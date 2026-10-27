@@ -132,20 +132,20 @@ describe("QueueManager", () => {
     expect(prev?.id).toBe("a");
   });
 
-  it("should wrap around at end of playlist", () => {
+  it("should wrap around at end of playlist only with wrap enabled", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(2);
-    const next = queue.getNextTrack(false);
-    expect(next?.id).toBe("a");
+    expect(queue.getNextTrack(false)).toBeNull();
+    expect(queue.getNextTrack(false, true)?.id).toBe("a");
   });
 
-  it("should wrap around at start of playlist", () => {
+  it("should wrap around at start of playlist only with wrap enabled", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(0);
-    const prev = queue.getPreviousTrack(false);
-    expect(prev?.id).toBe("c");
+    expect(queue.getPreviousTrack(false)).toBeNull();
+    expect(queue.getPreviousTrack(false, true)?.id).toBe("c");
   });
 
   it("should shuffle tracks", () => {
@@ -509,6 +509,380 @@ describe("KomorebiEngine", () => {
     expect(settings.smartShuffle).toBe(true);
     expect(settings.repeat).toBe("one");
     expect(settings.autoPlayNext).toBe(false);
+  });
+
+  it("does not loop the queue when repeat is off", async () => {
+    const playlist = createMockPlaylist(["a", "b", "c"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[2]);
+    await engine.play();
+
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("c");
+  });
+
+  it("loops to the first track on next when repeat is all", async () => {
+    const playlist = createMockPlaylist(["a", "b", "c"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[2]);
+    await engine.play();
+
+    engine.setRepeat("all");
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+  });
+
+  it("advances through the queue when repeat is all even with autoPlayNext off", async () => {
+    engine.setAutoPlayNext(false);
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    engine.setRepeat("all");
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("b");
+  });
+
+  it("ignores next at the last track when repeat is off even with autoPlayNext off", async () => {
+    engine.setAutoPlayNext(false);
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[1]);
+    await engine.play();
+
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("b");
+    expect(engine.getState().state).toBe("playing");
+  });
+
+  it("restarts the same track when it ends with repeat one", async () => {
+    const endedTrackIds: Array<string | null> = [];
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    engine.setRepeat("one");
+    engine.on("trackchange", (e) => {
+      if (e.to) endedTrackIds.push(e.to.id);
+    });
+
+    (backend.onEnded as ReturnType<typeof jest.fn>).mock.calls.forEach(
+      ([cb]) => cb(),
+    );
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(endedTrackIds).not.toContain("b");
+    expect(backend.seek).toHaveBeenCalledWith(0);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(backend.play).toHaveBeenCalledTimes(2);
+  });
+
+  it("advances to the next track when it ends with repeat all", async () => {
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    engine.setRepeat("all");
+    (backend.onEnded as ReturnType<typeof jest.fn>).mock.calls.forEach(
+      ([cb]) => cb(),
+    );
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(engine.getCurrentTrack()?.id).toBe("b");
+  });
+
+  it("stops when a track ends with repeat off and autoPlayNext disabled", async () => {
+    engine.setAutoPlayNext(false);
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    (backend.onEnded as ReturnType<typeof jest.fn>).mock.calls.forEach(
+      ([cb]) => cb(),
+    );
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(engine.getState().state).toBe("ready");
+  });
+
+  it("suppresses the scheduled transition when repeat is one", async () => {
+    let now = 0;
+    const xfadeBackend = createMockBackend();
+    xfadeBackend.getCurrentTime = () => now;
+    xfadeBackend.getDuration = () => 180;
+
+    engine = new KomorebiEngine(xfadeBackend, {
+      crossfade: { duration: 3, shape: "linear" },
+      gapless: { enabled: true },
+      smartShuffle: true,
+      autoPlayNext: true,
+    });
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[0]);
+    await engine.play();
+
+    engine.setRepeat("one");
+    now = 179.9;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(xfadeBackend.load).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to replaying the only track when it ends with repeat off and autoPlayNext on", async () => {
+    const solo = createMockPlaylist(["a"]);
+    engine.setPlaylist(solo);
+    await engine.load(solo.songs[0]);
+    await engine.play();
+
+    (backend.onEnded as ReturnType<typeof jest.fn>).mock.calls.forEach(
+      ([cb]) => cb(),
+    );
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(backend.load).toHaveBeenCalledTimes(2);
+  });
+
+  describe("repeat transition timing", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      engine.stop();
+      jest.useRealTimers();
+    });
+
+    it.each([
+      ["setRepeat", false],
+      ["setRepeat", true],
+      ["updateSettings", false],
+      ["updateSettings", true],
+    ] as const)(
+      "%s cancels a pending wrap when repeat is turned off (shuffled: %s)",
+      async (method, shuffled) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b", "c"]);
+        engine.setPlaylist(playlist);
+        if (shuffled) {
+          engine.getQueue().setState({ shuffled: true, shuffleOrder: [1, 2, 0] });
+        }
+        const lastTrack = playlist.songs[shuffled ? 0 : 2];
+        await engine.load(lastTrack);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        const stateChange = jest.fn();
+        const ended = jest.fn();
+        engine.on("statechange", stateChange);
+        engine.on("ended", ended);
+        if (method === "setRepeat") engine.setRepeat("off");
+        else engine.updateSettings({ repeat: "off" });
+
+        expect(engine.getState().state).toBe("playing");
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "transitioning",
+          newState: "playing",
+        });
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe(lastTrack.id);
+        expect(backend.load).toHaveBeenCalledTimes(1);
+        expect(ended).not.toHaveBeenCalled();
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+        expect(engine.getState().state).toBe("ready");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each(["setRepeat", "updateSettings"] as const)(
+      "%s preserves a pending non-wrapping transition when repeat is turned off",
+      async (method) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        if (method === "setRepeat") engine.setRepeat("off");
+        else engine.updateSettings({ repeat: "off" });
+
+        expect(engine.getState().state).toBe("transitioning");
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(engine.getState().state).toBe("playing");
+        expect(backend.load).toHaveBeenCalledTimes(2);
+      },
+    );
+
+    it.each(["setRepeat", "toggleRepeat"] as const)(
+      "%s cancels a pending transition when switching to repeat one",
+      async (method) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        const stateChange = jest.fn();
+        engine.on("statechange", stateChange);
+        if (method === "setRepeat") engine.setRepeat("one");
+        else engine.toggleRepeat();
+
+        expect(engine.getState().settings.repeat).toBe("one");
+        expect(engine.getState().state).toBe("ready");
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "transitioning",
+          newState: "ready",
+        });
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe("a");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+        expect(backend.seek).toHaveBeenCalledWith(0);
+        expect(engine.getState().state).toBe("playing");
+
+        engine.setRepeat("off");
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(backend.load).toHaveBeenCalledTimes(2);
+      },
+    );
+
+    it.each(["setRepeat", "toggleRepeat"] as const)(
+      "%s leaves an already-started crossfade running",
+      async (method) => {
+        const source = {
+          setOutputGain: jest.fn(),
+          getCurrentTime: () => 0,
+          dispose: jest.fn(),
+        };
+        backend.getCurrentTime = () => 179.9;
+        backend.createCrossfadeSource = jest.fn().mockResolvedValue(source);
+        backend.commitCrossfadeSource = jest.fn();
+        backend.setOutputGain = jest.fn();
+        engine.setCrossfade(3);
+        engine.setRepeat("all");
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+
+        await jest.advanceTimersByTimeAsync(101);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(backend.commitCrossfadeSource).not.toHaveBeenCalled();
+
+        if (method === "setRepeat") engine.setRepeat("one");
+        else engine.toggleRepeat();
+
+        await jest.advanceTimersByTimeAsync(3100);
+        expect(source.dispose).not.toHaveBeenCalled();
+        expect(backend.commitCrossfadeSource).toHaveBeenCalledWith(source);
+        expect(engine.getState().state).toBe("playing");
+      },
+    );
+
+    it.each([0, 3])(
+      "keeps the last track playing through the transition window with crossfade %s",
+      async (crossfade) => {
+        backend.getCurrentTime = () => 179.9;
+        engine.setCrossfade(crossfade);
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[1], playlist);
+        await engine.play();
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("playing");
+        engine.pause();
+        expect(backend.pause).toHaveBeenCalledTimes(1);
+        expect(engine.getState().state).toBe("paused");
+      },
+    );
+
+    it.each([false, true])(
+      "becomes ready at the end of the queue with repeat off and autoPlayNext %s",
+      async (autoPlayNext) => {
+        engine.setAutoPlayNext(autoPlayNext);
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[1], playlist);
+        await engine.play();
+        const stateChange = jest.fn();
+        engine.on("statechange", stateChange);
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(engine.getState().state).toBe("ready");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "playing",
+          newState: "ready",
+        });
+      },
+    );
+  });
+
+  it("does not replay the only track when autoPlayNext is off", async () => {
+    engine.setAutoPlayNext(false);
+    const solo = createMockPlaylist(["a"]);
+    engine.setPlaylist(solo);
+    await engine.load(solo.songs[0]);
+    await engine.play();
+
+    (backend.onEnded as ReturnType<typeof jest.fn>).mock.calls.forEach(
+      ([cb]) => cb(),
+    );
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(backend.load).toHaveBeenCalledTimes(1);
+    expect(engine.getState().state).toBe("ready");
+  });
+
+  it("replays the only track when next is pressed with repeat off", async () => {
+    const solo = createMockPlaylist(["a"]);
+    engine.setPlaylist(solo);
+    await engine.load(solo.songs[0]);
+    await engine.play();
+
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("a");
+    expect(backend.load).toHaveBeenCalledTimes(2);
+  });
+
+  it("advances past the last track only when repeat is all, never via the single-track fallback", async () => {
+    const playlist = createMockPlaylist(["a", "b"]);
+    engine.setPlaylist(playlist);
+    await engine.load(playlist.songs[1]);
+    await engine.play();
+
+    await engine.next();
+
+    expect(engine.getCurrentTrack()?.id).toBe("b");
   });
 
   it("should seek to position", async () => {
