@@ -56,7 +56,11 @@ if (isWeb && !isSingleFile) {
   plugins.push(
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["robots.txt"],
+      includeAssets: [
+        "robots.txt",
+        "favicon.ico",
+        "muzari-*.svg",
+      ],
 
       strategies: "injectManifest",
       srcDir: "src/workers",
@@ -66,7 +70,6 @@ if (isWeb && !isSingleFile) {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         swSrc: "./src/workers/sw.ts",
       },
-
       manifest: {
         id: "muzari",
         name: "Muzari",

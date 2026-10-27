@@ -1,125 +1,128 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="A modern music player interface with playlists, song management, and an amazing visualizer."
-    />
-    <meta
-      property="og:image"
-      content="https://nellowtcs.me/assets/icon-1024.png"
-    />
-    <meta
-      property="og:description"
-      content="A modern music player interface with playlists, song management, and an amazing visualizer."
-    />
-    <meta property="og:title" content="Muzari" />
 
-    <script>
-      (function () {
-        // Vite will replace these exact strings during build
-        const isSingleFile = __IS_SINGLE_FILE__;
-        const iconData = __INLINED_ICON__;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="A modern music player interface with playlists, song management, and an amazing visualizer." />
+  <meta property="og:image" content="/Muzari/png-512x512.png" />
+  <meta property="og:description"
+    content="A modern music player interface with playlists, song management, and an amazing visualizer." />
+  <meta property="og:title" content="Muzari" />
 
-        if (isSingleFile && iconData) {
-          const link =
-            document.querySelector("link[rel*='icon']") ||
-            document.createElement("link");
-          link.type = "image/png";
-          link.rel = "icon";
-          link.href = iconData;
-          document.head.appendChild(link);
+  <!-- PWA icons (favicon.ico, SVG favicon, apple-touch-icon) are injected at
+       build by vite-plugin-pwa's assets generator; see pwa-assets.config.ts. -->
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
 
-          const ogImage =
-            document.querySelector('meta[property="og:image"]') ||
-            document.createElement("meta");
-          ogImage.setAttribute("property", "og:image");
-          ogImage.content = iconData;
-          document.head.appendChild(ogImage);
-        }
-      })();
-    </script>
+  <script>
+    (function () {
+      // Vite will replace these exact strings during build
+      const isSingleFile = __IS_SINGLE_FILE__;
+      const iconData = __INLINED_ICON__;
 
-    <link href="./src/global.css" rel="stylesheet" />
-    <link
-      href="./src/ui/resources/themes/Palettes/Blue/Blue.theme.css"
-      rel="stylesheet"
-      id="theme-link"
-    />
+      if (isSingleFile && iconData) {
+        // A single-file build has no sibling assets, so the static hanko SVG
+        // link is replaced with the inlined hanko PNG.
+        const link =
+          document.querySelector("link[rel*='icon']") ||
+          document.createElement("link");
+        link.type = "image/png";
+        link.rel = "icon";
+        link.href = iconData;
+        document.head.appendChild(link);
 
-    <script>
-      (function () {
-        // Apply dark mode immediately if needed (before theme switching)
-        const savedMode = localStorage.getItem("themeMode") || "auto";
-        let isDark = false;
-        if (savedMode === "dark") {
+        const ogImage =
+          document.querySelector('meta[property="og:image"]') ||
+          document.createElement("meta");
+        ogImage.setAttribute("property", "og:image");
+        ogImage.content = iconData;
+        document.head.appendChild(ogImage);
+      }
+    })();
+  </script>
+
+  <link href="./src/global.css" rel="stylesheet" />
+  <link href="./src/ui/resources/themes/Palettes/Blue/Blue.theme.css" rel="stylesheet" id="theme-link" />
+
+  <script>
+    (function () {
+      // Apply dark mode immediately if needed (before theme switching)
+      const savedMode = localStorage.getItem("themeMode") || "auto";
+      let isDark = false;
+      if (savedMode === "dark") {
+        isDark = true;
+        document.documentElement.classList.add("dark");
+      } else if (savedMode === "auto") {
+        // Check system preference
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
           isDark = true;
           document.documentElement.classList.add("dark");
-        } else if (savedMode === "auto") {
-          // Check system preference
-          if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-          ) {
-            isDark = true;
-            document.documentElement.classList.add("dark");
-          }
         }
-        // Prevent white flash before theme CSS variables load
-        document.documentElement.style.backgroundColor = isDark
-          ? "#0a192f"
-          : "#f0f9ff";
-      })();
-    </script>
+      }
+      // Prevent white flash before theme CSS variables load
+      document.documentElement.style.backgroundColor = isDark
+        ? "#0a192f"
+        : "#f0f9ff";
+    })();
+  </script>
 
-    <title>Muzari</title>
-  </head>
-  <body>
-    <div id="loading-screen" class="loadingScreen">
-      <div class="loadingContent">
-        <div class="loadingSpinner"></div>
-        <h1 class="loadingTitle">Muzari</h1>
-        <p class="loadingText" id="loading-text">
-          Loading the loading message...
-        </p>
+  <title>Muzari</title>
+</head>
+
+<body>
+  <div id="loading-screen" class="loadingScreen">
+    <div class="loadingContent">
+      <div class="loadingSpinner">
+        <svg class="loadingMark" viewBox="0 0 78 77" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="currentColor" fill-rule="evenodd"
+            d="M 20.1 64.9 L 47 60.5 Q 51.3 59.7 59.1 58.4 Q 61.8 57.9 61.8 56 Q 61.8 55.2 61 53.9 Q 57.1 48.2 52.1 43.3 Q 50.5 41.8 50.5 41 Q 50.5 40.4 51.4 40.4 Q 52.9 40.4 54.9 41.7 Q 61.2 45.8 68.15 53.45 Q 75.1 61.1 77.5 68.7 Q 77.8 69.9 77.8 70.9 Q 77.8 73 76.5 74.3 Q 75.2 75.6 73.5 75.6 Q 72.3 75.6 71.25 74.8 Q 70.2 74 69.8 72.4 Q 68.8 68.7 66.9 64.5 Q 66 62.4 63 62.4 Q 62.4 62.4 60.8 62.6 Q 22.9 69 12.7 75.9 Q 11.4 76.7 10 76.7 Q 7.8 76.7 5.5 75.25 Q 3.2 73.8 1.6 71.85 Q 0 69.9 0 68.5 Q 0 67.1 1.7 67.1 Q 2.5 67.1 4.7 66.9 Q 6.1 66.7 7.05 66.2 Q 8 65.7 8.8 64.6 Q 15.2 56.4 21.05 45.05 Q 26.9 33.7 30.5 23.35 Q 34.1 13 34.1 7.6 Q 34.1 4.7 33 3.9 Q 32.1 3.3 31.65 2.55 Q 31.2 1.8 31.2 1.2 Q 31.2 0 32.6 0 Q 33.3 0 34.6 0.5 Q 37.9 1.9 41 4.85 Q 44.1 7.8 44.1 10.2 Q 44.1 11.4 43.3 12.2 Q 42.2 13.4 38.3 22.7 Q 32.8 35.3 29.3 42.4 Q 23.8 53.2 17.9 61.2 Q 17 62.4 17 63.4 Q 17 64.3 17.8 64.7 Q 18.6 65.1 20.1 64.9 Z" />
+        </svg>
       </div>
+      <h1 class="loadingTitle">Muzari</h1>
+      <p class="loadingText" id="loading-text">
+        Loading the loading message...
+      </p>
     </div>
+  </div>
 
-    <div id="root"></div>
+  <div id="root"></div>
 
-    <script>
-      (function () {
-        const userLang = (navigator.language || "en").substring(0, 2);
-        const lang = userLang === "fr" ? "fr" : "en";
-        const loadingText = document.getElementById("loading-text");
+  <script>
+    (function () {
+      const userLang = (navigator.language || "en").substring(0, 2);
+      const lang = userLang === "fr" ? "fr" : "en";
+      const loadingText = document.getElementById("loading-text");
 
-        const updateText = (messages) => {
-          if (loadingText && messages) {
-            const randomMessage =
-              messages[Math.floor(Math.random() * messages.length)];
-            loadingText.textContent = randomMessage;
-          }
-        };
-
-        // Statically replaced by the custom plugin
-        const inlined = __INLINED_MESSAGES__;
-        const messages =
-          inlined && Array.isArray(inlined[lang]) ? inlined[lang] : null;
-
-        if (messages && messages.length > 0) {
-          updateText(messages);
-          let index = 0;
-          setInterval(() => {
-            if (!loadingText) return;
-            index = (index + 1) % messages.length;
-            loadingText.textContent = messages[index];
-          }, 2000);
+      const updateText = (messages) => {
+        if (loadingText && messages) {
+          const randomMessage =
+            messages[Math.floor(Math.random() * messages.length)];
+          loadingText.textContent = randomMessage;
         }
-      })();
-    </script>
+      };
 
-    <script type="module" src="./src/pages/main.tsx"></script>
-  </body>
+      // Statically replaced by the custom plugin
+      const inlined = __INLINED_MESSAGES__;
+      const messages =
+        inlined && Array.isArray(inlined[lang]) ? inlined[lang] : null;
+
+      if (messages && messages.length > 0) {
+        updateText(messages);
+        let index = 0;
+        setInterval(() => {
+          if (!loadingText) return;
+          index = (index + 1) % messages.length;
+          loadingText.textContent = messages[index];
+        }, 2000);
+      }
+    })();
+  </script>
+
+  <script type="module" src="./src/pages/main.tsx"></script>
+</body>
+
 </html>

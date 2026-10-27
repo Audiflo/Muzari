@@ -1,5 +1,7 @@
 # Muzari
 
+<img src="./Build/public/muzari-squircle.svg" align="right" width="88" alt="Muzari logo" />
+
 Modern local-first audio player for the browser and for desktop (via Tauri).
 
 [![All Contributors](https://img.shields.io/github/all-contributors/Audiflo/Muzari?color=ee8449&style=flat-square)](#contributors)
