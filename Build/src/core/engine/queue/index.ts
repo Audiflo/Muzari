@@ -415,8 +415,8 @@ export class QueueManager {
         if (adjacentPos < 0 || adjacentPos > last) {
           if (!wrap) return { kind: "empty" };
         }
-        const wrappedPos = ((adjacentPos % order.length) + order.length) %
-          order.length;
+        const wrappedPos =
+          ((adjacentPos % order.length) + order.length) % order.length;
         const target = order[wrappedPos];
         assertInvariant(
           target !== undefined,
