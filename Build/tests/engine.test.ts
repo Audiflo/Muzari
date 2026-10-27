@@ -579,7 +579,8 @@ describe("KomorebiEngine", () => {
     expect(engine.getCurrentTrack()?.id).toBe("a");
     expect(endedTrackIds).not.toContain("b");
     expect(backend.seek).toHaveBeenCalledWith(0);
-    expect(backend.play).toHaveBeenCalled();
+    await new Promise((r) => setTimeout(r, 10));
+    expect(backend.play).toHaveBeenCalledTimes(2);
   });
 
   it("advances to the next track when it ends with repeat all", async () => {

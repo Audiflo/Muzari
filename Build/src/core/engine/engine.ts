@@ -1022,6 +1022,8 @@ export class KomorebiEngine {
     }
 
     if (this.settings.repeat === "one") {
+      this.stateMachine.transition("ready");
+      this.emitStateChange();
       this.seek(0);
       void this.play();
       return;
