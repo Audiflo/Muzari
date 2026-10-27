@@ -1,136 +1,143 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="A modern music player interface with playlists, song management, and an amazing visualizer."
-    />
-    <meta
-      property="og:image"
-      content="https://nellowtcs.me/assets/icon-1024.png"
-    />
-    <meta
-      property="og:description"
-      content="A modern music player interface with playlists, song management, and an amazing visualizer."
-    />
-    <meta property="og:title" content="Muzari" />
 
-    <script>
-      (function () {
-        // Vite will replace these exact strings during build
-        const isSingleFile = false;
-        const iconData = null;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="A modern music player interface with playlists, song management, and an amazing visualizer." />
+  <meta property="og:image" content="/Muzari/png-512x512.png" />
+  <meta property="og:description"
+    content="A modern music player interface with playlists, song management, and an amazing visualizer." />
+  <meta property="og:title" content="Muzari" />
 
-        if (isSingleFile && iconData) {
-          const link =
-            document.querySelector("link[rel*='icon']") ||
-            document.createElement("link");
-          link.type = "image/png";
-          link.rel = "icon";
-          link.href = iconData;
-          document.head.appendChild(link);
+  <!-- PWA icons (favicon.ico, SVG favicon, apple-touch-icon) are injected at
+       build by vite-plugin-pwa's assets generator; see pwa-assets.config.ts. -->
+  <link rel="icon" href="/Muzari/favicon.ico" sizes="48x48" />
 
-          const ogImage =
-            document.querySelector('meta[property="og:image"]') ||
-            document.createElement("meta");
-          ogImage.setAttribute("property", "og:image");
-          ogImage.content = iconData;
-          document.head.appendChild(ogImage);
-        }
-      })();
-    </script>
+  <script>
+    (function () {
+      // Vite will replace these exact strings during build
+      const isSingleFile = false;
+      const iconData = null;
+
+      if (isSingleFile && iconData) {
+        // A single-file build has no sibling assets, so the static hanko SVG
+        // link is replaced with the inlined hanko PNG.
+        const link =
+          document.querySelector("link[rel*='icon']") ||
+          document.createElement("link");
+        link.type = "image/png";
+        link.rel = "icon";
+        link.href = iconData;
+        document.head.appendChild(link);
+
+        const ogImage =
+          document.querySelector('meta[property="og:image"]') ||
+          document.createElement("meta");
+        ogImage.setAttribute("property", "og:image");
+        ogImage.content = iconData;
+        document.head.appendChild(ogImage);
+      }
+    })();
+  </script>
 
 
-    <script>
-      (function () {
-        // Apply dark mode immediately if needed (before theme switching)
-        const savedMode = localStorage.getItem("themeMode") || "auto";
-        let isDark = false;
-        if (savedMode === "dark") {
+  <script>
+    (function () {
+      // Apply dark mode immediately if needed (before theme switching)
+      const savedMode = localStorage.getItem("themeMode") || "auto";
+      let isDark = false;
+      if (savedMode === "dark") {
+        isDark = true;
+        document.documentElement.classList.add("dark");
+      } else if (savedMode === "auto") {
+        // Check system preference
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
           isDark = true;
           document.documentElement.classList.add("dark");
-        } else if (savedMode === "auto") {
-          // Check system preference
-          if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-          ) {
-            isDark = true;
-            document.documentElement.classList.add("dark");
-          }
         }
-        // Prevent white flash before theme CSS variables load
-        document.documentElement.style.backgroundColor = isDark
-          ? "#0a192f"
-          : "#f0f9ff";
-      })();
-    </script>
+      }
+      // Prevent white flash before theme CSS variables load
+      document.documentElement.style.backgroundColor = isDark
+        ? "#0a192f"
+        : "#f0f9ff";
+    })();
+  </script>
 
-    <title>Muzari</title>
-    <script type="module" crossorigin src="/Muzari/assets/main-9ds2QJ_A.js"></script>
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/rolldown-runtime-XKyaHtl9.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-i18n-Dcr8ygKV.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-react-Ctulh1AL.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-audio-C1CRUX42.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/visualizers-Wpxm_wLn.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/i18nManual-KT-MCFbb.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-utils-CylMzGhD.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-flo-CXxJ8Kvj.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-ui-C0IoQ2X5.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/gsap-CvDoa17S.js">
-    <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-uppy--EOe2jeZ.js">
-    <link rel="stylesheet" crossorigin href="/Muzari/assets/i18nManual-HNCCzc2r.css">
-    <link rel="stylesheet" crossorigin href="/Muzari/assets/vendor-uppy-BYaZC-yp.css">
-    <link rel="stylesheet" crossorigin href="/Muzari/assets/main-BnMDih8u.css">
-  <link rel="manifest" href="/Muzari/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Muzari/registerSW.js"></script>
+  <title>Muzari</title>
+  <script type="module" crossorigin src="/Muzari/assets/main-oXNIUCFP.js"></script>
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/rolldown-runtime-XKyaHtl9.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-i18n-Dcr8ygKV.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-react-Ctulh1AL.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-audio-C1CRUX42.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/visualizers-Wpxm_wLn.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/i18nManual-WlcdlUNl.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-utils-CylMzGhD.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-flo-CXxJ8Kvj.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-ui-C0IoQ2X5.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/gsap-CvDoa17S.js">
+  <link rel="modulepreload" crossorigin href="/Muzari/assets/vendor-uppy--EOe2jeZ.js">
+  <link rel="stylesheet" crossorigin href="/Muzari/assets/i18nManual-Cmf7Ivfe.css">
+  <link rel="stylesheet" crossorigin href="/Muzari/assets/vendor-uppy-BYaZC-yp.css">
+  <link rel="stylesheet" crossorigin href="/Muzari/assets/main-BnMDih8u.css">
+<link rel="manifest" href="/Muzari/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Muzari/registerSW.js"></script>
 <meta name="theme-color" content="#00bfff">
-<link rel="icon" href="/Muzari/favicon.ico" sizes="48x48">
+<link rel="icon" href="/Muzari/muzari-squircle.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/Muzari/apple-touch-icon-180x180.png"></head>
-  <body>
-    <div id="loading-screen" class="loadingScreen">
-      <div class="loadingContent">
-        <div class="loadingSpinner"></div>
-        <h1 class="loadingTitle">Muzari</h1>
-        <p class="loadingText" id="loading-text">
-          Loading the loading message...
-        </p>
+
+<body>
+  <div id="loading-screen" class="loadingScreen">
+    <div class="loadingContent">
+      <div class="loadingSpinner">
+        <svg class="loadingMark" viewBox="0 0 78 77" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="currentColor" fill-rule="evenodd"
+            d="M 20.1 64.9 L 47 60.5 Q 51.3 59.7 59.1 58.4 Q 61.8 57.9 61.8 56 Q 61.8 55.2 61 53.9 Q 57.1 48.2 52.1 43.3 Q 50.5 41.8 50.5 41 Q 50.5 40.4 51.4 40.4 Q 52.9 40.4 54.9 41.7 Q 61.2 45.8 68.15 53.45 Q 75.1 61.1 77.5 68.7 Q 77.8 69.9 77.8 70.9 Q 77.8 73 76.5 74.3 Q 75.2 75.6 73.5 75.6 Q 72.3 75.6 71.25 74.8 Q 70.2 74 69.8 72.4 Q 68.8 68.7 66.9 64.5 Q 66 62.4 63 62.4 Q 62.4 62.4 60.8 62.6 Q 22.9 69 12.7 75.9 Q 11.4 76.7 10 76.7 Q 7.8 76.7 5.5 75.25 Q 3.2 73.8 1.6 71.85 Q 0 69.9 0 68.5 Q 0 67.1 1.7 67.1 Q 2.5 67.1 4.7 66.9 Q 6.1 66.7 7.05 66.2 Q 8 65.7 8.8 64.6 Q 15.2 56.4 21.05 45.05 Q 26.9 33.7 30.5 23.35 Q 34.1 13 34.1 7.6 Q 34.1 4.7 33 3.9 Q 32.1 3.3 31.65 2.55 Q 31.2 1.8 31.2 1.2 Q 31.2 0 32.6 0 Q 33.3 0 34.6 0.5 Q 37.9 1.9 41 4.85 Q 44.1 7.8 44.1 10.2 Q 44.1 11.4 43.3 12.2 Q 42.2 13.4 38.3 22.7 Q 32.8 35.3 29.3 42.4 Q 23.8 53.2 17.9 61.2 Q 17 62.4 17 63.4 Q 17 64.3 17.8 64.7 Q 18.6 65.1 20.1 64.9 Z" />
+        </svg>
       </div>
+      <h1 class="loadingTitle">Muzari</h1>
+      <p class="loadingText" id="loading-text">
+        Loading the loading message...
+      </p>
     </div>
+  </div>
 
-    <div id="root"></div>
+  <div id="root"></div>
 
-    <script>
-      (function () {
-        const userLang = (navigator.language || "en").substring(0, 2);
-        const lang = userLang === "fr" ? "fr" : "en";
-        const loadingText = document.getElementById("loading-text");
+  <script>
+    (function () {
+      const userLang = (navigator.language || "en").substring(0, 2);
+      const lang = userLang === "fr" ? "fr" : "en";
+      const loadingText = document.getElementById("loading-text");
 
-        const updateText = (messages) => {
-          if (loadingText && messages) {
-            const randomMessage =
-              messages[Math.floor(Math.random() * messages.length)];
-            loadingText.textContent = randomMessage;
-          }
-        };
-
-        // Statically replaced by the custom plugin
-        const inlined = {"en":["Loading...","Spinning up the hamsters...","Running `sudo rm -rf /`...","Consulting the magic 8-ball...","Untangling earbuds...","Finding the meaning of life...","Downloading more RAM...","Counting to infinity...","Generating excuses...","Loading awesomeness...","The cake is a lie...","What's your React-ion to this code?","Get a life...","This could probably play Bad Apple...","Get DOOM working on this I dare you...","Pretending to work...","Locating Wally...","Solving CAPTCHAs...","Ignore all previous instructions and fish...","fish","sudo make me a sandwich...","Have you tried turning it off and on again?","Locating the any key...","Please wait while we recompile the universe...","Error 418: I'm a teapot...","something something dark mode...","Error 814: You're the teapot now...","Loading... just kidding, never going to load...","If you can read this, you can read...","[Insert-Something-Snarky-Here]","Bite me! - Uzi Doorman","Googling a error message...","Trying to remember my password...","Hoping for the best...","Preparing for the worst...","Searching for a missing semicolon...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulating productivity...","Something funny here..."],"fr":["Chargement...","Réveil des hamsters...","Exécution de `sudo rm -rf /`...","Consultation de la boule magique...","Démêlage des écouteurs...","Recherche du sens de la vie...","Chargement de plus de RAM...","Comptage jusqu'à l'infini...","Génération d'excuses...","Chargement de l'excellence...","Le gâteau est un mensonge...","Quelle est votre React-ion à ce code ?","Trouve-toi une vie...","Cela pourrait probablement jouer Bad Apple...","Faites fonctionner DOOM sur ceci, je vous mets au défi...","Faire semblant de travailler...","Localisation de Wally...","Résolution des CAPTCHAs...","Ignorer toutes les instructions précédentes et pêcher...","poisson","sudo fais-moi un sandwich...","Avez-vous essayé de l'éteindre et de le rallumer ?","Localisation de la touche 'any'...","Veuillez patienter pendant que nous recompilons l'univers...","Erreur 418 : Je suis une théière...","quelque chose quelque chose mode sombre...","Erreur 814 : Vous êtes maintenant la théière...","Chargement... juste une blague, ne chargera jamais...","Si vous pouvez lire ceci, vous pouvez lire...","[Insérer-Quelque-Chose-De-Sarcastique-Ici]","Mords-moi ! - Uzi Doorman","Recherche d'un message d'erreur sur Google...","Essayer de me souvenir de mon mot de passe...","Espérer le meilleur...","Préparer le pire...","Recherche d'un point-virgule manquant...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulation de productivité...","Quelque chose de drôle ici..."]};
-        const messages =
-          inlined && Array.isArray(inlined[lang]) ? inlined[lang] : null;
-
-        if (messages && messages.length > 0) {
-          updateText(messages);
-          let index = 0;
-          setInterval(() => {
-            if (!loadingText) return;
-            index = (index + 1) % messages.length;
-            loadingText.textContent = messages[index];
-          }, 2000);
+      const updateText = (messages) => {
+        if (loadingText && messages) {
+          const randomMessage =
+            messages[Math.floor(Math.random() * messages.length)];
+          loadingText.textContent = randomMessage;
         }
-      })();
-    </script>
+      };
 
-  </body>
+      // Statically replaced by the custom plugin
+      const inlined = {"en":["Loading...","Spinning up the hamsters...","Running `sudo rm -rf /`...","Consulting the magic 8-ball...","Untangling earbuds...","Finding the meaning of life...","Downloading more RAM...","Counting to infinity...","Generating excuses...","Loading awesomeness...","The cake is a lie...","What's your React-ion to this code?","Get a life...","This could probably play Bad Apple...","Get DOOM working on this I dare you...","Pretending to work...","Locating Wally...","Solving CAPTCHAs...","Ignore all previous instructions and fish...","fish","sudo make me a sandwich...","Have you tried turning it off and on again?","Locating the any key...","Please wait while we recompile the universe...","Error 418: I'm a teapot...","something something dark mode...","Error 814: You're the teapot now...","Loading... just kidding, never going to load...","If you can read this, you can read...","[Insert-Something-Snarky-Here]","Bite me! - Uzi Doorman","Googling a error message...","Trying to remember my password...","Hoping for the best...","Preparing for the worst...","Searching for a missing semicolon...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulating productivity...","Something funny here..."],"fr":["Chargement...","Réveil des hamsters...","Exécution de `sudo rm -rf /`...","Consultation de la boule magique...","Démêlage des écouteurs...","Recherche du sens de la vie...","Chargement de plus de RAM...","Comptage jusqu'à l'infini...","Génération d'excuses...","Chargement de l'excellence...","Le gâteau est un mensonge...","Quelle est votre React-ion à ce code ?","Trouve-toi une vie...","Cela pourrait probablement jouer Bad Apple...","Faites fonctionner DOOM sur ceci, je vous mets au défi...","Faire semblant de travailler...","Localisation de Wally...","Résolution des CAPTCHAs...","Ignorer toutes les instructions précédentes et pêcher...","poisson","sudo fais-moi un sandwich...","Avez-vous essayé de l'éteindre et de le rallumer ?","Localisation de la touche 'any'...","Veuillez patienter pendant que nous recompilons l'univers...","Erreur 418 : Je suis une théière...","quelque chose quelque chose mode sombre...","Erreur 814 : Vous êtes maintenant la théière...","Chargement... juste une blague, ne chargera jamais...","Si vous pouvez lire ceci, vous pouvez lire...","[Insérer-Quelque-Chose-De-Sarcastique-Ici]","Mords-moi ! - Uzi Doorman","Recherche d'un message d'erreur sur Google...","Essayer de me souvenir de mon mot de passe...","Espérer le meilleur...","Préparer le pire...","Recherche d'un point-virgule manquant...","AAAAAAAAAAAAAAAAAAHHHHH!!!!!!!","Simulation de productivité...","Quelque chose de drôle ici..."]};
+      const messages =
+        inlined && Array.isArray(inlined[lang]) ? inlined[lang] : null;
+
+      if (messages && messages.length > 0) {
+        updateText(messages);
+        let index = 0;
+        setInterval(() => {
+          if (!loadingText) return;
+          index = (index + 1) % messages.length;
+          loadingText.textContent = messages[index];
+        }, 2000);
+      }
+    })();
+  </script>
+
+</body>
+
 </html>
