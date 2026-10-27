@@ -36,7 +36,7 @@ import {
 import { createLogger } from "../../helpers/logger";
 import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
 
-export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
+export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS, IAudioBackend };
 
 const logger = createLogger("engine");
 
@@ -310,11 +310,25 @@ export class KomorebiEngine {
   async next(): Promise<void> {
     this.cancelScheduledTransition();
 
-    const nextCursor = this.queue.peekNextCursor(this.settings.smartShuffle);
+    const nextCursor = this.queue.peekNextCursor(
+      this.settings.smartShuffle,
+      this.settings.repeat === "all",
+    );
 
     switch (nextCursor.kind) {
-      case "empty":
+      case "empty": {
+        if (
+          this.settings.autoPlayNext &&
+          this.settings.repeat !== "all" &&
+          this.queue.getTracks().length === 1
+        ) {
+          const current = this.queue.getCurrentTrack();
+          if (current) {
+            await this.loadAndPlay(current);
+          }
+        }
         break;
+      }
       case "active": {
         const nextTrack = this.queue.getTracks()[nextCursor.index];
         if (nextTrack === undefined) break;
@@ -345,6 +359,7 @@ export class KomorebiEngine {
 
     const prevCursor = this.queue.peekPreviousCursor(
       this.settings.smartShuffle,
+      this.settings.repeat === "all",
     );
 
     switch (prevCursor.kind) {
@@ -775,9 +790,19 @@ export class KomorebiEngine {
   private scheduleTransition(_track: Track): void {
     if (this.scheduledTransitionId !== null) return;
 
+    if (this.settings.repeat === "one") {
+      if (this.stateMachine.isTransitioning()) {
+        this.stateMachine.transition("ready");
+      }
+      return;
+    }
+
     this.stateMachine.transition("transitioning");
 
-    const nextTrack = this.queue.getNextTrack(this.settings.smartShuffle);
+    const nextTrack = this.queue.getNextTrack(
+      this.settings.smartShuffle,
+      this.settings.repeat === "all",
+    );
     if (!nextTrack) {
       if (this.stateMachine.canTransition("ready")) {
         this.stateMachine.transition("ready");
@@ -998,12 +1023,12 @@ export class KomorebiEngine {
 
     if (this.settings.repeat === "one") {
       this.seek(0);
-      this.play();
+      void this.play();
       return;
     }
 
-    if (this.settings.autoPlayNext) {
-      this.next();
+    if (this.settings.repeat === "all" || this.settings.autoPlayNext) {
+      void this.next();
     } else if (this.stateMachine.canTransition("ready")) {
       this.stateMachine.transition("ready");
       this.emitStateChange();

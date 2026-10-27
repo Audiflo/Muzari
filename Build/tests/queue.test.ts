@@ -1,5 +1,6 @@
 import { QueueManager, WeightedRandomizer } from "../src/core/engine/queue";
 import { createMockTrack } from "./helpers";
+import { describe, beforeEach, it, expect } from "@jest/globals";
 
 class MockRandomizer implements WeightedRandomizer {
   private trackOrder: string[] = [];
@@ -32,38 +33,46 @@ describe("QueueManager", () => {
     });
 
     it("should set an active cursor", () => {
-      queue.setPlaylist({ id: "p1", name: "Tracks", songs: [
-        createMockTrack("1"),
-        createMockTrack("2"),
-      ] });
+      queue.setPlaylist({
+        id: "p1", name: "Tracks", songs: [
+          createMockTrack("1"),
+          createMockTrack("2"),
+        ]
+      });
       queue.setCursor({ kind: "active", index: 1 });
       expect(queue.getCurrentIndex()).toBe(1);
       expect(queue.getCurrentTrack()?.id).toBe("2");
     });
 
     it("should collapse out-of-bounds active cursor to empty", () => {
-      queue.setPlaylist({ id: "p1", name: "Tracks", songs: [
-        createMockTrack("1"),
-      ] });
+      queue.setPlaylist({
+        id: "p1", name: "Tracks", songs: [
+          createMockTrack("1"),
+        ]
+      });
       queue.setCursor({ kind: "active", index: 5 });
       expect(queue.getCursor()).toEqual({ kind: "empty" });
       expect(queue.getCurrentIndex()).toBeNull();
     });
 
     it("should collapse negative active cursor to empty", () => {
-      queue.setPlaylist({ id: "p1", name: "Tracks", songs: [
-        createMockTrack("1"),
-      ] });
+      queue.setPlaylist({
+        id: "p1", name: "Tracks", songs: [
+          createMockTrack("1"),
+        ]
+      });
       queue.setCursor({ kind: "active", index: -1 });
       expect(queue.getCursor()).toEqual({ kind: "empty" });
       expect(queue.getCurrentIndex()).toBeNull();
     });
 
     it("should collapse jump to null to empty", () => {
-      queue.setPlaylist({ id: "p1", name: "Tracks", songs: [
-        createMockTrack("1"),
-        createMockTrack("2"),
-      ] });
+      queue.setPlaylist({
+        id: "p1", name: "Tracks", songs: [
+          createMockTrack("1"),
+          createMockTrack("2"),
+        ]
+      });
       queue.jumpToIndex(0);
       expect(queue.getCurrentIndex()).toBe(0);
       queue.jumpToIndex(null);
@@ -125,16 +134,35 @@ describe("QueueManager", () => {
       expect(prev?.id).toBe("1");
     });
 
-    it("should wrap around at end", () => {
+    it("should wrap around at end when wrap is enabled", () => {
       queue.jumpToIndex(2);
-      const next = queue.getNextTrack(false);
+      const next = queue.getNextTrack(false, true);
       expect(next?.id).toBe("1");
     });
 
-    it("should wrap around at start for previous", () => {
+    it("should not wrap around at end when wrap is disabled", () => {
+      queue.jumpToIndex(2);
+      expect(queue.getNextTrack(false)).toBeNull();
+      expect(queue.peekNextCursor(false)).toEqual({ kind: "empty" });
+    });
+
+    it("should wrap around at start for previous when wrap is enabled", () => {
       queue.jumpToIndex(0);
-      const prev = queue.getPreviousTrack(false);
+      const prev = queue.getPreviousTrack(false, true);
       expect(prev?.id).toBe("3");
+    });
+
+    it("should not wrap around at start for previous when wrap is disabled", () => {
+      queue.jumpToIndex(0);
+      expect(queue.getPreviousTrack(false)).toBeNull();
+      expect(queue.peekPreviousCursor(false)).toEqual({ kind: "empty" });
+    });
+
+    it("should loop a single-track queue only when wrap is enabled", () => {
+      queue.setPlaylist({ id: "p1", name: "Solo", songs: [createMockTrack("1")] });
+      queue.jumpToIndex(0);
+      expect(queue.getNextTrack(false, true)?.id).toBe("1");
+      expect(queue.getNextTrack(false, false)).toBeNull();
     });
 
     it("should peek from empty to first/last", () => {

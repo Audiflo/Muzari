@@ -94,12 +94,12 @@ export class QueueManager {
     );
   }
 
-  peekNextCursor(_smartShuffle: boolean): QueueCursor {
-    return this.peekAdjacentCursor("next");
+  peekNextCursor(_smartShuffle: boolean, wrap = false): QueueCursor {
+    return this.peekAdjacentCursor("next", wrap);
   }
 
-  peekPreviousCursor(_smartShuffle: boolean): QueueCursor {
-    return this.peekAdjacentCursor("previous");
+  peekPreviousCursor(_smartShuffle: boolean, wrap = false): QueueCursor {
+    return this.peekAdjacentCursor("previous", wrap);
   }
 
   getCurrentTrack(): Track | null {
@@ -126,13 +126,13 @@ export class QueueManager {
     }
   }
 
-  getNextIndex(smartShuffle: boolean): number | null {
-    const cursor = this.peekNextCursor(smartShuffle);
+  getNextIndex(smartShuffle: boolean, wrap = false): number | null {
+    const cursor = this.peekNextCursor(smartShuffle, wrap);
     return cursor.kind === "active" ? cursor.index : null;
   }
 
-  getPreviousIndex(smartShuffle: boolean): number | null {
-    const cursor = this.peekPreviousCursor(smartShuffle);
+  getPreviousIndex(smartShuffle: boolean, wrap = false): number | null {
+    const cursor = this.peekPreviousCursor(smartShuffle, wrap);
     return cursor.kind === "active" ? cursor.index : null;
   }
 
@@ -147,12 +147,12 @@ export class QueueManager {
     return [...this.state.shuffleOrder];
   }
 
-  getNextTrack(smartShuffle: boolean): Track | null {
-    return this.trackForCursor(this.peekNextCursor(smartShuffle));
+  getNextTrack(smartShuffle: boolean, wrap = false): Track | null {
+    return this.trackForCursor(this.peekNextCursor(smartShuffle, wrap));
   }
 
-  getPreviousTrack(smartShuffle: boolean): Track | null {
-    return this.trackForCursor(this.peekPreviousCursor(smartShuffle));
+  getPreviousTrack(smartShuffle: boolean, wrap = false): Track | null {
+    return this.trackForCursor(this.peekPreviousCursor(smartShuffle, wrap));
   }
 
   shuffle(preserveCurrent = true): void {
@@ -379,7 +379,7 @@ export class QueueManager {
     }
   }
 
-  private peekAdjacentCursor(direction: Direction): QueueCursor {
+  private peekAdjacentCursor(direction: Direction, wrap: boolean): QueueCursor {
     const order = this.getPlayOrder();
     if (order.length === 0) return { kind: "empty" };
 
@@ -412,14 +412,17 @@ export class QueueManager {
         }
         const adjacentPos =
           direction === "next" ? currentPos + 1 : currentPos - 1;
-        const wrappedPos =
-          adjacentPos < 0 ? last : adjacentPos > last ? 0 : adjacentPos;
-        const wrapped = order[wrappedPos];
+        if (adjacentPos < 0 || adjacentPos > last) {
+          if (!wrap) return { kind: "empty" };
+        }
+        const wrappedPos = ((adjacentPos % order.length) + order.length) %
+          order.length;
+        const target = order[wrappedPos];
         assertInvariant(
-          wrapped !== undefined,
+          target !== undefined,
           "wrapped peek position must fall within the play order",
         );
-        return { kind: "active", index: wrapped };
+        return { kind: "active", index: target };
       }
       default:
         return assertNever(this.state.cursor);
