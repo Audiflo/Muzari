@@ -1,6 +1,6 @@
-# Muzari
+<img src="./Build/public/muzari-squircle.svg" align="left" width="76" alt="Muzari logo" />
 
-<img src="./Build/public/muzari-squircle.svg" align="right" width="88" alt="Muzari logo" />
+# Muzari
 
 Modern local-first audio player for the browser and for desktop (via Tauri).
 
