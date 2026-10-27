@@ -654,6 +654,128 @@ describe("KomorebiEngine", () => {
     expect(backend.load).toHaveBeenCalledTimes(2);
   });
 
+  describe("repeat transition timing", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      engine.stop();
+      jest.useRealTimers();
+    });
+
+    it.each(["setRepeat", "toggleRepeat"] as const)(
+      "%s cancels a pending transition when switching to repeat one",
+      async (method) => {
+        backend.getCurrentTime = () => 179.9;
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+        engine.setRepeat("all");
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("transitioning");
+
+        const stateChange = jest.fn();
+        engine.on("statechange", stateChange);
+        if (method === "setRepeat") engine.setRepeat("one");
+        else engine.toggleRepeat();
+
+        expect(engine.getState().settings.repeat).toBe("one");
+        expect(engine.getState().state).toBe("ready");
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "transitioning",
+          newState: "ready",
+        });
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe("a");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+        expect(backend.seek).toHaveBeenCalledWith(0);
+        expect(engine.getState().state).toBe("playing");
+
+        engine.setRepeat("off");
+        await jest.advanceTimersByTimeAsync(200);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(backend.load).toHaveBeenCalledTimes(2);
+      },
+    );
+
+    it.each(["setRepeat", "toggleRepeat"] as const)(
+      "%s leaves an already-started crossfade running",
+      async (method) => {
+        const source = {
+          setOutputGain: jest.fn(),
+          getCurrentTime: () => 0,
+          dispose: jest.fn(),
+        };
+        backend.getCurrentTime = () => 179.9;
+        backend.createCrossfadeSource = jest.fn().mockResolvedValue(source);
+        backend.commitCrossfadeSource = jest.fn();
+        backend.setOutputGain = jest.fn();
+        engine.setCrossfade(3);
+        engine.setRepeat("all");
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[0], playlist);
+        await engine.play();
+
+        await jest.advanceTimersByTimeAsync(101);
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(backend.commitCrossfadeSource).not.toHaveBeenCalled();
+
+        if (method === "setRepeat") engine.setRepeat("one");
+        else engine.toggleRepeat();
+
+        await jest.advanceTimersByTimeAsync(3100);
+        expect(source.dispose).not.toHaveBeenCalled();
+        expect(backend.commitCrossfadeSource).toHaveBeenCalledWith(source);
+        expect(engine.getState().state).toBe("playing");
+      },
+    );
+
+    it.each([0, 3])(
+      "keeps the last track playing through the transition window with crossfade %s",
+      async (crossfade) => {
+        backend.getCurrentTime = () => 179.9;
+        engine.setCrossfade(crossfade);
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[1], playlist);
+        await engine.play();
+
+        await jest.advanceTimersByTimeAsync(100);
+        expect(engine.getState().state).toBe("playing");
+        engine.pause();
+        expect(backend.pause).toHaveBeenCalledTimes(1);
+        expect(engine.getState().state).toBe("paused");
+      },
+    );
+
+    it.each([false, true])(
+      "becomes ready at the end of the queue with repeat off and autoPlayNext %s",
+      async (autoPlayNext) => {
+        engine.setAutoPlayNext(autoPlayNext);
+        const playlist = createMockPlaylist(["a", "b"]);
+        await engine.load(playlist.songs[1], playlist);
+        await engine.play();
+        const stateChange = jest.fn();
+        engine.on("statechange", stateChange);
+
+        jest.mocked(backend.onEnded).mock.calls[0][0]();
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(engine.getCurrentTrack()?.id).toBe("b");
+        expect(engine.getState().state).toBe("ready");
+        expect(backend.load).toHaveBeenCalledTimes(1);
+        expect(stateChange).toHaveBeenCalledWith({
+          oldState: "playing",
+          newState: "ready",
+        });
+      },
+    );
+  });
+
   it("does not replay the only track when autoPlayNext is off", async () => {
     engine.setAutoPlayNext(false);
     const solo = createMockPlaylist(["a"]);

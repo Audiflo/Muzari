@@ -36,7 +36,8 @@ import {
 import { createLogger } from "../../helpers/logger";
 import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
 
-export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS, IAudioBackend };
+export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
+export type { IAudioBackend };
 
 const logger = createLogger("engine");
 
@@ -446,6 +447,14 @@ export class KomorebiEngine {
 
   setRepeat(mode: RepeatMode): void {
     this.settings.repeat = mode;
+    if (mode === "one" && this.scheduledTransitionId !== null) {
+      clearTimeout(this.scheduledTransitionId);
+      this.scheduledTransitionId = null;
+      if (this.stateMachine.isTransitioning()) {
+        this.stateMachine.transition("ready");
+        this.emitStateChange();
+      }
+    }
     this.events.emit("settingschange", {
       settings: { repeat: mode },
     });
@@ -460,11 +469,9 @@ export class KomorebiEngine {
 
   toggleRepeat(): void {
     const current = this.settings.repeat;
-    this.settings.repeat =
-      current === "off" ? "all" : current === "all" ? "one" : "off";
-    this.events.emit("settingschange", {
-      settings: { repeat: this.settings.repeat },
-    });
+    this.setRepeat(
+      current === "off" ? "all" : current === "all" ? "one" : "off",
+    );
   }
 
   setCrossfade(durationSeconds: number): void {
@@ -797,18 +804,13 @@ export class KomorebiEngine {
       return;
     }
 
-    this.stateMachine.transition("transitioning");
-
     const nextTrack = this.queue.getNextTrack(
       this.settings.smartShuffle,
       this.settings.repeat === "all",
     );
-    if (!nextTrack) {
-      if (this.stateMachine.canTransition("ready")) {
-        this.stateMachine.transition("ready");
-      }
-      return;
-    }
+    if (!nextTrack) return;
+
+    this.stateMachine.transition("transitioning");
 
     const mode = this.scheduler.getMode();
     const isCrossfade = mode === "crossfade" && this.settings.crossfade > 0;
@@ -1022,16 +1024,26 @@ export class KomorebiEngine {
     }
 
     if (this.settings.repeat === "one") {
-      this.stateMachine.transition("ready");
-      this.emitStateChange();
+      if (this.stateMachine.canTransition("ready")) {
+        this.stateMachine.transition("ready");
+        this.emitStateChange();
+      }
       this.seek(0);
       void this.play();
       return;
     }
 
-    if (this.settings.repeat === "all" || this.settings.autoPlayNext) {
+    if (
+      this.settings.repeat === "all" ||
+      (this.settings.autoPlayNext &&
+        (this.queue.getTracks().length === 1 ||
+          this.queue.getNextTrack(this.settings.smartShuffle) !== null))
+    ) {
       void this.next();
-    } else if (this.stateMachine.canTransition("ready")) {
+    } else if (
+      !this.stateMachine.hasError() &&
+      this.stateMachine.canTransition("ready")
+    ) {
       this.stateMachine.transition("ready");
       this.emitStateChange();
     }
