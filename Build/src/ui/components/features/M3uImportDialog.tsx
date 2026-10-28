@@ -40,6 +40,12 @@ export function M3uImportDialog({
   onDrop,
 }: M3uImportDialogProps) {
   const { t } = useTranslation();
+  // Match-mode keys are dynamic (auto/path/filename); the typed t cannot
+  // resolve template keys, so cast once here.
+  const tLax = t as (
+    key: string,
+    options?: Record<string, unknown>,
+  ) => string;
   const [mode, setMode] = useState<M3uMatchMode>("auto");
   const [remaining, setRemaining] = useState<M3uUnresolvedEntry[]>([]);
 
@@ -139,7 +145,7 @@ export function M3uImportDialog({
                     onChange={() => setMode(value)}
                   />
                   <span className={styles.modeTitle}>
-                    {t(`playlist.m3u.mode.${value}`)}
+                    {tLax(`playlist.m3u.mode.${value}`)}
                   </span>
                 </span>
                 <span className={styles.modeDescription}>

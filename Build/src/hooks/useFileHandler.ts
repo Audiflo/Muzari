@@ -5,17 +5,18 @@ import {
   type FileHandlerResult,
 } from "../platform/storage/fileHandler";
 import type { Track } from "../core/engine/types";
+import type { Translate } from "../helpers/importAudioFiles";
 import { createLogger } from "../helpers/logger";
 
 const logger = createLogger("useFileHandler");
 
 export function useFileHandler(
   addSong: (song: Track, file?: File) => Promise<void>,
-  t: (key: string, options?: Record<string, unknown>) => string,
+  t: Translate,
   importFiles: (
     files: File[],
     addSong: (song: Track, file?: File) => Promise<void>,
-    t: (key: string, options?: Record<string, unknown>) => string,
+    t: Translate,
   ) => Promise<void>,
   isInitialized?: boolean,
 ) {

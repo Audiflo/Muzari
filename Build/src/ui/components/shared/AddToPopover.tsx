@@ -263,7 +263,7 @@ export const AddToPopover = ({
                   ))
                 ) : (
                   <p className={modalStyles.muted}>
-                    {t("search.noPlaylistsFound")}
+                    {t("noPlaylistsFound")}
                   </p>
                 )}
               </div>

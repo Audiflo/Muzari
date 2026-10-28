@@ -124,54 +124,54 @@ describe("QueueManager", () => {
     });
 
     it("should get next track", () => {
-      const next = queue.getNextTrack(false);
+      const next = queue.getNextTrack();
       expect(next?.id).toBe("2");
     });
 
     it("should get previous track", () => {
       queue.jumpToIndex(1);
-      const prev = queue.getPreviousTrack(false);
+      const prev = queue.getPreviousTrack();
       expect(prev?.id).toBe("1");
     });
 
     it("should wrap around at end when wrap is enabled", () => {
       queue.jumpToIndex(2);
-      const next = queue.getNextTrack(false, true);
+      const next = queue.getNextTrack(true);
       expect(next?.id).toBe("1");
     });
 
     it("should not wrap around at end when wrap is disabled", () => {
       queue.jumpToIndex(2);
-      expect(queue.getNextTrack(false)).toBeNull();
-      expect(queue.peekNextCursor(false)).toEqual({ kind: "empty" });
+      expect(queue.getNextTrack()).toBeNull();
+      expect(queue.peekNextCursor()).toEqual({ kind: "empty" });
     });
 
     it("should wrap around at start for previous when wrap is enabled", () => {
       queue.jumpToIndex(0);
-      const prev = queue.getPreviousTrack(false, true);
+      const prev = queue.getPreviousTrack(true);
       expect(prev?.id).toBe("3");
     });
 
     it("should not wrap around at start for previous when wrap is disabled", () => {
       queue.jumpToIndex(0);
-      expect(queue.getPreviousTrack(false)).toBeNull();
-      expect(queue.peekPreviousCursor(false)).toEqual({ kind: "empty" });
+      expect(queue.getPreviousTrack()).toBeNull();
+      expect(queue.peekPreviousCursor()).toEqual({ kind: "empty" });
     });
 
     it("should loop a single-track queue only when wrap is enabled", () => {
       queue.setPlaylist({ id: "p1", name: "Solo", songs: [createMockTrack("1")] });
       queue.jumpToIndex(0);
-      expect(queue.getNextTrack(false, true)?.id).toBe("1");
-      expect(queue.getNextTrack(false, false)).toBeNull();
+      expect(queue.getNextTrack(true)?.id).toBe("1");
+      expect(queue.getNextTrack(false)).toBeNull();
     });
 
     it("should peek from empty to first/last", () => {
       queue.clear();
-      expect(queue.peekNextCursor(false)).toEqual({ kind: "empty" });
+      expect(queue.peekNextCursor()).toEqual({ kind: "empty" });
       queue.addTrack(createMockTrack("1"));
       queue.addTrack(createMockTrack("2"));
-      expect(queue.peekNextCursor(false)).toEqual({ kind: "active", index: 0 });
-      expect(queue.peekPreviousCursor(false)).toEqual({ kind: "active", index: 1 });
+      expect(queue.peekNextCursor()).toEqual({ kind: "active", index: 0 });
+      expect(queue.peekPreviousCursor()).toEqual({ kind: "active", index: 1 });
     });
   });
 

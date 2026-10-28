@@ -21,6 +21,12 @@ export const ShortcutConfig: React.FC<ShortcutConfigProps> = ({
   onShortcutsChanged,
 }) => {
   const { t } = useTranslation();
+  // Shortcut descriptions are stored i18n keys (e.g. "settings.shortcuts.playPause")
+  // read back from the database, so the typed t cannot resolve them statically.
+  const tLax = t as (
+    key: string,
+    options?: Record<string, unknown>,
+  ) => string;
   const [shortcuts, setShortcuts] = useState<ShortcutConfigType>({});
   const [mergedShortcuts, setMergedShortcuts] = useState<ShortcutConfigType>(
     {},
@@ -116,7 +122,7 @@ export const ShortcutConfig: React.FC<ShortcutConfigProps> = ({
             return (
               <div key={shortcut.id} className={styles.shortcutConfigItem}>
                 <span className={styles.shortcutConfigLabel}>
-                  {t(shortcut.description)}
+                  {tLax(shortcut.description)}
                 </span>
                 {editingId === shortcut.id ? (
                   <>

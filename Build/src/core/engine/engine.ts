@@ -312,10 +312,7 @@ export class KomorebiEngine {
   async next(): Promise<void> {
     this.cancelScheduledTransition();
 
-    const nextCursor = this.queue.peekNextCursor(
-      this.settings.smartShuffle,
-      this.settings.repeat === "all",
-    );
+    const nextCursor = this.queue.peekNextCursor(this.settings.repeat === "all");
 
     switch (nextCursor.kind) {
       case "empty": {
@@ -360,7 +357,6 @@ export class KomorebiEngine {
     }
 
     const prevCursor = this.queue.peekPreviousCursor(
-      this.settings.smartShuffle,
       this.settings.repeat === "all",
     );
 
@@ -809,10 +805,7 @@ export class KomorebiEngine {
       return;
     }
 
-    const nextTrack = this.queue.getNextTrack(
-      this.settings.smartShuffle,
-      this.settings.repeat === "all",
-    );
+    const nextTrack = this.queue.getNextTrack(this.settings.repeat === "all");
     if (!nextTrack) return;
 
     this.stateMachine.transition("transitioning");
@@ -825,8 +818,7 @@ export class KomorebiEngine {
         ? 100
         : this.settings.crossfade * SECONDS_TO_MS;
 
-    this.scheduledTransitionWraps =
-      this.queue.getNextTrack(this.settings.smartShuffle) === null;
+    this.scheduledTransitionWraps = this.queue.getNextTrack() === null;
     this.scheduledTransitionId = window.setTimeout(() => {
       this.scheduledTransitionId = null;
       this.scheduledTransitionWraps = false;
@@ -1046,7 +1038,7 @@ export class KomorebiEngine {
       this.settings.repeat === "all" ||
       (this.settings.autoPlayNext &&
         (this.queue.getTracks().length === 1 ||
-          this.queue.getNextTrack(this.settings.smartShuffle) !== null))
+          this.queue.getNextTrack() !== null))
     ) {
       void this.next();
     } else if (

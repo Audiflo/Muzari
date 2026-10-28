@@ -20,13 +20,16 @@
     "unknownArtist": "Artiste Inconnu",
     "unknownAlbum": "Album Inconnu",
     "dontShowAgain": "Ne plus afficher",
-    "reset": "Réinitialiser"
+    "reset": "Réinitialiser",
+    "error": "Erreur"
   },
   "favorites": {
     "favorites": "Favoris",
     "added": "Ajouté « {{title}} » aux favoris",
     "removed": "Supprimé « {{title}} » des favoris",
-    "addToFavorites": "Ajouter aux favoris"
+    "addToFavorites": "Ajouter aux favoris",
+    "addedMultiple": "{{count}} morceaux ajoutés aux favoris",
+    "someAlreadyAdded": "{{count}} déjà dans les favoris"
   },
   "lyrics": {
     "cannotSearchWithoutArtist": "Impossible de rechercher des paroles sans un artiste connu",
@@ -142,7 +145,17 @@
       "exportPermissionDenied": "L'écriture dans ce dossier a été refusée",
       "exportFailed": "Impossible d'écrire la playlist dans ce dossier",
       "exportedToFolder": "{{name}} enregistré dans {{folder}}"
-    }
+    },
+    "copied": "Copié",
+    "deleteConfirmation": "Supprimer \"{{name}}\" ?",
+    "exported": "Exporté",
+    "imported": "Importé {{name}}",
+    "renamed": "Renommé",
+    "reordered": "{{item}} réordonné",
+    "shareFailed": "Échec du partage",
+    "shareText": "{{name}} - {{count}} morceaux",
+    "shareTitle": "Partager la playlist",
+    "someAlreadyInPlaylist": "{{count}} déjà dans cette playlist"
   },
   "noResults": {
     "search": "Aucune chanson trouvée",
@@ -466,5 +479,6 @@
     "failed": "Impossible de supprimer l'export.",
     "loadFailed": "Impossible de lire les exports enregistrés."
   },
-  "songMovedToPlaylist": "« {{song}} » déplacé vers la playlist « {{playlist}} »"
+  "songMovedToPlaylist": "« {{song}} » déplacé vers la playlist « {{playlist}} »",
+  "closeSidebar": "Fermer la barre latérale"
 }

@@ -32,6 +32,12 @@ export const Visualizer = ({
   className,
 }: VisualizerProps) => {
   const { t } = useTranslation();
+  // Visualizer settings keys are dynamic: only bars/waveform/circle are
+  // catalogued, so the typed t cannot resolve them. Cast once here.
+  const tLax = t as (
+    key: string,
+    options?: Record<string, unknown>,
+  ) => string;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const settingsPanelRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -127,7 +133,7 @@ export const Visualizer = ({
             .map(([key, config]) => (
               <div key={key} className={styles.setting}>
                 <label htmlFor={key}>
-                  {t(`visualizers.${selectedVisualizerKey}.settings.${key}`)}
+                  {tLax(`visualizers.${selectedVisualizerKey}.settings.${key}`)}
                 </label>
                 {config.type === "range" && (
                   <Slider

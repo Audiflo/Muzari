@@ -20,13 +20,16 @@
     "unknownArtist": "Unknown Artist",
     "unknownAlbum": "Unknown Album",
     "dontShowAgain": "Don't show again",
-    "reset": "Reset"
+    "reset": "Reset",
+    "error": "Error"
   },
   "favorites": {
     "favorites": "Favorites",
     "addToFavorites": "Add to favorites",
     "added": "Added \"{{title}}\" to favorites",
-    "removed": "Removed \"{{title}}\" from favorites"
+    "removed": "Removed \"{{title}}\" from favorites",
+    "addedMultiple": "{{count}} songs added to favorites",
+    "someAlreadyAdded": "{{count}} already in favorites"
   },
   "lyrics": {
     "cannotSearchWithoutArtist": "Cannot search for lyrics without a known artist",
@@ -142,7 +145,17 @@
       "exportPermissionDenied": "Permission to write to that folder was denied",
       "exportFailed": "Could not write the playlist into that folder",
       "exportedToFolder": "Saved {{name}} to {{folder}}"
-    }
+    },
+    "copied": "Copied",
+    "deleteConfirmation": "Delete \"{{name}}\"?",
+    "exported": "Exported",
+    "imported": "Imported {{name}}",
+    "renamed": "Renamed",
+    "reordered": "{{item}} reordered",
+    "shareFailed": "Failed to share",
+    "shareText": "{{name}} - {{count}} songs",
+    "shareTitle": "Share playlist",
+    "someAlreadyInPlaylist": "{{count}} already in this playlist"
   },
   "noResults": {
     "search": "No songs found",
@@ -466,5 +479,6 @@
     "deleted": "Deleted {{name}}.",
     "loadFailed": "Could not read the saved exports.",
     "failed": "Could not delete the export."
-  }
+  },
+  "closeSidebar": "Close sidebar"
 }

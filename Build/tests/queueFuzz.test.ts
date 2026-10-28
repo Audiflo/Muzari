@@ -47,8 +47,8 @@ function expectQueueInvariants(queue: QueueManager): void {
       throw new Error("empty queue must yield an empty play order");
     }
     if (
-      queue.peekNextCursor(false).kind !== "empty" ||
-      queue.peekPreviousCursor(false).kind !== "empty"
+      queue.peekNextCursor().kind !== "empty" ||
+      queue.peekPreviousCursor().kind !== "empty"
     ) {
       throw new Error("empty queue must yield empty peek cursors");
     }
@@ -77,8 +77,8 @@ function expectQueueInvariants(queue: QueueManager): void {
       throw new Error("unshuffled play order must be sequential");
     }
     if (
-      queue.peekNextCursor(false, true).kind !== "active" ||
-      queue.peekPreviousCursor(false, true).kind !== "active"
+      queue.peekNextCursor(true).kind !== "active" ||
+      queue.peekPreviousCursor(true).kind !== "active"
     ) {
       throw new Error(
         "non-empty queue must yield active wrap cursors",
@@ -158,7 +158,7 @@ function applyOp(
   }
 
   if (roll < 0.86) {
-    const next = queue.peekNextCursor(false);
+    const next = queue.peekNextCursor();
     if (next.kind === "active") {
       queue.jumpToIndex(next.index);
     }
