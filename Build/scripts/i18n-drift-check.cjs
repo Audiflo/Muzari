@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 function flatten(obj, prefix) {
   prefix = prefix || "";
@@ -77,7 +77,7 @@ function main() {
     fs.mkdirSync(TMP_DIR, { recursive: true });
 
     const config = path.join(BUILD_DIR, "i18next-parser.config.cjs");
-    execSync(`node node_modules/i18next-parser/bin/cli.js --config ${config}`, {
+    execFileSync("node", ["node_modules/i18next-parser/bin/cli.js", "--config", config], {
       cwd: BUILD_DIR,
       stdio: "inherit",
     });
