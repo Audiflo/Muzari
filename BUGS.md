@@ -25,7 +25,7 @@
   - light mode mostly fixed, re-check all
 
 - [ ] some missed text that's supposed to be in i18n
-  - Run `npm run i18n-check` or `node i18n-izer.cjs -I "visualizers"  --ignore-console`
+  - Run `npm run i18n:extract` and `npm run i18n:check`
   - [ ] **Priority 1**: User-visible UI text (buttons, labels, user-facing error messages)
   - [ ] **Priority 2**: Status messages and user notifications
     - [ ] Processing status messages ("Processing X/Y songs...")

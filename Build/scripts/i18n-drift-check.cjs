@@ -77,24 +77,25 @@ function main() {
     fs.mkdirSync(TMP_DIR, { recursive: true });
 
     const config = path.join(BUILD_DIR, "i18next-parser.config.cjs");
-    execFileSync("node", ["node_modules/i18next-parser/bin/cli.js", "--config", config], {
-      cwd: BUILD_DIR,
-      stdio: "inherit",
-    });
-
-    for (const locale of ["en", "fr"]) {
-      const src = path.join(BUILD_DIR, "locales", locale, "translation.json");
-      const dst = path.join(TMP_DIR, `${locale}.json`);
-      if (fs.existsSync(src)) {
-        fs.renameSync(src, dst);
-      }
-    }
-    fs.rmSync(path.join(BUILD_DIR, "locales"), { recursive: true, force: true });
+    execFileSync(
+      "node",
+      [
+        "node_modules/i18next-parser/bin/cli.js",
+        "--config",
+        config,
+        "--output",
+        ".i18n-drift-tmp/$LOCALE/$NAMESPACE.json",
+      ],
+      {
+        cwd: BUILD_DIR,
+        stdio: "inherit",
+      },
+    );
 
     let failed = false;
 
     for (const locale of ["en", "fr"]) {
-      const extractedPath = path.join(TMP_DIR, `${locale}.json`);
+      const extractedPath = path.join(TMP_DIR, locale, "translation.json");
       if (!fs.existsSync(extractedPath)) {
         console.error(`Missing extracted keys for ${locale}`);
         failed = true;

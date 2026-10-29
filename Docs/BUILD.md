@@ -81,7 +81,8 @@ if (isTauri) {
 | `npm run test`          | Run tests                        |
 | `npm run build:wasm`    | Build the Symphonia WASM decoder |
 | `npm run count-lines`   | Count lines of code              |
-| `npm run i18n-check`    | Check i18n coverage              |
+| `npm run i18n:extract`  | Extract i18n keys                |
+| `npm run i18n:check`    | Check i18n coverage              |
 
 ### Symphonia WASM Decoder
 

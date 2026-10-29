@@ -24,7 +24,6 @@
     "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
     "make-pretty": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,scss,md,html,cjs}'",
     "count-lines": "cloc . --exclude-dir=node_modules,build,dist --exclude-ext=lock,json",
-    "i18n-check": "node i18n-izer.cjs --ignore-console",
     "generate:visualizers": "node scripts/gen-visualizer-registry.cjs",
     "update": "npm-check-updates -i",
     "i18n:extract": "node node_modules/i18next-parser/bin/cli.js --config i18next-parser.config.cjs",
