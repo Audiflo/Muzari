@@ -312,7 +312,9 @@ export class KomorebiEngine {
   async next(): Promise<void> {
     this.cancelScheduledTransition();
 
-    const nextCursor = this.queue.peekNextCursor(this.settings.repeat === "all");
+    const nextCursor = this.queue.peekNextCursor(
+      this.settings.repeat === "all",
+    );
 
     switch (nextCursor.kind) {
       case "empty": {

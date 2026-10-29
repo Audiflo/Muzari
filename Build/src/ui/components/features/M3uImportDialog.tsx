@@ -42,10 +42,7 @@ export function M3uImportDialog({
   const { t } = useTranslation();
   // Match-mode keys are dynamic (auto/path/filename); the typed t cannot
   // resolve template keys, so cast once here.
-  const tLax = t as (
-    key: string,
-    options?: Record<string, unknown>,
-  ) => string;
+  const tLax = t as (key: string, options?: Record<string, unknown>) => string;
   const [mode, setMode] = useState<M3uMatchMode>("auto");
   const [remaining, setRemaining] = useState<M3uUnresolvedEntry[]>([]);
 

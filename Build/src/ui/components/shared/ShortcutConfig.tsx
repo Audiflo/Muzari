@@ -23,10 +23,7 @@ export const ShortcutConfig: React.FC<ShortcutConfigProps> = ({
   const { t } = useTranslation();
   // Shortcut descriptions are stored i18n keys (e.g. "settings.shortcuts.playPause")
   // read back from the database, so the typed t cannot resolve them statically.
-  const tLax = t as (
-    key: string,
-    options?: Record<string, unknown>,
-  ) => string;
+  const tLax = t as (key: string, options?: Record<string, unknown>) => string;
   const [shortcuts, setShortcuts] = useState<ShortcutConfigType>({});
   const [mergedShortcuts, setMergedShortcuts] = useState<ShortcutConfigType>(
     {},

@@ -298,8 +298,7 @@ export async function importAudioFiles(
           id: songId,
           title: metadata.title,
           artist: metadata.artist,
-          album:
-            metadata.album || t("common.unknownAlbum"),
+          album: metadata.album || t("common.unknownAlbum"),
           duration: metadata.duration,
           url: "",
           albumArt: albumArtUrl,

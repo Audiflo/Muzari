@@ -27,10 +27,7 @@ import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useFileHandler } from "../hooks/useFileHandler";
 import { useShareTarget } from "../hooks/useShareTarget";
 import { clearHandledShares } from "../platform/integrations/shareTarget";
-import {
-  importAudioFiles,
-  type Translate,
-} from "../helpers/importAudioFiles";
+import { importAudioFiles, type Translate } from "../helpers/importAudioFiles";
 import { storeImportedSong, type ImportContext } from "../helpers/addSong";
 import {
   importFolder,

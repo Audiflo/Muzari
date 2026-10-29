@@ -262,9 +262,7 @@ export const AddToPopover = ({
                     </Button>
                   ))
                 ) : (
-                  <p className={modalStyles.muted}>
-                    {t("noPlaylistsFound")}
-                  </p>
+                  <p className={modalStyles.muted}>{t("noPlaylistsFound")}</p>
                 )}
               </div>
             ) : (

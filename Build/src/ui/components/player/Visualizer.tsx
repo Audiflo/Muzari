@@ -34,10 +34,7 @@ export const Visualizer = ({
   const { t } = useTranslation();
   // Visualizer settings keys are dynamic: only bars/waveform/circle are
   // catalogued, so the typed t cannot resolve them. Cast once here.
-  const tLax = t as (
-    key: string,
-    options?: Record<string, unknown>,
-  ) => string;
+  const tLax = t as (key: string, options?: Record<string, unknown>) => string;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const settingsPanelRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
