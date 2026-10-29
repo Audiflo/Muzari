@@ -49,7 +49,7 @@ app.get("/oauth/callback", async (req, res) => {
 });
 
 app.post("/presence", async (req, res) => {
-  const { userId, details, state } = req.body;
+  const { userId, details, state } = req.body ?? {};
   const tokenData = userTokens[userId];
 
   if (!tokenData) return res.status(400).send("User not authorized");
