@@ -1,0 +1,14 @@
+{
+  "cannotSearchWithoutArtist": "Impossible de rechercher des paroles sans un artiste connu",
+  "notFound": "Paroles non trouvées pour cette chanson",
+  "failedToLoad": "Échec du chargement des paroles",
+  "loading": "Chargement des paroles...",
+  "tryAgain": "Réessayer",
+  "noLyricsAvailable": "Aucune parole disponible pour cette chanson.",
+  "embeddedLyrics": "Paroles Intégrées",
+  "synchronized": "Synchronisées",
+  "unsynchronized": "Non Synchronisées",
+  "noEmbeddedLyrics": "Aucune parole intégrée trouvée",
+  "fetchOnline": "Récupérer en Ligne",
+  "useEmbedded": "Utiliser les Paroles Intégrées"
+}

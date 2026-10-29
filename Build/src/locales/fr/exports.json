@@ -1,0 +1,15 @@
+{
+  "title": "Exports enregistrés",
+  "settingsDescription": "Fichiers M3U générés par l'application, conservés pour pouvoir les retélécharger.",
+  "manage": "Gérer",
+  "description": "Playlists M3U que vous avez exportés, stockés sur cet appareil.",
+  "empty": "Aucun export enregistré. Exportez une playlist en M3U pour en garder une copie ici.",
+  "notFound": "Cet export n'est plus enregistré.",
+  "download": "Télécharger",
+  "delete": "Supprimer",
+  "clearAll": "Tout supprimer",
+  "cleared": "Exports supprimés.",
+  "deleted": "{{name}} supprimé.",
+  "failed": "Impossible de supprimer l'export.",
+  "loadFailed": "Impossible de lire les exports enregistrés."
+}

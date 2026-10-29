@@ -1,0 +1,22 @@
+{
+  "selectSong": "Select a song to start playing",
+  "albumArtAlt": "{{title}} album art",
+  "addFavorite": "Add to favorites",
+  "removeFavorite": "Remove from favorites",
+  "shuffleOn": "On",
+  "shuffleOff": "Off",
+  "previous": "Previous",
+  "next": "Next",
+  "play": "Play",
+  "pause": "Pause",
+  "repeatTrack": "Track",
+  "repeatAll": "All",
+  "repeatOff": "Off",
+  "volume": "Volume",
+  "visualizer": "Visualizer",
+  "lyrics": "Lyrics",
+  "noSongPlaying": "No song is currently playing",
+  "albumArt": "Album Art",
+  "previousTrack": "Previous track",
+  "nextTrack": "Next track"
+}

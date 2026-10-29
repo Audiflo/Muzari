@@ -120,7 +120,7 @@ describe("QueueManager", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(0);
-    const next = queue.getNextTrack(false);
+    const next = queue.getNextTrack();
     expect(next?.id).toBe("b");
   });
 
@@ -128,7 +128,7 @@ describe("QueueManager", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(1);
-    const prev = queue.getPreviousTrack(false);
+    const prev = queue.getPreviousTrack();
     expect(prev?.id).toBe("a");
   });
 
@@ -136,16 +136,16 @@ describe("QueueManager", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(2);
-    expect(queue.getNextTrack(false)).toBeNull();
-    expect(queue.getNextTrack(false, true)?.id).toBe("a");
+    expect(queue.getNextTrack()).toBeNull();
+    expect(queue.getNextTrack(true)?.id).toBe("a");
   });
 
   it("should wrap around at start of playlist only with wrap enabled", () => {
     const playlist = createMockPlaylist(["a", "b", "c"]);
     queue.setPlaylist(playlist);
     queue.jumpToIndex(0);
-    expect(queue.getPreviousTrack(false)).toBeNull();
-    expect(queue.getPreviousTrack(false, true)?.id).toBe("c");
+    expect(queue.getPreviousTrack()).toBeNull();
+    expect(queue.getPreviousTrack(true)?.id).toBe("c");
   });
 
   it("should shuffle tracks", () => {

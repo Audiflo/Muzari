@@ -1,0 +1,20 @@
+{
+  "connection": "Discord Connection",
+  "enableIntegration": "Enable Discord Integration (Broken)",
+  "connected": "Connected as Discord User ID: {{userId}}",
+  "notConnected": "Not connected to Discord",
+  "disconnected": "Disconnected from Discord",
+  "completeAuth": "Please complete Discord authorization in the new tab",
+  "connect": "Connect Discord",
+  "disconnect": "Disconnect",
+  "manualUserId": "Manual Discord User ID",
+  "manualUserIdDescription": "If the OAuth flow completed successfully, you can manually enter your Discord User ID here.",
+  "userId": "Discord User ID",
+  "userIdSaved": "Discord User ID saved",
+  "status": "Discord RPC Status",
+  "statusUnknown": "Unknown (check availability)",
+  "statusAvailable": "Discord is running (RPC available)",
+  "statusUnavailable": "Discord is not running",
+  "statusUnsupported": "Discord RPC not supported in this environment",
+  "refreshStatus": "Refresh status"
+}

@@ -1,0 +1,9 @@
+{
+  "selectFiles": "Sélectionnez des fichiers audio à importer...",
+  "successImport": "Importation réussie de {{count}} chanson(s)",
+  "duplicatesSkipped": "{{count}} fichier(s) en double ignoré(s)",
+  "failedImport": "Échec de l'importation de {{count}} fichier(s)",
+  "failedOpen": "Échec de l'ouverture du sélecteur de fichiers",
+  "selectAudioFiles": "Sélectionner des Fichiers Audio",
+  "onlyAudioFiles": "Vous ne pouvez télécharger que des fichiers audio"
+}

@@ -1,0 +1,20 @@
+{
+  "connection": "Connexion Discord",
+  "enableIntegration": "Activer l'intégration Discord (en panne)",
+  "connected": "Connecté en tant qu'ID utilisateur Discord : {{userId}}",
+  "notConnected": "Non connecté à Discord",
+  "disconnected": "Déconnecté de Discord",
+  "completeAuth": "Veuillez compléter l'autorisation Discord dans le nouvel onglet",
+  "connect": "Connecter Discord",
+  "disconnect": "Déconnecter",
+  "manualUserId": "ID utilisateur Discord manuel",
+  "manualUserIdDescription": "Si le flux OAuth s'est terminé avec succès, vous pouvez saisir manuellement votre ID utilisateur Discord ici.",
+  "userId": "ID utilisateur Discord",
+  "userIdSaved": "ID utilisateur Discord sauvegardé",
+  "status": "Statut RPC Discord",
+  "statusUnknown": "Inconnu (vérifiez la disponibilité)",
+  "statusAvailable": "Discord est en cours d'exécution (RPC disponible)",
+  "statusUnavailable": "Discord n'est pas en cours d'exécution",
+  "statusUnsupported": "RPC Discord non pris en charge dans cet environnement",
+  "refreshStatus": "Rafraîchir le statut"
+}

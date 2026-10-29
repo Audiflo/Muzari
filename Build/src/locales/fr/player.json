@@ -1,0 +1,22 @@
+{
+  "selectSong": "Sélectionnez une chanson pour commencer la lecture",
+  "albumArtAlt": "Pochette de l'album « {{title}} »",
+  "addFavorite": "Ajouter aux favoris",
+  "removeFavorite": "Retirer des favoris",
+  "shuffleOn": "Activée",
+  "shuffleOff": "Désactivée",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "play": "Lire",
+  "pause": "Pause",
+  "repeatTrack": "Piste",
+  "repeatAll": "Tout",
+  "repeatOff": "Désactivée",
+  "volume": "Volume",
+  "visualizer": "Visualiseur",
+  "lyrics": "Paroles",
+  "noSongPlaying": "Aucune chanson en cours de lecture",
+  "albumArt": "Pochette d'Album",
+  "previousTrack": "Piste précédente",
+  "nextTrack": "Piste suivante"
+}

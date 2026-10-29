@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import type { TFunction } from "i18next";
 import {
   identifyFormat,
   isImportableFile,
@@ -29,10 +30,7 @@ import type {
 } from "../platform/metadata";
 import type { Track } from "../core/engine/types";
 
-export type Translate = (
-  key: string,
-  options?: Record<string, unknown>,
-) => string;
+export type Translate = TFunction<"translation">;
 
 export interface AudioImportOpts {
   t: Translate;
@@ -300,9 +298,7 @@ export async function importAudioFiles(
           id: songId,
           title: metadata.title,
           artist: metadata.artist,
-          album:
-            metadata.album ||
-            t("songInfo.album", { title: t("common.unknownAlbum") }),
+          album: metadata.album || t("common.unknownAlbum"),
           duration: metadata.duration,
           url: "",
           albumArt: albumArtUrl,

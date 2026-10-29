@@ -39,6 +39,10 @@ jobs:
           npm run test:e2e
           npm run test:integration
 
+      - name: i18n drift check
+        working-directory: Build
+        run: npm run i18n:check
+
       - name: Lint
         working-directory: Build
         run: npm run lint

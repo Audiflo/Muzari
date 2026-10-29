@@ -1,0 +1,10 @@
+{
+  "name": "Nom",
+  "artist": "Artiste",
+  "album": "Album",
+  "rating": "Évaluation",
+  "ascending": "Croissant",
+  "descending": "Décroissant",
+  "clear": "Effacer le tri",
+  "sortBy": "Trier par"
+}

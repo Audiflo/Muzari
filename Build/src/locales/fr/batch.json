@@ -1,0 +1,3 @@
+{
+  "processing": "Traitement du lot {{currentBatch}} sur {{totalBatches}}..."
+}

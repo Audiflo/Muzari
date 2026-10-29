@@ -1,0 +1,24 @@
+{
+  "bars": {
+    "name": "Bars",
+    "settings": {
+      "barWidth": "Bar Width",
+      "barSpacing": "Bar Spacing",
+      "sensitivity": "Sensitivity"
+    }
+  },
+  "waveform": {
+    "name": "Waveform",
+    "settings": {
+      "lineWidth": "Line Width",
+      "amplitude": "Amplitude"
+    }
+  },
+  "circle": {
+    "name": "Circle",
+    "settings": {
+      "radius": "Radius",
+      "segments": "Segments"
+    }
+  }
+}

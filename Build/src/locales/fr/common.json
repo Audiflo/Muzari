@@ -1,0 +1,17 @@
+{
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "close": "Fermer",
+  "create": "Créer",
+  "delete": "Supprimer",
+  "artist": "Artiste",
+  "album": "Album",
+  "duration": "Durée",
+  "loading": "Chargement...",
+  "save": "Enregistrer",
+  "unknownArtist": "Artiste Inconnu",
+  "unknownAlbum": "Album Inconnu",
+  "dontShowAgain": "Ne plus afficher",
+  "reset": "Réinitialiser",
+  "error": "Erreur"
+}

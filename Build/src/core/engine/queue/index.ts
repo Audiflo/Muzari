@@ -94,11 +94,11 @@ export class QueueManager {
     );
   }
 
-  peekNextCursor(_smartShuffle: boolean, wrap = false): QueueCursor {
+  peekNextCursor(wrap = false): QueueCursor {
     return this.peekAdjacentCursor("next", wrap);
   }
 
-  peekPreviousCursor(_smartShuffle: boolean, wrap = false): QueueCursor {
+  peekPreviousCursor(wrap = false): QueueCursor {
     return this.peekAdjacentCursor("previous", wrap);
   }
 
@@ -126,13 +126,13 @@ export class QueueManager {
     }
   }
 
-  getNextIndex(smartShuffle: boolean, wrap = false): number | null {
-    const cursor = this.peekNextCursor(smartShuffle, wrap);
+  getNextIndex(wrap = false): number | null {
+    const cursor = this.peekNextCursor(wrap);
     return cursor.kind === "active" ? cursor.index : null;
   }
 
-  getPreviousIndex(smartShuffle: boolean, wrap = false): number | null {
-    const cursor = this.peekPreviousCursor(smartShuffle, wrap);
+  getPreviousIndex(wrap = false): number | null {
+    const cursor = this.peekPreviousCursor(wrap);
     return cursor.kind === "active" ? cursor.index : null;
   }
 
@@ -147,12 +147,12 @@ export class QueueManager {
     return [...this.state.shuffleOrder];
   }
 
-  getNextTrack(smartShuffle: boolean, wrap = false): Track | null {
-    return this.trackForCursor(this.peekNextCursor(smartShuffle, wrap));
+  getNextTrack(wrap = false): Track | null {
+    return this.trackForCursor(this.peekNextCursor(wrap));
   }
 
-  getPreviousTrack(smartShuffle: boolean, wrap = false): Track | null {
-    return this.trackForCursor(this.peekPreviousCursor(smartShuffle, wrap));
+  getPreviousTrack(wrap = false): Track | null {
+    return this.trackForCursor(this.peekPreviousCursor(wrap));
   }
 
   shuffle(preserveCurrent = true): void {

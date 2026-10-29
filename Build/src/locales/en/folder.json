@@ -1,0 +1,5 @@
+{
+  "permissionDenied": "Could not access the folder \"{{name}}\". Permission was not granted.",
+  "noAudio": "No supported audio files found in \"{{name}}\".",
+  "syncComplete": "Synced {{count}} folder(s): {{added}} added, {{removed}} removed"
+}

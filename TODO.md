@@ -1,8 +1,8 @@
 # Todo
 
-- [ ] Firefox support 
+- [ ] Firefox support
 
-- [ ] Open Search should open a global search modal overlay, similar to Spotlight Search
+- [ ] Search should open a global search modal overlay, similar to Spotlight Search or VSCode command palette, that can search for songs, playlists, and settings.
 
 - [X] Add TS/TSX support and wallpapers for interactivity
   - [X] Start with built-in wallpapers using TS/TSX components, loaded via a wallpaper loader (similar to themeLoader)
@@ -46,7 +46,7 @@
 
 - [ ] 🔼 custom theme builder with options for custom picture backgrounds
 
-### Metadata
+## Metadata
 
 - [ ] More places to fetch lyrics from:
   - use [all2mp3](https://github.com/AllToMP3/alltomp3/blob/master/index.js) as reference
@@ -65,7 +65,7 @@
 
 - [ ] Duplicate file detection (not just by title but checksum as well).
 
-### LocalDataDB (workshop name)
+## LocalDataDB (workshop name)
 
 - Basically all your data (which songs played, how much, etc. ) but local, and gets smarter the more you use Muzari
 
@@ -81,9 +81,6 @@
 ## Either now or future versions
 
 - [ ] Add subsonic API support
-
-- [ ] M3U playlist import (`.m3u`/`.m3u8`) via a dedicated library
-  - `Playlist.tsx` currently shows a "M3U import not yet supported" toast
 
 - [ ] 🔼 a Whisper based, fully in browser, Live Lyrics thing
 
@@ -139,6 +136,8 @@
     Improvement: Add a equalizer using the Web Audio API or an external library.
 
 ## Done
+
+- [X] M3U playlist import (`.m3u`/`.m3u8`) via a dedicated library
 
 - [X] A versioning system, linked with `send-beta-build.yml` and the `links.json` but different file, supporting both git commits (for beta/dev stuff) and github latest releases for normal people use
   - maybe this isn't needed (note to self, read *all* of the docs first): <https://vite-pwa-org.netlify.app/frameworks/react.html#react>

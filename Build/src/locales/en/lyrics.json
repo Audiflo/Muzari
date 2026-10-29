@@ -1,0 +1,14 @@
+{
+  "cannotSearchWithoutArtist": "Cannot search for lyrics without a known artist",
+  "notFound": "Lyrics not found for this song",
+  "failedToLoad": "Failed to load lyrics",
+  "loading": "Loading lyrics...",
+  "tryAgain": "Try Again",
+  "noLyricsAvailable": "No lyrics available for this song.",
+  "embeddedLyrics": "Embedded Lyrics",
+  "synchronized": "Synchronized",
+  "unsynchronized": "Unsynchronized",
+  "noEmbeddedLyrics": "No embedded lyrics found",
+  "fetchOnline": "Fetch from Online",
+  "useEmbedded": "Use Embedded Lyrics"
+}

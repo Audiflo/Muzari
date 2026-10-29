@@ -6,6 +6,7 @@ import { SortDropdown } from "./SortDropdown";
 import { SelectSongsMenu } from "./SelectSongsMenu";
 import { DeleteDialog } from "../primitives/DeleteDialog";
 import type { NavigationState } from "../../navigation";
+import type { Translate } from "../../../helpers/importAudioFiles";
 import styles from "./MainContent.module.css";
 
 interface MainContentHeaderProps {
@@ -36,7 +37,7 @@ interface MainContentHeaderProps {
   showDeleteConfirm: boolean;
   onDeleteConfirm: () => void;
   onDeleteConfirmOpenChange: (open: boolean) => void;
-  t: (key: string, options?: Record<string, unknown>) => string;
+  t: Translate;
   isHomeView: boolean;
   viewSwitcher: React.ReactNode;
 }

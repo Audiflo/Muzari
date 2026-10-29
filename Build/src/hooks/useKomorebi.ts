@@ -24,6 +24,7 @@ import { engineSettingsPersistence } from "../platform/settings/enginePersistenc
 import { syncAllDirectories } from "../platform/storage/folderImporter";
 import { storeImportedSong } from "../helpers/addSong";
 import i18n from "i18next";
+import type { Translate } from "../helpers/importAudioFiles";
 import { createLogger } from "../helpers/logger";
 import { sanitizeEqualizerState } from "../platform/audio/equalizer";
 import {
@@ -361,7 +362,7 @@ export function useKomorebi(
     const runDirectorySync = async () => {
       try {
         await syncAllDirectories({
-          t: (key, options) => i18n.t(key, options),
+          t: i18n.t as Translate,
           addSong: async (song, file, context) => {
             const stored = await storeImportedSong(song, file, context);
             library.addSongs([stored]);

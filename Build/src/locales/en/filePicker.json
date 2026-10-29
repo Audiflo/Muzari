@@ -1,0 +1,9 @@
+{
+  "selectFiles": "Select audio files to import...",
+  "successImport": "Successfully imported {{count}} song(s)",
+  "duplicatesSkipped": "Skipped {{count}} duplicate file(s)",
+  "failedImport": "Failed to import {{count}} file(s)",
+  "failedOpen": "Failed to open file picker",
+  "selectAudioFiles": "Select Audio Files",
+  "onlyAudioFiles": "You can only upload audio files"
+}
