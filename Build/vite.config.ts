@@ -14,6 +14,7 @@ import frMessages from "./src/locales/fr/loading-messages-fr.json" with { type: 
 
 const host = process.env.TAURI_DEV_HOST;
 const buildTarget = process.env.BUILD_TARGET || "web";
+const isCodespaces = process.env.CODESPACES === "true";
 
 const isSingleFile = process.env.SINGLE_FILE === "true";
 const isDesktop = buildTarget === "desktop";
@@ -30,7 +31,7 @@ const iconBase64 = isSingleFile
   : null;
 
 const plugins = [
-  isWeb && mkcert(),
+  isWeb && !isCodespaces && mkcert(),
   react(),
   wasm(),
   isSingleFile &&
@@ -327,6 +328,7 @@ export default defineConfig({
       }
     : {
         open: true,
+        host: true,
         allowedHosts: true,
       },
 
