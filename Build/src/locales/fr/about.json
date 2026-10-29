@@ -1,0 +1,7 @@
+{
+  "description": "Une interface moderne de lecteur de musique avec playlists, gestion des chansons et un visualiseur incroyable.",
+  "version": "Version",
+  "privacy": "Politique de confidentialité",
+  "terms": "Conditions d'utilisation",
+  "madeWith": "Fait avec ❤️ en utilisant React, TypeScript et Web Audio API"
+}

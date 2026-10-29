@@ -1,0 +1,8 @@
+{
+  "favorites": "Favorites",
+  "addToFavorites": "Add to favorites",
+  "added": "Added \"{{title}}\" to favorites",
+  "removed": "Removed \"{{title}}\" from favorites",
+  "addedMultiple": "Added {{count}} songs to favorites",
+  "someAlreadyAdded": "Some songs already in favorites"
+}

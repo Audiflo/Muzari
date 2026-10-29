@@ -1,0 +1,15 @@
+{
+  "title": "Saved exports",
+  "settingsDescription": "M3U files this app generated, kept so you can download them again.",
+  "manage": "Manage",
+  "description": "M3U playlists you have exported, stored on this device.",
+  "empty": "No saved exports yet. Export a playlist as M3U to keep a copy here.",
+  "notFound": "That export is no longer saved.",
+  "download": "Download",
+  "delete": "Delete",
+  "clearAll": "Delete all",
+  "cleared": "Saved exports deleted.",
+  "deleted": "Deleted {{name}}.",
+  "loadFailed": "Could not read the saved exports.",
+  "failed": "Could not delete the export."
+}

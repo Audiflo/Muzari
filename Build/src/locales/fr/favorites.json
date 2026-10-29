@@ -1,0 +1,8 @@
+{
+  "favorites": "Favoris",
+  "added": "Ajouté « {{title}} » aux favoris",
+  "removed": "Supprimé « {{title}} » des favoris",
+  "addToFavorites": "Ajouter aux favoris",
+  "addedMultiple": "{{count}} titres ajoutés aux favoris",
+  "someAlreadyAdded": "Certains titres sont déjà dans les favoris"
+}

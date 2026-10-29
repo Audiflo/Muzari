@@ -1,0 +1,5 @@
+{
+  "permissionDenied": "Impossible d'accéder au dossier \"{{name}}\". L'autorisation a été refusée.",
+  "noAudio": "Aucun fichier audio pris en charge trouvé dans \"{{name}}\".",
+  "syncComplete": "{{count}} dossier(s) synchronisé(s) : {{added}} ajouté(s), {{removed}} supprimé(s)"
+}

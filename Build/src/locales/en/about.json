@@ -1,0 +1,7 @@
+{
+  "description": "A modern music player interface with playlists, song management, and an amazing visualizer.",
+  "version": "Version",
+  "privacy": "Privacy Policy",
+  "terms": "Terms of Service",
+  "madeWith": "Made with ❤️ using React, TypeScript, and Web Audio API"
+}

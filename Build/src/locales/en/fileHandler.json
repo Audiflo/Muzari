@@ -1,0 +1,4 @@
+{
+  "filesReceived": "Received {{count}} file(s) via file handler",
+  "filesSkipped": "Skipped {{count}} invalid file(s)"
+}

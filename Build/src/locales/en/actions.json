@@ -1,0 +1,10 @@
+{
+  "selectAll": "Select All",
+  "deselectAll": "Deselect All",
+  "addTo": "Actions",
+  "back": "Back",
+  "delete": "Delete",
+  "selectSongs": "Select Songs",
+  "addMusic": "Add Music",
+  "addFolder": "Import Folder"
+}

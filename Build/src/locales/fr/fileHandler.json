@@ -1,0 +1,4 @@
+{
+  "filesReceived": "Fichiers reçus : {{count}} via gestionnaire de fichiers",
+  "filesSkipped": "Fichiers ignorés : {{count}} invalides"
+}
