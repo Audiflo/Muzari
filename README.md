@@ -81,6 +81,7 @@ Contributions are welcome. Fork the repo, make your changes under `Build/`, then
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/TrickiyALT"><img src="https://avatars.githubusercontent.com/u/195377855?v=4?s=100" width="100px;" alt="Trickiy"/><br /><sub><b>Trickiy</b></sub></a><br /><a href="#ideas-TrickiyALT" title="Ideas, Planning, & Feedback">🤔</a> <a href="#bug-TrickiyALT" title="Bug reports">🐛</a> <a href="#design-TrickiyALT" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/hpadgett812-del"><img src="https://avatars.githubusercontent.com/u/347101374?v=4?s=100" width="100px;" alt="hpadgett812-del"/><br /><sub><b>hpadgett812-del</b></sub></a><br /><a href="#bug-hpadgett812-del" title="Bug reports">🐛</a> <a href="#code-hpadgett812-del" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
