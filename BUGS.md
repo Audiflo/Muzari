@@ -1,14 +1,5 @@
 # Bugs
 
-- [ ] when the visualizer is open, something UI bugs out and transparency and it flickers sometimes
-- [ ] Decoder backpressure is improved but not strictly bounded as the 8s "hard cap" still accepts overflow and `pendingChunks` has no upper limit (needs a bounded queue with a drop-or-stall thing)
-
-- [ ] Add tour to inline
-
-- [ ] Either comment out or implement missing features:
-  - [ ] Compact mode
-  - [ ] Show Lyrics
-  - [ ] Show Album Art
 - [ ] Lessen delays while reordering
 
 - [ ] Use List Virtualization for song list so that having larger libraries doesn't cause lag on all songs
