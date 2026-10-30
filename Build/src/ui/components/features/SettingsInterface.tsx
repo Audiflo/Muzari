@@ -206,7 +206,7 @@ export function SettingsInterface({
         <Switch
           id="compact-mode"
           checked={settingsState.compactMode}
-          onCheckedChange={settings.setCompactMode}
+          onCheckedChange={(compact) => settings.setCompactMode(compact)}
         />
       </div>
 
@@ -222,7 +222,7 @@ export function SettingsInterface({
         <Switch
           id="show-album-art"
           checked={settingsState.showAlbumArt}
-          onCheckedChange={settings.setShowAlbumArt}
+          onCheckedChange={(show) => settings.setShowAlbumArt(show)}
         />
       </div>
 
@@ -236,7 +236,7 @@ export function SettingsInterface({
         <Switch
           id="show-lyrics"
           checked={settingsState.showLyrics}
-          onCheckedChange={settings.setShowLyrics}
+          onCheckedChange={(show) => settings.setShowLyrics(show)}
         />
       </div>
 

@@ -119,6 +119,22 @@ describe("SettingsManager", () => {
     });
   });
 
+  describe("hydrate", () => {
+    it("should notify listeners when stored settings are loaded", () => {
+      const callback = jest.fn();
+      settings.on("settingschange", callback);
+
+      settings.hydrate({ showAlbumArt: false, showLyrics: true });
+
+      expect(settings.getSettings().showAlbumArt).toBe(false);
+      expect(settings.getSettings().showLyrics).toBe(true);
+      expect(callback).toHaveBeenCalledWith({
+        showAlbumArt: false,
+        showLyrics: true,
+      });
+    });
+  });
+
   describe("resetToDefaults", () => {
     it("should reset all settings to defaults", () => {
       settings.setColorTheme("Red");
