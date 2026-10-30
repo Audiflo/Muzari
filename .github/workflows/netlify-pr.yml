@@ -1,0 +1,67 @@
+name: Netlify Preview Deploy
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  statuses: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: netlify-preview
+      url: ${{ steps.netlify.outputs.deploy-url }}
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Build/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Build
+        run: npm ci
+
+      - name: Setup WASM toolchain
+        uses: ./.github/actions/setup-wasm
+
+      - name: Build Symphonia WASM decoder
+        uses: ./.github/actions/verify-wasm
+        with:
+          verify: "false"
+
+      - name: Build
+        working-directory: Build
+        run: npm run build
+        env:
+          BASE_PATH: /
+
+      - name: Deploy preview to Netlify
+        id: netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: './Build/dist'
+          production-deploy: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy PR preview from GitHub Actions"
+          enable-commit-comment: true
+          enable-github-deployment: true
+          github-deployment-environment: "Preview - Netlify"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
