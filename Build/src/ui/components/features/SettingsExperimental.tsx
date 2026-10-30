@@ -117,7 +117,7 @@ export function SettingsExperimental({
         <Switch
           id="discord-enabled"
           checked={settingsState.discordEnabled || false}
-          onCheckedChange={settings.setDiscordEnabled}
+          onCheckedChange={(enabled) => settings.setDiscordEnabled(enabled)}
         />
       </div>
 

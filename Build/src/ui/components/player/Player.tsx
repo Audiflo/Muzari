@@ -21,6 +21,7 @@ import { PlayerControls } from "./PlayerControls";
 import { PlayerAlbumArt } from "./PlayerAlbumArt";
 import { PlayerTrackInfo } from "./PlayerTrackInfo";
 import { PlayerSecondaryControls } from "./PlayerSecondaryControls";
+import { useSettingsState } from "../../../hooks/useSettingsState";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import type { Track, Playlist } from "../../../core/engine/types";
 
@@ -39,7 +40,7 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
   ({ komorebi }, ref) => {
     const { t } = useTranslation();
     const settings = komorebi.settings;
-    const settingsState = settings.getSettings();
+    const settingsState = useSettingsState(settings);
 
     const {
       currentTrack,
@@ -145,7 +146,9 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
     );
 
     useEffect(() => {
-      if (currentSong && settingsState.showLyrics) setShowLyrics(true);
+      if (!currentSong) return;
+      setShowLyrics(settingsState.showLyrics);
+      setIsLyricsClosing(false);
     }, [currentSong, settingsState.showLyrics]);
 
     const isHomeView = navState.view === "home";
@@ -180,15 +183,17 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
           </div>
         )}
         <div
-          className={`${styles.player} ${isHomeView ? styles.playerCompact : ""}`}
+          className={`${styles.player} ${isHomeView || settingsState.compactMode ? styles.playerCompact : ""}`}
         >
           <div className={styles.currentSong}>
-            <PlayerAlbumArt
-              songId={currentSong?.id}
-              hasAlbumArt={currentSong?.hasAlbumArt}
-              albumArt={currentSong?.albumArt}
-              title={currentSong?.title || ""}
-            />
+            {settingsState.showAlbumArt && (
+              <PlayerAlbumArt
+                songId={currentSong?.id}
+                hasAlbumArt={currentSong?.hasAlbumArt}
+                albumArt={currentSong?.albumArt}
+                title={currentSong?.title || ""}
+              />
+            )}
             <PlayerTrackInfo
               title={currentSong?.title}
               artist={currentSong?.artist}
