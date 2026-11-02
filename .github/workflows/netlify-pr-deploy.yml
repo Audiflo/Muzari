@@ -10,7 +10,7 @@ permissions:
   contents: read
   deployments: write
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   group: netlify-preview-${{ github.event.workflow_run.id }}
@@ -25,11 +25,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: netlify-preview
 
+    permissions:
+      actions: read
+      contents: read
+      deployments: write
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Resolve pull request
         id: pr
         uses: actions/github-script@v8
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const run = context.payload.workflow_run;
 
@@ -141,6 +149,7 @@ jobs:
           DEPLOY_URL: ${{ steps.netlify.outputs.deploy-url }}
           RUN_ID: ${{ github.event.workflow_run.id }}
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = Number(process.env.PR_NUMBER);
             const expectedHeadSha = process.env.PR_HEAD_SHA;
@@ -226,32 +235,40 @@ jobs:
               `_Deployed by [GitHub Actions](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})._`
             ].join("\n");
 
-            const comments = await github.paginate(
-              github.rest.issues.listComments,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber
+            try {
+              const comments = await github.paginate(
+                github.rest.issues.listComments,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber
+                }
+              );
+
+              const existing = comments.find(comment =>
+                comment.body?.includes(marker) &&
+                comment.user?.type === "Bot"
+              );
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body
+                });
               }
-            );
 
-            const existing = comments.find(comment =>
-              comment.body?.includes(marker) &&
-              comment.user?.type === "Bot"
-            );
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body
-              });
+              core.info(`Updated preview comment on PR #${prNumber}.`);
+            } catch (error) {
+              throw new Error(
+                `Deployment succeeded, but PR comment failed: ${error.message}`
+              );
             }
