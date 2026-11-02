@@ -147,9 +147,12 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
 
     useEffect(() => {
       if (!currentSong) return;
-      setShowLyrics(settingsState.showLyrics);
       setIsLyricsClosing(false);
-    }, [currentSong, settingsState.showLyrics]);
+    }, [currentSong]);
+
+    useEffect(() => {
+      setShowLyrics(settingsState.showLyrics);
+    }, [settingsState.showLyrics]);
 
     const isHomeView = navState.view === "home";
 
