@@ -43,6 +43,8 @@
     "repeat": "Mode de Répétition par Défaut",
     "autoPlay": "Lecture Automatique de la Chanson Suivante",
     "autoPlayDesc": "Jouer automatiquement la chanson suivante quand la chanson actuelle se termine",
+    "autoShowVisualizer": "Afficher le visualiseur pendant la lecture",
+    "autoShowVisualizerDesc": "Ouvrir automatiquement le visualiseur au démarrage de la lecture ou d'une nouvelle chanson",
     "tempo": "Tempo",
     "pitch": "Hauteur",
     "gapless": "Lecture Sans Interruption",

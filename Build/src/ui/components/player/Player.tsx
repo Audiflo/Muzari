@@ -154,6 +154,23 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
       setShowLyrics(settingsState.showLyrics);
     }, [settingsState.showLyrics]);
 
+    useEffect(() => {
+      if (
+        !currentSong ||
+        !isPlaying ||
+        !settingsState.autoShowVisualizer
+      ) {
+        return;
+      }
+
+      setIsVisualizerClosing(false);
+      setShowVisualizer(true);
+    }, [
+      currentSong?.id,
+      isPlaying,
+      settingsState.autoShowVisualizer,
+    ]);
+
     const isHomeView = navState.view === "home";
 
     if (!currentSong) {

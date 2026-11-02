@@ -43,6 +43,8 @@
     "repeat": "Default Repeat Mode",
     "autoPlay": "Auto-play Next Song",
     "autoPlayDesc": "Automatically play the next song when current song ends",
+    "autoShowVisualizer": "Show Visualizer When Playing",
+    "autoShowVisualizerDesc": "Automatically open the visualizer when playback starts or a new song begins",
     "tempo": "Tempo",
     "pitch": "Pitch",
     "gapless": "Gapless Playback",
