@@ -93,10 +93,17 @@ export class SettingsManager implements SettingsActions {
   }
 
   hydrate(updates: Partial<SettingsState>): void {
+    const hydratedUpdates: Partial<SettingsState> = {};
+
     for (const [key, value] of Object.entries(updates)) {
       if (value !== undefined) {
         (this.settings as unknown as Record<string, unknown>)[key] = value;
+        (hydratedUpdates as unknown as Record<string, unknown>)[key] = value;
       }
+    }
+
+    if (Object.keys(hydratedUpdates).length > 0) {
+      this.emitSettingsChange(hydratedUpdates);
     }
   }
 

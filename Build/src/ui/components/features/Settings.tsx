@@ -12,6 +12,7 @@ import { Button } from "../primitives/Button";
 import { Icon } from "../shared/Icon";
 import styles from "./Settings.module.css";
 import { usePalette } from "../../theming/hooks/useTheming";
+import { useSettingsState } from "../../../hooks/useSettingsState";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 
 import { SettingsAudio } from "./SettingsAudio";
@@ -40,7 +41,7 @@ export function Settings({
   const { t } = useTranslation();
   const { setPalette } = usePalette();
   const settings = komorebi.settings;
-  const settingsState = settings.getSettings();
+  const settingsState = useSettingsState(settings);
   const [activeCategory, setActiveCategory] =
     useState<SettingsCategory>("playback");
 
