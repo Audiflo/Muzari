@@ -21,6 +21,7 @@ export interface PreloadConfig {
 
 export interface PreloadOptions {
   resolveTrack?: (track: Track) => Promise<Track>;
+  load?: (url: string) => Promise<string>;
 }
 
 const DEFAULT_CONFIG: PreloadConfig = {
@@ -35,6 +36,7 @@ export class PreloadManager {
   private loading: Set<string> = new Set();
   private preloadCallbacks: Map<string, Set<PreloadWaiter>> = new Map();
   private readonly resolveTrack?: (track: Track) => Promise<Track>;
+  private readonly load: (url: string) => Promise<string>;
   private readonly logger: KomorebiLogger;
 
   constructor(
@@ -44,6 +46,21 @@ export class PreloadManager {
   ) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.resolveTrack = options.resolveTrack;
+    this.load =
+      options.load ??
+      (async (url) => {
+        const runtime = globalThis as typeof globalThis & {
+          fetch?: (input: string) => Promise<{
+            blob(): Promise<Blob>;
+          }>;
+          URL?: { createObjectURL(blob: Blob): string };
+        };
+        if (!runtime.fetch || !runtime.URL?.createObjectURL) {
+          throw new Error("PreloadManager requires a loader in this runtime");
+        }
+        const response = await runtime.fetch(url);
+        return runtime.URL.createObjectURL(await response.blob());
+      });
     this.logger = logger;
   }
 
@@ -91,9 +108,7 @@ export class PreloadManager {
 
     try {
       const source = this.resolveTrack ? await this.resolveTrack(track) : track;
-      const response = await fetch(source.url);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      const url = await this.load(source.url);
 
       this.cache.set(track.id, {
         track,

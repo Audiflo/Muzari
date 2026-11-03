@@ -1,7 +1,15 @@
 import type { Track } from "../engine/types";
-import type { MediaActionHandlers } from "../engine/adapters";
 
 export type MediaPlaybackState = "playing" | "paused" | "none";
+
+export interface MediaActionHandlers {
+  play(): void | Promise<void>;
+  pause(): void;
+  next(): void | Promise<void>;
+  previous(): void | Promise<void>;
+  stop(): void;
+  seek(time: number): void;
+}
 
 export interface MediaSessionAdapter {
   initialize(): void | Promise<void>;

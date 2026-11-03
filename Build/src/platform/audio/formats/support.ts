@@ -3,12 +3,51 @@ import { createLogger } from "../../../helpers/logger";
 
 const logger = createLogger("formats");
 import {
+  FormatCapabilityRegistry,
   identifyFormat,
   type AudioFormat,
-  type MetadataCapability,
 } from "@audiflo/komorebi";
 
 export type BackendKind = "flo" | "symphonia" | "html";
+
+const decoderProviders = new FormatCapabilityRegistry();
+const metadataProviders = new FormatCapabilityRegistry();
+
+decoderProviders.register({
+  id: "flo",
+  supports: (format) => format.id === "flo",
+});
+decoderProviders.register({
+  id: "symphonia",
+  supports: (format) => format.decode === "required",
+});
+metadataProviders.register({
+  id: "flo",
+  supports: (format) => format.id === "flo" && format.metadata === "available",
+});
+metadataProviders.register({
+  id: "music-metadata",
+  supports: (format) =>
+    format.id !== "flo" && format.metadata === "available",
+});
+
+function decoderBackendFor(format: AudioFormat): BackendKind | null {
+  const provider = decoderProviders.find(format);
+  return provider?.id === "flo" || provider?.id === "symphonia"
+    ? provider.id
+    : null;
+}
+
+function metadataProviderFor(
+  format: AudioFormat | undefined,
+): "music-metadata" | "flo" | "none" {
+  if (!format) return "none";
+  const provider = metadataProviders.find(format);
+  if (provider?.id === "flo" || provider?.id === "music-metadata") {
+    return provider.id;
+  }
+  return "none";
+}
 
 export type SupportVerdict =
   | { status: "supported"; format: AudioFormat; backend: BackendKind }
@@ -62,21 +101,27 @@ export function chooseBackendFor(
   format: AudioFormat | undefined,
   options: { hasStoredAudio: boolean; isSafariRuntime?: boolean },
 ): BackendKind {
-  if (format?.decode === "flo") return "flo";
+  if (!format) {
+    const onSafari = options.isSafariRuntime ?? isSafari();
+    return onSafari || !options.hasStoredAudio ? "html" : "symphonia";
+  }
+
+  const decoder = format ? decoderBackendFor(format) : null;
+  if (decoder === "flo") return "flo";
 
   const onSafari = options.isSafariRuntime ?? isSafari();
   if (onSafari || !options.hasStoredAudio) return "html";
 
-  if (format?.decode === "none") return "html";
+  if (decoder === null) return "html";
 
   return "symphonia";
 }
 
 export function metadataExtractorFor(
   format: AudioFormat | undefined,
-): MetadataCapability | "none" {
+): "music-metadata" | "flo" | "none" {
   if (!format) return "none";
-  return format.metadata;
+  return metadataProviderFor(format);
 }
 
 export function resolveSupport(

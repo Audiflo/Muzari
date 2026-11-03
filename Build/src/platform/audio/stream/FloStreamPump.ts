@@ -1,5 +1,9 @@
 import initFlo, { WasmStreamingDecoder } from "@audiflo/libflo";
-import type { AudioStream } from "@audiflo/komorebi";
+import type {
+  AudioStream,
+  StreamChunk,
+  StreamInfo,
+} from "@audiflo/komorebi";
 
 export interface FloStreamInfo {
   sample_rate: number;
@@ -35,6 +39,8 @@ export interface FloStreamPumpEvents {
   onChunk?(chunk: Float32Array): void;
   onEnd?(): void;
   onError?(error: Error): void;
+  onStreamInfo?(info: StreamInfo): void;
+  onStreamChunk?(chunk: StreamChunk): void;
 }
 
 const DECODER_ERROR_MESSAGE = "decoder reported an error";
@@ -229,6 +235,12 @@ export class FloStreamPump implements AudioStream {
         if (info && info.channels > 0) {
           this.channels = info.channels;
           this.events.onInfo?.(info);
+          this.events.onStreamInfo?.({
+            sampleRate: info.sample_rate,
+            channels: info.channels,
+            bitDepth: info.bit_depth,
+            totalSamples: info.total_samples,
+          });
         }
       }
 
@@ -259,6 +271,11 @@ export class FloStreamPump implements AudioStream {
       }
 
       this.events.onChunk?.(block);
+      this.events.onStreamChunk?.({
+        data: block,
+        frames: Math.floor(block.length / this.channels),
+        channels: this.channels,
+      });
       this.firstAudioReady?.();
       this.firstAudioReady = null;
     }

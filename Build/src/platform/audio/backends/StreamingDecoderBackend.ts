@@ -1,6 +1,6 @@
 import { BaseAudioBackend } from "./BaseBackend";
 import { AudioGraph } from "../graph";
-import { clampRate } from "../clamp";
+import { clampRate } from "@audiflo/komorebi";
 import { StreamDecoderClient } from "../stream/StreamDecoderClient";
 import type {
   FloStreamInfo,

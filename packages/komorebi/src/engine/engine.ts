@@ -24,30 +24,30 @@ import type {
   CrossfadeSource,
   IAudioBackend,
   KomorebiLogger,
-  MediaSessionIntegration,
   PreloadAdapter,
 } from "./adapters";
+import type { MediaSessionAdapter } from "../integrations/mediaSession";
 import { PreloadManager } from "./preloader";
 import type { Equalizer, EqualizerState } from "./equalizer";
 import { createKomorebiLogger } from "./logger";
 import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
+import {
+  clampCrossfade,
+  clampRate,
+  clampVolume,
+} from "../audio/effects";
 
 export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
 export type {
   CrossfadeSource,
   IAudioBackend,
   KomorebiLogger,
-  MediaSessionIntegration,
   PreloadAdapter,
 } from "./adapters";
+export type { MediaSessionAdapter } from "../integrations/mediaSession";
 export { PreloadManager } from "./preloader";
 
 const MAX_REPLAY_GAIN_DB = 60;
-const clampVolume = (value: number): number => Math.max(0, Math.min(1, value));
-const clampRate = (value: number): number =>
-  Math.max(0.25, Math.min(4, value));
-const clampCrossfadeSeconds = (value: number): number =>
-  Math.max(0, Math.min(10, value));
 const defaultLogger = createKomorebiLogger("engine");
 
 export interface IAudioEngineConfig {
@@ -61,8 +61,9 @@ export interface IAudioEngineConfig {
   smartShuffle?: boolean;
   autoPlayNext?: boolean;
   trackResolver?: (track: Track) => Promise<Track>;
+  preloadLoader?: (url: string) => Promise<string>;
   preloadManager?: PreloadAdapter;
-  mediaSession?: MediaSessionIntegration;
+  mediaSession?: MediaSessionAdapter;
   logger?: KomorebiLogger;
 }
 
@@ -93,7 +94,7 @@ export class KomorebiEngine {
   private readonly trackResolver:
     ((track: Track) => Promise<Track>) | undefined;
   private readonly preloadManager: PreloadAdapter | null;
-  private readonly mediaSession: MediaSessionIntegration | null;
+  private readonly mediaSession: MediaSessionAdapter | null;
   private readonly logger: KomorebiLogger;
   private prefetchSentinel = false;
 
@@ -106,7 +107,10 @@ export class KomorebiEngine {
       (config?.trackResolver
         ? new PreloadManager(
             {},
-            { resolveTrack: config.trackResolver },
+            {
+              resolveTrack: config.trackResolver,
+              load: config.preloadLoader,
+            },
             this.logger,
           )
         : null);
@@ -495,7 +499,7 @@ export class KomorebiEngine {
   }
 
   setCrossfade(durationSeconds: number): void {
-    const duration = clampCrossfadeSeconds(durationSeconds);
+    const duration = clampCrossfade(durationSeconds);
     this.settings.crossfade = duration;
     this.applySchedulerSettings();
     this.events.emit("settingschange", { settings: { crossfade: duration } });
@@ -609,7 +613,7 @@ export class KomorebiEngine {
     return this.queue;
   }
 
-  getAnalyser(): AnalyserNode | null {
+  getAnalyser(): unknown {
     return this.backend.getAnalyser?.() ?? null;
   }
 

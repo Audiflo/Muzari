@@ -3,7 +3,7 @@ import { QueueManager } from "@audiflo/komorebi";
 import { Scheduler, CrossfadeScheduler, GaplessScheduler } from "@audiflo/komorebi";
 import { KomorebiEngine, IAudioBackend } from "@audiflo/komorebi";
 import type { Track, Playlist } from "@audiflo/komorebi";
-import { MAX_CROSSFADE_SECONDS } from "../src/platform/audio/clamp";
+import { MAX_CROSSFADE_SECONDS } from "@audiflo/komorebi";
 import { MAX_REPLAY_GAIN_DB } from "@audiflo/komorebi";
 import { describe, it, jest, expect, beforeEach, afterEach } from "@jest/globals";
 

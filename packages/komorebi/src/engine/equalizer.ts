@@ -9,6 +9,19 @@ export type EqualizerBandType =
   | "bandpass"
   | "notch";
 
+export interface EqualizerFilterNode {
+  type: string;
+  frequency: { value: number };
+  gain: { value: number };
+  Q: { value: number };
+  disconnect(): void;
+  connect(destination: unknown): unknown;
+}
+
+export interface EqualizerContext {
+  createBiquadFilter(): EqualizerFilterNode;
+}
+
 export interface EqualizerBand {
   type: EqualizerBandType;
   frequency: number;
@@ -204,7 +217,7 @@ export function headroomDb(bands: EqualizerBand[]): number {
 export class Equalizer {
   private readonly logger: KomorebiLogger;
   private bands: EqualizerBand[] = createDefaultBands();
-  private filterNodes: BiquadFilterNode[] = [];
+  private filterNodes: EqualizerFilterNode[] = [];
   private enabled = false;
 
   constructor(logger: KomorebiLogger = createKomorebiLogger("equalizer")) {
@@ -223,11 +236,11 @@ export class Equalizer {
     this.enabled = enabled;
   }
 
-  get nodes(): BiquadFilterNode[] {
+  get nodes(): EqualizerFilterNode[] {
     return [...this.filterNodes];
   }
 
-  build(context: AudioContext): void {
+  build(context: EqualizerContext): void {
     if (this.filterNodes.length > 0) {
       this.applyToNodes();
       return;
@@ -339,7 +352,7 @@ export class Equalizer {
     });
   }
 
-  private applyBandToNode(node: BiquadFilterNode, band: EqualizerBand): void {
+  private applyBandToNode(node: EqualizerFilterNode, band: EqualizerBand): void {
     node.type = band.type;
     node.frequency.value = band.frequency;
     node.Q.value = band.q;

@@ -8,7 +8,7 @@ import {
   clampVolume as sharedClampVolume,
   clampRate as sharedClampRate,
   clampCrossfade as sharedClampCrossfade,
-} from "../audio/clamp";
+} from "@audiflo/komorebi";
 import { MAX_REPLAY_GAIN_DB } from "@audiflo/komorebi";
 import { createLogger } from "../../helpers/logger";
 import { deserializeVersionedJson, serializeVersioned } from "../validators";

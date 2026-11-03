@@ -22,7 +22,7 @@ export interface IAudioBackend {
     track?: Track,
   ): Promise<CrossfadeSource | null>;
   commitCrossfadeSource?(source: CrossfadeSource): void;
-  getAnalyser?: () => AnalyserNode | null;
+  getAnalyser?: () => unknown;
   getEqualizer?(): Equalizer;
   setEqualizer?(enabled: boolean): void;
   updateEqualizer?(): void;
@@ -39,28 +39,6 @@ export interface IAudioBackend {
 export interface PreloadAdapter {
   getUrl(trackId: string): string | null;
   preloadNext(tracks: Track[], currentIndex: number): void;
-}
-
-export interface MediaSessionIntegration {
-  initialize(): void | Promise<void>;
-  dispose(): void;
-  setActionHandlers(handlers: MediaActionHandlers): void;
-  updateMetadata(track: Track | null): void | Promise<void>;
-  setPlaybackState(state: "playing" | "paused" | "none"): void;
-  setPositionState(
-    duration: number,
-    position: number,
-    playbackRate?: number,
-  ): void;
-}
-
-export interface MediaActionHandlers {
-  play(): void | Promise<void>;
-  pause(): void;
-  next(): void | Promise<void>;
-  previous(): void | Promise<void>;
-  stop(): void;
-  seek(time: number): void;
 }
 
 export interface KomorebiLogger {

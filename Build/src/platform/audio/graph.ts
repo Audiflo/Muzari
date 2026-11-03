@@ -2,10 +2,10 @@ import {
   Equalizer,
   clampPitch,
   gainDbToLinear,
+  clampVolume,
   type AudioEffects,
   type AudioSessionAdapter,
 } from "@audiflo/komorebi";
-import { clampVolume } from "./clamp";
 import { MediaElementPool } from "./backends/mediaElementPool";
 import { createLogger } from "../../helpers/logger";
 const logger = createLogger("audioGraph");
@@ -315,8 +315,8 @@ export class AudioGraph implements AudioEffects, AudioSessionAdapter {
     let eqTail: AudioNode = this.eqPreampNode;
 
     for (const node of eqNodes) {
-      eqTail.connect(node);
-      eqTail = node;
+      eqTail.connect(node as unknown as AudioNode);
+      eqTail = node as unknown as AudioNode;
     }
 
     eqTail.connect(this.analyser);
