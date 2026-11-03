@@ -12,6 +12,7 @@ import { BackendRouter } from "../platform/audio/backends";
 import {
   createDiscordIntegration,
   DiscordService,
+  createMediaSessionIntegration,
 } from "../platform/integrations";
 import { LibraryManager } from "../platform/library/library";
 import { libraryPersistence } from "../platform/library/persistence";
@@ -193,6 +194,7 @@ export function useKomorebi(
     }
 
     const backend = new BackendRouter();
+    const mediaSession = createMediaSessionIntegration();
     const engine = new KomorebiEngine(backend, {
       autoPlayNext: autoPlayRef.current,
       trackResolver: (track) => trackStorage.reconstructUrl(track),
@@ -201,6 +203,7 @@ export function useKomorebi(
         const blob = await response.blob();
         return URL.createObjectURL(blob);
       },
+      mediaSession,
     });
     restoreEngineSettings(engine);
 
