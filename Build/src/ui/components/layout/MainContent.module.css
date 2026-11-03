@@ -18,6 +18,9 @@
   gap: var(--spacing-4);
   border-radius: 0 0 1.25rem 1.25rem;
   box-shadow: 0 0 0 2px var(--themecolor2-transparent);
+  scale: calc(1 + var(--wallpaper-pulse, 0) * 0.045);
+  transform-origin: 50% 50%;
+  isolation: isolate;
 }
 
 .titleArea {

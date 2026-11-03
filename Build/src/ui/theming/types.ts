@@ -1,4 +1,5 @@
 import type { ThemeMode } from "./events";
+import type { Track } from "../../core/engine/types";
 
 export interface Palette {
   name: string;
@@ -25,9 +26,14 @@ export interface Wallpaper {
 
 export type WallpaperComponent = React.ComponentType<WallpaperProps>;
 
+export interface WallpaperPlaybackState {
+  isPlaying?: boolean;
+  analyserNode?: AnalyserNode | null;
+}
+
 export interface WallpaperProps {
-  currentSong?: unknown;
-  playbackState?: unknown;
+  currentSong?: Track;
+  playbackState?: WallpaperPlaybackState;
 }
 
 export interface ThemeConfig {

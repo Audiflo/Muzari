@@ -11,6 +11,10 @@
   transition:
     width var(--animation-duration-normal) ease-in-out,
     padding var(--animation-duration-normal) ease-in-out;
+  scale: calc(1 + var(--wallpaper-pulse, 0) * 0.04);
+  transform-origin: 50% 50%;
+  isolation: isolate;
+  backface-visibility: hidden;
 }
 
 .sidebar.collapsed {

@@ -9,23 +9,6 @@
   - [ ] Use sandboxed iframe with postMessage for API access to Muzari internals (playback state, settings, etc.)
   - [ ] Eventually have an NPM module (@audiflo/muzari-api) (using above postmessage system and validation/abstraction) for external wallpaper development, allowing user-created interactive wallpapers
 
-- [ ] Add showDirectoryPicker API and ponyfil
-  - but `showDirectoryPicker` is not supported in all browsers (e.g., Safari).
-
-- [ ] platform-specific files
-  - For example: split storage into:
-    - Storage.web.ts
-    - Storage.web.webkit.ts (for showDirectoryPicker)
-    - Storage.desktop.ts
-    - Storage.desktop.webkit.ts
-
-  - with dynamic loader (use import.meta.glob to auto-discover)
-    - detect platform + engine
-    - load the correct file
-    - maybe add helper like getPlatformFlavor() -> "desktop.webkit" etc
-
-  - <https://github.com/LZS911/vite-plugin-conditional-compile>
-
 - [ ] a queue
   - like a line of records behind album art?
   - smooth animation
@@ -37,7 +20,7 @@
   - Export/import JSON playlists via sharing as well but url encoding limits are troublesome
   - Add "Copy Share Link" button to hide messy encoding
 
-- [ ] Dynamic theming based on album art colors.
+- [X] Dynamic theming based on album art colors.
   - CSS backgrounds can be images, and album art is images
 
 - [ ] Animated album art transitions, like fade/zoom/warp album art between songs.
