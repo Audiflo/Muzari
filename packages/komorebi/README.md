@@ -1,32 +1,94 @@
 # Komorebi
 
-Komorebi is a platform-agnostic playback core for music applications.
+Reusable audio playback infrastructure for web and desktop applications.
 
-Applications provide their own audio backend, storage, and UI integration
-around these core types and state helpers.
+Komorebi is the reusable playback core from [Muzari](https://github.com/Audiflo/Muzari). It handles playback, queues, track transitions, scheduling, format detection, and audio-related interfaces. Applications provide their own audio backend and platform integrations.
 
-## Status
+## Features
 
-The package exposes `KomorebiEngine` and the reusable engine model: tracks and
-playlists, queue management, shuffle, scheduling, state transitions, events,
-validation, and default settings. It also owns pure audio format
-identification, decoder/streaming contracts, audio-effects contracts, and
-platform-neutral Media Session and audio-session contracts.
+- `KomorebiEngine` for loading, playing, pausing, seeking, stopping, and switching tracks.
+- Queue and playlist management, including shuffle and repeat modes.
+- Gapless playback and equal-power crossfades.
+- Playback state, events, validation, and default settings.
+- Audio format detection using file extensions, MIME types, and codec hints.
+- Interfaces for decoders, streaming, audio effects, Media Session, and audio sessions.
+- Track preloading and equalizer models.
+- ReplayGain parsing and conversion.
+- Injectable logging, with [Satori](https://github.com/Nisoku/Satori) as the default logger.
 
-Applications provide an `IAudioBackend` and concrete platform adapters.
-Browser APIs, WASM decoders, workers, AudioWorklets, storage, and UI remain
-outside Komorebi. The streaming interfaces deliberately describe lifecycle
-and decoded output without requiring `ReadableStream`, `Worker`, or a
-particular decoder.
+## Installation
 
-Muzari implements these contracts with its HTML audio, Flo, Symphonia,
-Web Audio, Tone.js, and browser Media Session adapters.
+```sh
+npm install @audiflo/komorebi
+```
+
+## How it fits together
+
+Komorebi handles playback logic. The application handles the actual audio output and platform-specific functionality.
+
+```text
+Your application (e.g. Muzari)
+├── Audio backend and decoder
+├── Audio effects
+├── Storage and track URL resolution
+├── Media Session integration
+└── UI and application state
+        |
+        ▼
+@audiflo/komorebi
+├── Playback engine
+├── Queue and scheduling
+├── Format detection
+├── Decoder and streaming interfaces
+└── Audio models and utilities
+```
+
+Komorebi does not depend on a particular audio implementation. Applications can use HTML audio, Web Audio, WASM decoders, native audio APIs, or their own implementations.
+
+## Imports
+
+Most functionality is available from the package root:
+
+```ts
+import {
+  KomorebiEngine,
+  DecoderRegistry,
+  identifyFormat,
+  type IAudioBackend,
+} from "@audiflo/komorebi";
+```
+
+Individual modules can also be imported directly:
+
+```ts
+import { identifyFormat } from "@audiflo/komorebi/formats";
+import { DecoderRegistry } from "@audiflo/komorebi/audio/streaming";
+import { clampPitch } from "@audiflo/komorebi/audio/effects";
+import type { MediaSessionAdapter } from
+  "@audiflo/komorebi/integrations/media-session";
+```
+
+To use `KomorebiEngine`, provide an implementation of `IAudioBackend`. It handles media loading and audio output, while Komorebi manages playback state and behavior.
 
 ## Development
 
+Run these commands from `packages/komorebi`:
+
 ```sh
+npm install
 npm run typecheck
 npm run build
+npm pack --dry-run
 ```
 
-continued...
+## Used by Muzari
+
+[Muzari](https://github.com/Audiflo/Muzari) is the first application to use Komorebi.
+
+Muzari provides the browser-specific implementations, including HTML audio, WASM decoders, Web Audio, Tone.js, Media Session, storage, and its React/Zustand application layer.
+
+Komorebi is maintained as a separate package and can be used without Muzari.
+
+## License
+
+MPL-2.0. See [LICENSE](./LICENSE) for details.

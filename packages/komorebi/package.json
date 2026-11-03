@@ -5,7 +5,9 @@
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -59,6 +61,18 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepare": "npm run build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Audiflo/Muzari.git",
+    "directory": "packages/komorebi"
+  },
+  "homepage": "https://github.com/Audiflo/Muzari/tree/main/packages/komorebi",
+  "bugs": {
+    "url": "https://github.com/Audiflo/Muzari/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   },
@@ -68,5 +82,5 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT"
+  "license": "MPL-2.0"
 }
