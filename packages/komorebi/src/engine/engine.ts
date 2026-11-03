@@ -20,26 +20,41 @@ import {
 import { Scheduler } from "./scheduler";
 import { AsyncOp } from "./asyncOp";
 import { assertNever } from "./invariants";
-import type { CrossfadeSource, IAudioBackend } from "../../platform/audio";
-import { PreloadManager } from "../../platform/audio/preloader";
-import { MAX_REPLAY_GAIN_DB } from "../../platform/audio/replayGain";
-import {
-  createMediaSessionIntegration,
-  type MediaSessionIntegration,
-} from "../../platform/integrations/mediaSession";
-import type { Equalizer, EqualizerState } from "../../platform/audio/equalizer";
-import {
-  clampCrossfade as clampCrossfadeSeconds,
-  clampRate,
-  clampVolume,
-} from "../../platform/audio/clamp";
-import { createLogger } from "../../helpers/logger";
+import type {
+  CrossfadeSource,
+  Equalizer,
+  EqualizerState,
+  IAudioBackend,
+  KomorebiLogger,
+  MediaSessionIntegration,
+  PreloadAdapter,
+} from "./adapters";
+import { PreloadManager } from "./preloader";
 import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
 
 export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
-export type { IAudioBackend };
+export type {
+  CrossfadeSource,
+  Equalizer,
+  EqualizerState,
+  IAudioBackend,
+  KomorebiLogger,
+  MediaSessionIntegration,
+  PreloadAdapter,
+} from "./adapters";
+export { PreloadManager } from "./preloader";
 
-const logger = createLogger("engine");
+const MAX_REPLAY_GAIN_DB = 60;
+const clampVolume = (value: number): number => Math.max(0, Math.min(1, value));
+const clampRate = (value: number): number =>
+  Math.max(0.25, Math.min(4, value));
+const clampCrossfadeSeconds = (value: number): number =>
+  Math.max(0, Math.min(10, value));
+const defaultLogger: KomorebiLogger = {
+  debug: () => undefined,
+  warn: () => undefined,
+  error: () => undefined,
+};
 
 export interface IAudioEngineConfig {
   crossfade?: {
@@ -52,6 +67,9 @@ export interface IAudioEngineConfig {
   smartShuffle?: boolean;
   autoPlayNext?: boolean;
   trackResolver?: (track: Track) => Promise<Track>;
+  preloadManager?: PreloadAdapter;
+  mediaSession?: MediaSessionIntegration;
+  logger?: KomorebiLogger;
 }
 
 const SECONDS_TO_MS = 1000;
@@ -70,26 +88,30 @@ export class KomorebiEngine {
   private currentError: EngineError | null = null;
   private currentPlaylist: Playlist | null = null;
 
-  private timeUpdateInterval: number | null = null;
-  private scheduledTransitionId: number | null = null;
+  private timeUpdateInterval: ReturnType<typeof setInterval> | null = null;
+  private scheduledTransitionId: ReturnType<typeof setTimeout> | null = null;
   private scheduledTransitionWraps = false;
-  private crossfadeTimer: number | null = null;
+  private crossfadeTimer: ReturnType<typeof setTimeout> | null = null;
   private crossfadeSource: CrossfadeSource | null = null;
   private crossfadeFinish: (() => void) | null = null;
 
   private readonly loadOp = new AsyncOp();
   private readonly trackResolver:
     ((track: Track) => Promise<Track>) | undefined;
-  private readonly preloadManager: PreloadManager | null;
+  private readonly preloadManager: PreloadAdapter | null;
   private readonly mediaSession: MediaSessionIntegration | null;
+  private readonly logger: KomorebiLogger;
   private prefetchSentinel = false;
 
   constructor(backend: IAudioBackend, config?: Partial<IAudioEngineConfig>) {
     this.backend = backend;
+    this.logger = config?.logger ?? defaultLogger;
     this.trackResolver = config?.trackResolver;
-    this.preloadManager = config?.trackResolver
-      ? new PreloadManager({}, { resolveTrack: config.trackResolver })
-      : null;
+    this.preloadManager =
+      config?.preloadManager ??
+      (config?.trackResolver
+        ? new PreloadManager({}, { resolveTrack: config.trackResolver })
+        : null);
     this.backend.onEnded(() => {
       this.handleTrackEnded();
     });
@@ -119,10 +141,7 @@ export class KomorebiEngine {
 
     this.applySchedulerSettings();
 
-    this.mediaSession =
-      typeof navigator !== "undefined" && "mediaSession" in navigator
-        ? createMediaSessionIntegration()
-        : null;
+    this.mediaSession = config?.mediaSession ?? null;
     if (this.mediaSession) {
       void this.mediaSession.initialize();
       this.mediaSession.setActionHandlers({
@@ -821,7 +840,7 @@ export class KomorebiEngine {
         : this.settings.crossfade * SECONDS_TO_MS;
 
     this.scheduledTransitionWraps = this.queue.getNextTrack() === null;
-    this.scheduledTransitionId = window.setTimeout(() => {
+    this.scheduledTransitionId = globalThis.setTimeout(() => {
       this.scheduledTransitionId = null;
       this.scheduledTransitionWraps = false;
       void this.executeTransition(nextTrack);
@@ -847,11 +866,11 @@ export class KomorebiEngine {
         }
         return;
       }
-      logger.warn("Crossfade failed, falling back to hard transition", {
+      this.logger.warn("Crossfade failed, falling back to hard transition", {
         track: nextTrack.title,
       });
     } else {
-      logger.debug("Hard transition scheduled", {
+      this.logger.debug("Hard transition scheduled", {
         mode: this.scheduler.getMode(),
         crossfade: this.settings.crossfade,
       });
@@ -888,7 +907,7 @@ export class KomorebiEngine {
     try {
       source = await createCrossfadeSource.call(this.backend, url, nextTrack);
     } catch (error) {
-      logger.warn("Crossfade source creation failed", {
+      this.logger.warn("Crossfade source creation failed", {
         error: String(error),
       });
       return false;
@@ -979,14 +998,14 @@ export class KomorebiEngine {
       source.setOutputGain(toVolume);
 
       if (progress < 1) {
-        this.crossfadeTimer = window.setTimeout(step, 16);
+        this.crossfadeTimer = globalThis.setTimeout(step, 16);
         return;
       }
 
       finish();
     };
 
-    this.crossfadeTimer = window.setTimeout(step, 0);
+    this.crossfadeTimer = globalThis.setTimeout(step, 0);
   }
 
   private cancelCrossfadeLoop(): void {
@@ -1066,7 +1085,7 @@ export class KomorebiEngine {
   private startTimeUpdates(): void {
     if (this.timeUpdateInterval) return;
 
-    this.timeUpdateInterval = window.setInterval(() => {
+    this.timeUpdateInterval = globalThis.setInterval(() => {
       const state = this.stateMachine.getState();
       if (state === "playing" || state === "transitioning") {
         this.handleTimeUpdate(this.getPlayheadTime());
