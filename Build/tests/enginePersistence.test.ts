@@ -5,7 +5,7 @@ import {
 } from "../src/platform/settings/enginePersistence";
 import type { EngineSettings } from "@audiflo/komorebi";
 import { MAX_CROSSFADE_SECONDS } from "../src/platform/audio/clamp";
-import { MAX_REPLAY_GAIN_DB } from "../src/platform/audio/replayGain";
+import { MAX_REPLAY_GAIN_DB } from "@audiflo/komorebi";
 
 const DEFAULT: EngineSettings = {
   volume: 1,

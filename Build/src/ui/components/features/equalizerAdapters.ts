@@ -2,7 +2,7 @@ import type { FilterType, GraphFilter } from "dsssp";
 import type {
   EqualizerBand,
   EqualizerBandType,
-} from "../../../platform/audio/equalizer";
+} from "@audiflo/komorebi";
 
 const DSSSP_TYPE_BY_BAND_TYPE: Record<EqualizerBandType, FilterType> = {
   lowshelf: "LOWSHELF1",

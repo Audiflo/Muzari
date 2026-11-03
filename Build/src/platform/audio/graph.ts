@@ -1,6 +1,5 @@
-import { Equalizer } from "./equalizer";
+import { Equalizer, gainDbToLinear } from "@audiflo/komorebi";
 import { clampVolume } from "./clamp";
-import { gainDbToLinear } from "./replayGain";
 import { MediaElementPool } from "./backends/mediaElementPool";
 import { createLogger } from "../../helpers/logger";
 const logger = createLogger("audioGraph");

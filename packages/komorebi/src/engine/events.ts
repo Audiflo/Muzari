@@ -1,11 +1,15 @@
 import type { EngineEvent, EngineEventMap } from "./types";
+import { createKomorebiLogger } from "./logger";
 
 type EventCallback<T> = (data: T) => void;
 
 type ListenerErrorHandler = (event: EngineEvent, error: unknown) => void;
 
 const defaultErrorHandler: ListenerErrorHandler = (event, error) => {
-  console.error(`[events] listener for "${event}" threw:`, error);
+  createKomorebiLogger("events").error(
+    `Listener for "${event}" threw`,
+    { error: String(error) },
+  );
 };
 
 export class KomorebiEvents {

@@ -8,7 +8,7 @@ import {
   type EqualizerBand,
   type EqualizerPreset,
   type EqualizerState,
-} from "../platform/audio/equalizer";
+} from "@audiflo/komorebi";
 import type {
   EngineEventMap,
   EngineState,

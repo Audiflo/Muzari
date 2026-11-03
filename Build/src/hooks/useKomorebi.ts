@@ -26,7 +26,7 @@ import { storeImportedSong } from "../helpers/addSong";
 import i18n from "i18next";
 import type { Translate } from "../helpers/importAudioFiles";
 import { createLogger } from "../helpers/logger";
-import { sanitizeEqualizerState } from "../platform/audio/equalizer";
+import { sanitizeEqualizerState } from "@audiflo/komorebi";
 import {
   useKomorebiStore,
   EMPTY_ENGINE_STATE,

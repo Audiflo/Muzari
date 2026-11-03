@@ -22,21 +22,19 @@ import { AsyncOp } from "./asyncOp";
 import { assertNever } from "./invariants";
 import type {
   CrossfadeSource,
-  Equalizer,
-  EqualizerState,
   IAudioBackend,
   KomorebiLogger,
   MediaSessionIntegration,
   PreloadAdapter,
 } from "./adapters";
 import { PreloadManager } from "./preloader";
+import type { Equalizer, EqualizerState } from "./equalizer";
+import { createKomorebiLogger } from "./logger";
 import { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS } from "./settings";
 
 export { DEFAULT_CROSSFADE_SHAPE, DEFAULT_ENGINE_SETTINGS };
 export type {
   CrossfadeSource,
-  Equalizer,
-  EqualizerState,
   IAudioBackend,
   KomorebiLogger,
   MediaSessionIntegration,
@@ -50,11 +48,7 @@ const clampRate = (value: number): number =>
   Math.max(0.25, Math.min(4, value));
 const clampCrossfadeSeconds = (value: number): number =>
   Math.max(0, Math.min(10, value));
-const defaultLogger: KomorebiLogger = {
-  debug: () => undefined,
-  warn: () => undefined,
-  error: () => undefined,
-};
+const defaultLogger = createKomorebiLogger("engine");
 
 export interface IAudioEngineConfig {
   crossfade?: {
@@ -110,7 +104,11 @@ export class KomorebiEngine {
     this.preloadManager =
       config?.preloadManager ??
       (config?.trackResolver
-        ? new PreloadManager({}, { resolveTrack: config.trackResolver })
+        ? new PreloadManager(
+            {},
+            { resolveTrack: config.trackResolver },
+            this.logger,
+          )
         : null);
     this.backend.onEnded(() => {
       this.handleTrackEnded();

@@ -9,4 +9,7 @@ export * from "./engine/state";
 export * from "./engine/asyncOp";
 export * from "./engine/adapters";
 export * from "./engine/preloader";
+export * from "./engine/equalizer";
+export * from "./engine/replayGain";
+export * from "./engine/logger";
 export * from "./engine/engine";

@@ -1,4 +1,4 @@
-import { PreloadManager } from "../src/platform/audio/preloader";
+import { PreloadManager } from "@audiflo/komorebi";
 import { KomorebiEngine } from "@audiflo/komorebi";
 import type {
   IAudioBackend,

@@ -1,7 +1,7 @@
-import type { ReplayGainInfo } from "@audiflo/komorebi";
-import { createLogger } from "../../helpers/logger";
+import type { ReplayGainInfo } from "./types";
+import type { KomorebiLogger } from "./adapters";
+import { createKomorebiLogger } from "./logger";
 
-const logger = createLogger("replayGain");
 
 export interface ReplayGainConfig {
   preampGain: number;
@@ -32,11 +32,16 @@ export function gainDbToLinear(
 }
 
 export class ReplayGainAnalyzer {
+  private readonly logger: KomorebiLogger;
   private config: ReplayGainConfig = DEFAULT_CONFIG;
   private audioContext: AudioContext | null = null;
   private gainNode: GainNode | null = null;
 
-  constructor(config?: Partial<ReplayGainConfig>) {
+  constructor(
+    config?: Partial<ReplayGainConfig>,
+    logger: KomorebiLogger = createKomorebiLogger("replayGain"),
+  ) {
+    this.logger = logger;
     if (config) {
       this.config = { ...DEFAULT_CONFIG, ...config };
     }
@@ -48,7 +53,7 @@ export class ReplayGainAnalyzer {
       const arrayBuffer = await response.arrayBuffer();
       return this.analyzeFromArrayBuffer(arrayBuffer);
     } catch (error) {
-      logger.error("ReplayGain analysis failed:", { error: String(error) });
+      this.logger.error("ReplayGain analysis failed", { error: String(error) });
       return null;
     }
   }
@@ -78,7 +83,7 @@ export class ReplayGainAnalyzer {
         referenceLoudness: this.config.defaultGain,
       };
     } catch (error) {
-      logger.error("ReplayGain analysis error:", { error: String(error) });
+      this.logger.error("ReplayGain analysis error", { error: String(error) });
       return null;
     }
   }

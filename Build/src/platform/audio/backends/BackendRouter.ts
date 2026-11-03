@@ -266,7 +266,7 @@ export class BackendRouter extends BaseAudioBackend {
     target.setOutputGain?.(0);
   }
 
-  getEqualizer(): import("../equalizer").Equalizer {
+  getEqualizer(): import("@audiflo/komorebi").Equalizer {
     return this.graph.getEqualizer();
   }
 

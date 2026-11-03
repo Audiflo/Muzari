@@ -1,6 +1,4 @@
-import { createLogger } from "../../helpers/logger";
 
-const logger = createLogger("equalizer");
 
 export type EqualizerBandType =
   | "lowshelf"
@@ -204,9 +202,14 @@ export function headroomDb(bands: EqualizerBand[]): number {
 }
 
 export class Equalizer {
+  private readonly logger: KomorebiLogger;
   private bands: EqualizerBand[] = createDefaultBands();
   private filterNodes: BiquadFilterNode[] = [];
   private enabled = false;
+
+  constructor(logger: KomorebiLogger = createKomorebiLogger("equalizer")) {
+    this.logger = logger;
+  }
 
   isBuilt(): boolean {
     return this.filterNodes.length === this.bands.length;
@@ -237,7 +240,9 @@ export class Equalizer {
         return filter;
       });
     } catch (error) {
-      logger.warn("Failed to build equalizer chain", { error: String(error) });
+      this.logger.warn("Failed to build equalizer chain", {
+        error: String(error),
+      });
       this.filterNodes = [];
     }
   }
@@ -247,7 +252,7 @@ export class Equalizer {
       try {
         filter.disconnect();
       } catch (error) {
-        logger.warn("Failed to disconnect equalizer band", {
+        this.logger.warn("Failed to disconnect equalizer band", {
           error: String(error),
         });
       }
@@ -296,7 +301,7 @@ export class Equalizer {
 
   setBands(bands: EqualizerBand[]): void {
     if (bands.length !== BAND_COUNT) {
-      logger.warn("Ignoring band set with unexpected band count", {
+      this.logger.warn("Ignoring band set with unexpected band count", {
         expected: BAND_COUNT,
         received: bands.length,
       });
@@ -345,3 +350,5 @@ export class Equalizer {
 export function createEqualizer(): Equalizer {
   return new Equalizer();
 }
+import type { KomorebiLogger } from "./adapters";
+import { createKomorebiLogger } from "./logger";

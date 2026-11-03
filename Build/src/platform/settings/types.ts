@@ -1,7 +1,7 @@
 import {
   createInitialEqualizerState,
   type EqualizerState,
-} from "../audio/equalizer";
+} from "@audiflo/komorebi";
 
 export type ThemeMode = "light" | "dark" | "auto";
 export type RepeatMode = "off" | "one" | "all";

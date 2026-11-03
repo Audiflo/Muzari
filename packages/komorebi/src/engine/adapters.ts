@@ -1,28 +1,11 @@
 import type { Track } from "./types";
+import type { Equalizer } from "./equalizer";
 
 export interface CrossfadeSource {
   setOutputGain(value: number): void;
   getCurrentTime(): number;
   getDuration?(): number;
   dispose(): void;
-}
-
-export interface EqualizerState {
-  enabled: boolean;
-  bands: readonly EqualizerBand[];
-  presetName: string | null;
-}
-
-export interface EqualizerBand {
-  type: string;
-  frequency: number;
-  gainDb: number;
-  q: number;
-}
-
-export interface Equalizer {
-  isEnabled(): boolean;
-  setBands(bands: readonly EqualizerBand[]): void;
 }
 
 export interface IAudioBackend {
