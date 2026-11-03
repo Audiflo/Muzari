@@ -1,5 +1,5 @@
-import { QueueManager } from "../src/core/engine/queue";
-import { isQueueState } from "../src/core/engine/validators";
+import { QueueManager } from "@audiflo/komorebi";
+import { isQueueState } from "@audiflo/komorebi";
 import { createMockTrack, mulberry32, randomInt } from "./helpers";
 import { describe, it } from "@jest/globals";
 

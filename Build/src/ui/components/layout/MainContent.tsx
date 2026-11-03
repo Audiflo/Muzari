@@ -29,7 +29,7 @@ import { useAlbumArt } from "../../../hooks/useAlbumArt";
 import { useNavigation } from "../../navigation";
 import { queueForNavigation, songsForNavigation } from "../../navigation/scope";
 import { MainContentHeader } from "./MainContentHeader";
-import type { Track, Playlist } from "../../../core/engine/types";
+import type { Track, Playlist } from "@audiflo/komorebi";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import type { PersistentDropdownMenuRef } from "../primitives/PersistentDropdownMenu";
 import { selectCurrentTrack, useKomorebiStore } from "../../../store";

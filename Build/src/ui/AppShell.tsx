@@ -44,7 +44,7 @@ import {
 } from "./theming";
 import styles from "../pages/_index.module.css";
 import type { UseKomorebiReturn } from "../hooks/useKomorebi";
-import type { Track } from "../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import {
   selectCurrentTrack,
   selectIsPlaying,

@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import type { Playlist, Track } from "../src/core/engine/types";
+import type { Playlist, Track } from "@audiflo/komorebi";
 import {
   remapM3uEntry,
   runM3uImport,

@@ -12,6 +12,8 @@ module.exports = {
     "^.+\\.tsx?$": ["ts-jest", { useESM: true }],
   },
   moduleNameMapper: {
+    "^@audiflo/komorebi$":
+      "<rootDir>/../packages/komorebi/src/index.ts",
     "decoderWorkerFactory$": "<rootDir>/tests/mocks/decoderWorkerFactory.ts",
     "floWorkletSource$": "<rootDir>/tests/mocks/rawModule.ts",
     "^.*/platform/visualizers$": "<rootDir>/tests/mocks/platformVisualizers.ts",

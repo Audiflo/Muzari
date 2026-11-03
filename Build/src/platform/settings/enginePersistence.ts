@@ -1,9 +1,9 @@
-import type { EngineSettings } from "../../core/engine/types";
+import type { EngineSettings } from "@audiflo/komorebi";
 import {
   isPlainObject,
   isRepeatMode,
   isReplayGainMode,
-} from "../../core/engine/validators";
+} from "@audiflo/komorebi";
 import {
   clampVolume as sharedClampVolume,
   clampRate as sharedClampRate,

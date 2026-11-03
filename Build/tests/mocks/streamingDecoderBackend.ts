@@ -1,5 +1,5 @@
 import type { AudioGraph } from "../../src/platform/audio/graph";
-import type { Track } from "../../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import type { StreamDecoderEngine } from "../../src/platform/audio/stream/StreamDecoder.worker";
 
 export class StreamingDecoderBackend {

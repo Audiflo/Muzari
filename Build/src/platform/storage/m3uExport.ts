@@ -1,4 +1,4 @@
-import type { Playlist, Track } from "../../core/engine/types";
+import type { Playlist, Track } from "@audiflo/komorebi";
 import { serializeM3u, type M3uEntry } from "../library/m3u";
 
 function playlistTrackPath(track: Track): string | null {

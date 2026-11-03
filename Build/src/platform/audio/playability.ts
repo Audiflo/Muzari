@@ -3,7 +3,7 @@ import {
   chooseBackendFor,
   getFormatByCodec,
 } from "./formats";
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 const SNIFF_HEAD_SIZE = 262144;
 const SNIFF_TAIL_SIZE = 262144;

@@ -16,7 +16,7 @@ import type {
   Track,
   Playlist,
   PlaylistFolder,
-} from "../../../core/engine/types";
+} from "@audiflo/komorebi";
 
 interface AddToPopoverProps {
   songs: Track[];

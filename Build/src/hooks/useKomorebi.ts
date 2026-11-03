@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { KomorebiEngine } from "../core/engine/engine";
+import { KomorebiEngine } from "@audiflo/komorebi";
 import type {
   Track,
   Playlist,
   PlaylistFolder,
   EngineState,
-} from "../core/engine/types";
+} from "@audiflo/komorebi";
 import type { IAudioBackend } from "../platform/audio";
 import { BackendRouter } from "../platform/audio/backends";
 import {

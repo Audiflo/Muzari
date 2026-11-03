@@ -1,11 +1,11 @@
-import { KomorebiEvents } from "../src/core/engine/events";
+import { KomorebiEvents } from "@audiflo/komorebi";
 import type {
   EngineEventMap,
   EngineState,
   Track,
-} from "../src/core/engine/types";
-import type { KomorebiEngine } from "../src/core/engine/engine";
-import { DEFAULT_ENGINE_SETTINGS } from "../src/core/engine/settings";
+} from "@audiflo/komorebi";
+import type { KomorebiEngine } from "@audiflo/komorebi";
+import { DEFAULT_ENGINE_SETTINGS } from "@audiflo/komorebi";
 import {
   EMPTY_CURSOR,
   EMPTY_QUEUE_STATE,

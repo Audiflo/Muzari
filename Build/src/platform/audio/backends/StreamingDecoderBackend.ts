@@ -8,7 +8,7 @@ import type {
 } from "../stream/FloStreamPump";
 import type { StreamDecoderEngine } from "../stream/StreamDecoder.worker";
 import floWorkletSource from "../stream/floWorkletSource";
-import type { Track } from "../../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { createLogger } from "../../../helpers/logger";
 
 const logger = createLogger("StreamingDecoderBackend");

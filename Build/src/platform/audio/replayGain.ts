@@ -1,4 +1,4 @@
-import type { ReplayGainInfo } from "../../core/engine/types";
+import type { ReplayGainInfo } from "@audiflo/komorebi";
 import { createLogger } from "../../helpers/logger";
 
 const logger = createLogger("replayGain");

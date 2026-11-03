@@ -1,5 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 jest.mock("../src/platform/metadata", () => {
   const extractMetadata = jest.fn();

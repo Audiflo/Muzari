@@ -1,10 +1,10 @@
 import { PreloadManager } from "../src/platform/audio/preloader";
-import { KomorebiEngine } from "../src/core/engine/engine";
+import { KomorebiEngine } from "@audiflo/komorebi";
 import type {
   IAudioBackend,
   IAudioEngineConfig,
-} from "../src/core/engine/engine";
-import type { Track } from "../src/core/engine/types";
+} from "@audiflo/komorebi";
+import type { Track } from "@audiflo/komorebi";
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 
 const createTrack = (id: string): Track => ({

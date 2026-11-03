@@ -1,4 +1,4 @@
-import { QueueManager, WeightedRandomizer } from "../src/core/engine/queue";
+import { QueueManager, WeightedRandomizer } from "@audiflo/komorebi";
 import { createMockTrack } from "./helpers";
 import { describe, beforeEach, it, expect } from "@jest/globals";
 
