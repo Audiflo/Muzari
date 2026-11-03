@@ -56,30 +56,48 @@ const AlbumArtAdaptive: React.FC<WallpaperProps> = ({
       yPercent: -50,
     });
     gsap.set(details, { opacity: 0, y: 24 });
-    const intro = gsap.timeline({ defaults: { ease: "expo.out" } });
-    intro
-      .to(plateNodes, {
+    let intro: gsap.core.Timeline | undefined;
+    if (reduceMotion) {
+      gsap.set(plateNodes, {
         opacity: (index) => 0.08 + index * 0.035,
         scale: 1,
         rotation: (index) => (index - 2) * 2.5,
         x: 0,
-        duration: 0.9,
-        stagger: 0.075,
-      })
-      .to(
-        art,
-        {
-          opacity: 0.88,
+      });
+      gsap.set(art, {
+        opacity: 0.88,
+        scale: 1,
+        rotation: 0,
+        x: 0,
+        y: 0,
+      });
+      gsap.set(details, { opacity: 1, y: 0 });
+    } else {
+      intro = gsap.timeline({ defaults: { ease: "expo.out" } });
+      intro
+        .to(plateNodes, {
+          opacity: (index) => 0.08 + index * 0.035,
           scale: 1,
-          rotation: 0,
+          rotation: (index) => (index - 2) * 2.5,
           x: 0,
-          y: 0,
           duration: 0.9,
-          ease: "back.out(1.35)",
-        },
-        "-=0.65",
-      )
-      .to(details, { opacity: 1, y: 0, duration: 0.45 }, "-=0.35");
+          stagger: 0.075,
+        })
+        .to(
+          art,
+          {
+            opacity: 0.88,
+            scale: 1,
+            rotation: 0,
+            x: 0,
+            y: 0,
+            duration: 0.9,
+            ease: "back.out(1.35)",
+          },
+          "-=0.65",
+        )
+        .to(details, { opacity: 1, y: 0, duration: 0.45 }, "-=0.35");
+    }
 
     const ticker = () => {
       if (
@@ -133,7 +151,7 @@ const AlbumArtAdaptive: React.FC<WallpaperProps> = ({
 
     gsap.ticker.add(ticker);
     return () => {
-      intro.kill();
+      intro?.kill();
       gsap.killTweensOf(state);
       gsap.ticker.remove(ticker);
       document.documentElement.style.removeProperty("--wallpaper-pulse");
@@ -207,6 +225,7 @@ const AlbumArtAdaptive: React.FC<WallpaperProps> = ({
           <img
             src={image}
             alt=""
+            onError={(event) => event.currentTarget.remove()}
             style={{
               width: "100%",
               height: "100%",

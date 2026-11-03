@@ -32,7 +32,7 @@ export interface WallpaperPlaybackState {
 }
 
 export interface WallpaperProps {
-  currentSong?: Track;
+  currentSong?: Track | null;
   playbackState?: WallpaperPlaybackState;
 }
 
