@@ -1,22 +1,19 @@
 import { BaseIntegration } from "./base";
-import type { Track } from "@audiflo/komorebi";
+import type {
+  MediaActionHandlers,
+  MediaPlaybackState,
+  MediaSessionAdapter,
+  Track,
+} from "@audiflo/komorebi";
 import { albumArtStorage } from "../storage";
 import { createLogger } from "../../helpers/logger";
 
 const logger = createLogger("mediaSession");
 
-export interface MediaActionHandlers {
-  play(): void | Promise<void>;
-  pause(): void;
-  next(): void | Promise<void>;
-  previous(): void | Promise<void>;
-  stop(): void;
-  seek(time: number): void;
-}
-
-type MediaPlaybackState = "playing" | "paused" | "none";
-
-export class MediaSessionIntegration extends BaseIntegration {
+export class MediaSessionIntegration
+  extends BaseIntegration
+  implements MediaSessionAdapter
+{
   name = "Media Session";
   private session: MediaSession | null = null;
   private currentTrack: Track | null = null;

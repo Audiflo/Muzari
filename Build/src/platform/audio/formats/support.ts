@@ -6,7 +6,7 @@ import {
   identifyFormat,
   type AudioFormat,
   type MetadataCapability,
-} from "./registry";
+} from "@audiflo/komorebi";
 
 export type BackendKind = "flo" | "symphonia" | "html";
 

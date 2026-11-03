@@ -1,13 +1,18 @@
-import { Equalizer, gainDbToLinear } from "@audiflo/komorebi";
+import {
+  Equalizer,
+  clampPitch,
+  gainDbToLinear,
+  type AudioEffects,
+  type AudioSessionAdapter,
+} from "@audiflo/komorebi";
 import { clampVolume } from "./clamp";
 import { MediaElementPool } from "./backends/mediaElementPool";
 import { createLogger } from "../../helpers/logger";
 const logger = createLogger("audioGraph");
 
 const ANALYSER_FFT_SIZE = 2048;
-const MAX_PITCH_SEMITONES = 48;
 
-export class AudioGraph {
+export class AudioGraph implements AudioEffects, AudioSessionAdapter {
   readonly mediaElementPool = new MediaElementPool();
 
   private context: AudioContext | null = null;
@@ -120,10 +125,7 @@ export class AudioGraph {
   }
 
   async setPitch(semitones: number): Promise<void> {
-    const clamped = Math.max(
-      -MAX_PITCH_SEMITONES,
-      Math.min(MAX_PITCH_SEMITONES, semitones),
-    );
+    const clamped = clampPitch(semitones);
     this.pitchSemitones = clamped;
 
     if (clamped === 0) {
@@ -150,6 +152,10 @@ export class AudioGraph {
   }
 
   getPitchSemitones(): number {
+    return this.pitchSemitones;
+  }
+
+  getPitch(): number {
     return this.pitchSemitones;
   }
 

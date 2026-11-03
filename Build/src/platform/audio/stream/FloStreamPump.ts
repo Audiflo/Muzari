@@ -1,4 +1,5 @@
 import initFlo, { WasmStreamingDecoder } from "@audiflo/libflo";
+import type { AudioStream } from "@audiflo/komorebi";
 
 export interface FloStreamInfo {
   sample_rate: number;
@@ -43,14 +44,14 @@ const MAX_STALLED_DRAIN_ROUNDS = 64;
 const defaultFetcher: FloStreamFetcher = (url, signal) =>
   fetch(url, { signal }) as Promise<FloStreamResponse>;
 
-export class FloStreamPump {
+export class FloStreamPump implements AudioStream {
   private readonly url: string;
   private readonly events: FloStreamPumpEvents;
   private readonly decoder: FloStreamDecoderProtocol;
   private readonly fetcher: FloStreamFetcher;
   private readonly controller = new AbortController();
-  private cancelled = false;
-  private framesDecoded = 0;
+  private cancelledState = false;
+  private framesDecodedState = 0;
   private channels = 0;
   private skipping = false;
   private skipTarget = 0;
@@ -86,15 +87,23 @@ export class FloStreamPump {
   }
 
   get frames(): number {
-    return this.framesDecoded;
+    return this.framesDecodedState;
+  }
+
+  get framesDecoded(): number {
+    return this.frames;
   }
 
   get isCancelled(): boolean {
-    return this.cancelled;
+    return this.cancelledState;
+  }
+
+  get cancelled(): boolean {
+    return this.isCancelled;
   }
 
   cancel(): void {
-    this.cancelled = true;
+    this.cancelledState = true;
     this.paused = false;
     this.resumeSignal?.();
     this.resumeSignal = null;
@@ -116,7 +125,7 @@ export class FloStreamPump {
   }
 
   private waitWhilePaused(): Promise<void> {
-    if (!this.paused || this.cancelled) return Promise.resolve();
+    if (!this.paused || this.cancelledState) return Promise.resolve();
     return new Promise<void>((resolve) => {
       this.resumeSignal = resolve;
     });
@@ -127,13 +136,13 @@ export class FloStreamPump {
     try {
       response = await this.fetcher(this.url, this.controller.signal);
     } catch (error) {
-      if (this.cancelled) return;
+      if (this.cancelledState) return;
       this.fail(error as Error);
       return;
     }
 
     if (!response.ok || response.body === null) {
-      if (!this.cancelled) {
+      if (!this.cancelledState) {
         this.fail(new Error(`HTTP ${response.status}`));
       }
       return;
@@ -142,17 +151,17 @@ export class FloStreamPump {
     const reader = response.body.getReader();
     try {
       for (;;) {
-        if (this.cancelled) {
+        if (this.cancelledState) {
           await this.silenceReader(reader);
           return;
         }
         await this.waitWhilePaused();
-        if (this.cancelled) {
+        if (this.cancelledState) {
           await this.silenceReader(reader);
           return;
         }
         const { value, done } = await reader.read();
-        if (this.cancelled) {
+        if (this.cancelledState) {
           await this.silenceReader(reader);
           return;
         }
@@ -169,14 +178,14 @@ export class FloStreamPump {
         await this.yieldToMain();
       }
 
-      if (this.cancelled) return;
+      if (this.cancelledState) return;
       this.decoder.end_of_input?.();
       await this.drainUntilFinished();
-      if (this.cancelled) return;
+      if (this.cancelledState) return;
       this.firstAudioReady?.();
       this.events.onEnd?.();
     } catch (error) {
-      if (!this.cancelled) {
+      if (!this.cancelledState) {
         this.fail(error as Error);
       }
     }
@@ -184,17 +193,17 @@ export class FloStreamPump {
 
   private async drainUntilFinished(): Promise<void> {
     for (;;) {
-      const before = this.framesDecoded;
+      const before = this.framesDecodedState;
       await this.waitWhilePaused();
-      if (this.cancelled) return;
+      if (this.cancelledState) return;
       this.drain();
-      if (this.cancelled) return;
+      if (this.cancelledState) return;
       if (this.decoder.has_error()) {
         this.fail(this.decodeError());
         return;
       }
       if (this.decoder.is_finished()) return;
-      if (this.framesDecoded === before) {
+      if (this.framesDecodedState === before) {
         if (this.paused) {
           this.stalledDrainRounds = 0;
         } else if (++this.stalledDrainRounds >= MAX_STALLED_DRAIN_ROUNDS) {
@@ -214,7 +223,7 @@ export class FloStreamPump {
 
   private drain(): void {
     for (;;) {
-      if (this.paused || this.cancelled) break;
+      if (this.paused || this.cancelledState) break;
       if (this.channels === 0) {
         const info = this.decoder.get_info();
         if (info && info.channels > 0) {
@@ -227,26 +236,26 @@ export class FloStreamPump {
       if (chunk == null || chunk.length === 0) break;
 
       if (this.channels === 0) {
-        this.framesDecoded += 1;
+        this.framesDecodedState += 1;
         continue;
       }
 
       const chunkFrames = Math.floor(chunk.length / this.channels);
-      if (this.skipping && this.framesDecoded + chunkFrames < this.skipTarget) {
-        this.framesDecoded += chunkFrames;
+      if (this.skipping && this.framesDecodedState + chunkFrames < this.skipTarget) {
+        this.framesDecodedState += chunkFrames;
         continue;
       }
 
       let block = chunk;
       if (this.skipping) {
-        const offset = Math.max(0, this.skipTarget - this.framesDecoded);
+        const offset = Math.max(0, this.skipTarget - this.framesDecodedState);
         const cut = Math.min(offset, chunkFrames);
         block = chunk.subarray(cut * this.channels);
-        this.framesDecoded += chunkFrames;
+        this.framesDecodedState += chunkFrames;
         this.skipping = false;
         if (block.length === 0) continue;
       } else {
-        this.framesDecoded += chunkFrames;
+        this.framesDecodedState += chunkFrames;
       }
 
       this.events.onChunk?.(block);
