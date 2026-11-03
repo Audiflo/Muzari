@@ -24,11 +24,7 @@ const WallpaperRenderer: React.FC<WallpaperRendererProps> = ({
   }, [albumArtUrl]);
 
   const wallpaperSong = React.useMemo(() => {
-    if (
-      !currentSong ||
-      !albumArtUrl ||
-      currentSong.albumArt === albumArtUrl
-    ) {
+    if (!currentSong || !albumArtUrl || currentSong.albumArt === albumArtUrl) {
       return currentSong;
     }
     return { ...currentSong, albumArt: albumArtUrl };

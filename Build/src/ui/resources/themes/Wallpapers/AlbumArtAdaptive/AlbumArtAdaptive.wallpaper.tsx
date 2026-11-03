@@ -96,9 +96,7 @@ const AlbumArtAdaptive: React.FC<WallpaperProps> = ({
       analyser.getByteFrequencyData(frequencyData);
       const bassEnd = Math.max(1, Math.floor(frequencyData.length * 0.12));
       const bass =
-        frequencyData
-          .slice(0, bassEnd)
-          .reduce((sum, value) => sum + value, 0) /
+        frequencyData.slice(0, bassEnd).reduce((sum, value) => sum + value, 0) /
         (bassEnd * 255);
       const bassThreshold = 0.14;
       const bassSignal = Math.max(
@@ -115,8 +113,7 @@ const AlbumArtAdaptive: React.FC<WallpaperProps> = ({
       }
 
       state.pulse +=
-        (bassSignal - state.pulse) *
-        (bassSignal > state.pulse ? 0.52 : 0.18);
+        (bassSignal - state.pulse) * (bassSignal > state.pulse ? 0.52 : 0.18);
       if (!reduceMotion) {
         const pulse = state.pulse ** 1.35;
         document.documentElement.style.setProperty(
