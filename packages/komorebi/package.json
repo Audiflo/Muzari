@@ -57,9 +57,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepare": "npm run build"
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "repository": {
     "type": "git",
@@ -74,6 +73,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "tsdown": "^0.15.7",
     "typescript": "^5.9.3"
   },
   "dependencies": {

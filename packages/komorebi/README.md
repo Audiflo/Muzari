@@ -81,6 +81,9 @@ npm run build
 npm pack --dry-run
 ```
 
+The package is bundled with [tsdown](https://tsdown.dev/) and emits ESM
+JavaScript, source maps, and declaration files for the public entry points.
+
 ## Used by Muzari
 
 [Muzari](https://github.com/Audiflo/Muzari) is the first application to use Komorebi.
