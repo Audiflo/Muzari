@@ -20,10 +20,7 @@ export class MediaSessionIntegration
   private actionHandlers: MediaActionHandlers | null = null;
 
   async initialize(): Promise<void> {
-    if (
-      typeof navigator === "undefined" ||
-      !("mediaSession" in navigator)
-    ) {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
       logger.warn("MediaSession not supported");
       return;
     }

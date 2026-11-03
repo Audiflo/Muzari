@@ -12,11 +12,7 @@ import {
 import modalStyles from "../primitives/Dialog.module.css";
 import { useTranslation } from "react-i18next";
 import { Icon } from "./Icon";
-import type {
-  Track,
-  Playlist,
-  PlaylistFolder,
-} from "@audiflo/komorebi";
+import type { Track, Playlist, PlaylistFolder } from "@audiflo/komorebi";
 
 interface AddToPopoverProps {
   songs: Track[];

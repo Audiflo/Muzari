@@ -1,9 +1,5 @@
 import initFlo, { WasmStreamingDecoder } from "@audiflo/libflo";
-import type {
-  AudioStream,
-  StreamChunk,
-  StreamInfo,
-} from "@audiflo/komorebi";
+import type { AudioStream, StreamChunk, StreamInfo } from "@audiflo/komorebi";
 
 export interface FloStreamInfo {
   sample_rate: number;
@@ -253,7 +249,10 @@ export class FloStreamPump implements AudioStream {
       }
 
       const chunkFrames = Math.floor(chunk.length / this.channels);
-      if (this.skipping && this.framesDecodedState + chunkFrames < this.skipTarget) {
+      if (
+        this.skipping &&
+        this.framesDecodedState + chunkFrames < this.skipTarget
+      ) {
         this.framesDecodedState += chunkFrames;
         continue;
       }

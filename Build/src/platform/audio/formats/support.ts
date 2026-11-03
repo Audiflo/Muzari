@@ -27,8 +27,7 @@ metadataProviders.register({
 });
 metadataProviders.register({
   id: "music-metadata",
-  supports: (format) =>
-    format.id !== "flo" && format.metadata === "available",
+  supports: (format) => format.id !== "flo" && format.metadata === "available",
 });
 
 function decoderBackendFor(format: AudioFormat): BackendKind | null {
