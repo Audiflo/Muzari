@@ -7,10 +7,13 @@ export function useAlbumArt(
   songId: string | undefined,
   hasAlbumArt: boolean = false,
 ): string | undefined {
-  const [albumArt, setAlbumArt] = useState<{
-    songId: string;
-    url: string;
-  } | undefined>(() => {
+  const [albumArt, setAlbumArt] = useState<
+    | {
+        songId: string;
+        url: string;
+      }
+    | undefined
+  >(() => {
     if (!songId) return undefined;
     const url = albumArtStorage.get(songId);
     return url ? { songId, url } : undefined;
