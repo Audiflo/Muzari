@@ -24,6 +24,9 @@
     height var(--animation-duration-fast) ease-in-out,
     padding var(--animation-duration-fast) ease-in-out;
   box-shadow: 0 0 0 2px var(--themecolor2-transparent);
+  scale: calc(1 + var(--wallpaper-pulse, 0) * 0.028);
+  transform-origin: 50% 100%;
+  isolation: isolate;
 }
 
 .playerCompact {

@@ -9,23 +9,6 @@
   - [ ] Use sandboxed iframe with postMessage for API access to Muzari internals (playback state, settings, etc.)
   - [ ] Eventually have an NPM module (@audiflo/muzari-api) (using above postmessage system and validation/abstraction) for external wallpaper development, allowing user-created interactive wallpapers
 
-- [ ] Add showDirectoryPicker API and ponyfil
-  - but `showDirectoryPicker` is not supported in all browsers (e.g., Safari).
-
-- [ ] platform-specific files
-  - For example: split storage into:
-    - Storage.web.ts
-    - Storage.web.webkit.ts (for showDirectoryPicker)
-    - Storage.desktop.ts
-    - Storage.desktop.webkit.ts
-
-  - with dynamic loader (use import.meta.glob to auto-discover)
-    - detect platform + engine
-    - load the correct file
-    - maybe add helper like getPlatformFlavor() -> "desktop.webkit" etc
-
-  - <https://github.com/LZS911/vite-plugin-conditional-compile>
-
 - [ ] a queue
   - like a line of records behind album art?
   - smooth animation
@@ -36,9 +19,6 @@
     - `songFile` is for the future, so that I can have a simple way to share song files directly (files staying in a simple Cloudflare worker's KV or Durable Objects for 10-30 min or more probs (max like 2 days though))  
   - Export/import JSON playlists via sharing as well but url encoding limits are troublesome
   - Add "Copy Share Link" button to hide messy encoding
-
-- [ ] Dynamic theming based on album art colors.
-  - CSS backgrounds can be images, and album art is images
 
 - [ ] Animated album art transitions, like fade/zoom/warp album art between songs.
 
@@ -131,11 +111,31 @@
   - Implemented and theoretically works but requires Discord approval for Rich Presence API (via server) access. Need to submit Discord app for verification to enable it.
     - Asked Discord currently, they understandably said no.
 
-- [ ] Equalizer Settings
+## Done
+
+- [X] Equalizer Settings
     Issue: No audio customization options.
     Improvement: Add a equalizer using the Web Audio API or an external library.
 
-## Done
+- [X] Dynamic theming based on album art colors.
+  - CSS backgrounds can be images, and album art is images
+
+- [X] Add showDirectoryPicker API and ponyfil
+  - but `showDirectoryPicker` is not supported in all browsers (e.g., Safari).
+
+- [X] platform-specific files
+  - For example: split storage into:
+    - Storage.web.ts
+    - Storage.web.webkit.ts (for showDirectoryPicker)
+    - Storage.desktop.ts
+    - Storage.desktop.webkit.ts
+
+  - with dynamic loader (use import.meta.glob to auto-discover)
+    - detect platform + engine
+    - load the correct file
+    - maybe add helper like getPlatformFlavor() -> "desktop.webkit" etc
+
+  - <https://github.com/LZS911/vite-plugin-conditional-compile>
 
 - [X] M3U playlist import (`.m3u`/`.m3u8`) via a dedicated library
 
