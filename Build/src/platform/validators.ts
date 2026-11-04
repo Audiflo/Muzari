@@ -1,4 +1,4 @@
-import { isPlainObject } from "../core/engine/validators";
+import { isPlainObject } from "@audiflo/komorebi";
 
 function isString(value: unknown): value is string {
   return typeof value === "string";

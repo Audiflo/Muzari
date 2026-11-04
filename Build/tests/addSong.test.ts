@@ -2,7 +2,7 @@ import { describe, it, expect, jest, beforeEach, afterEach } from "@jest/globals
 import { storeImportedSong } from "../src/helpers/addSong";
 import { saveAudio } from "../src/platform/storage/opfs";
 import { trackStorage } from "../src/platform/storage/trackStorage";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 jest.mock("../src/platform/storage/opfs", () => ({
   saveAudio: jest.fn(),

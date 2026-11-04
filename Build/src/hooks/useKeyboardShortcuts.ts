@@ -6,7 +6,7 @@ import {
 } from "../platform/storage/shortcuts";
 import type { UseKomorebiReturn } from "./useKomorebi";
 import { createLogger } from "../helpers/logger";
-import { clampVolume } from "../platform/audio/clamp";
+import { clampVolume } from "@audiflo/komorebi";
 import { selectVolume, useKomorebiStore } from "../store";
 
 const logger = createLogger("keyboardShortcuts");

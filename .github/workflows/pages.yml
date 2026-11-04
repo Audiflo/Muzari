@@ -26,6 +26,10 @@ jobs:
           cache: npm
           cache-dependency-path: Build/package-lock.json
 
+      - name: Build Komorebi
+        working-directory: packages/komorebi
+        run: npm ci && npm run build
+
       - name: Install dependencies
         working-directory: Build
         run: npm ci

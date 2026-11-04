@@ -9,7 +9,7 @@ import {
 } from "../primitives/Select";
 import { Icon } from "../shared/Icon";
 import styles from "./Settings.module.css";
-import type { RepeatMode } from "../../../core/engine/types";
+import type { RepeatMode } from "@audiflo/komorebi";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import { useSettingsState } from "../../../hooks/useSettingsState";
 

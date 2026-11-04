@@ -6,7 +6,7 @@ import {
   MAX_GAIN_DB,
   MAX_Q,
   MIN_GAIN_DB,
-} from "../src/platform/audio/equalizer";
+} from "@audiflo/komorebi";
 
 const ROCK = findPreset("Rock")!;
 

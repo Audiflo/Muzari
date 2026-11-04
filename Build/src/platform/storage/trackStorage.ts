@@ -1,5 +1,5 @@
-import type { Track, TrackSourceKind } from "../../core/engine/types";
-import { isPlainObject } from "../../core/engine/validators";
+import type { Track, TrackSourceKind } from "@audiflo/komorebi";
+import { isPlainObject } from "@audiflo/komorebi";
 import { getDb, STORES, tx, req } from "./db";
 import { loadAudio, deleteAudio } from "./opfs";
 import { directoryStore } from "./directoryStore";

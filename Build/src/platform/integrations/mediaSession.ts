@@ -1,29 +1,26 @@
 import { BaseIntegration } from "./base";
-import type { Track } from "../../core/engine/types";
+import type {
+  MediaActionHandlers,
+  MediaPlaybackState,
+  MediaSessionAdapter,
+  Track,
+} from "@audiflo/komorebi";
 import { albumArtStorage } from "../storage";
 import { createLogger } from "../../helpers/logger";
 
 const logger = createLogger("mediaSession");
 
-export interface MediaActionHandlers {
-  play(): void | Promise<void>;
-  pause(): void;
-  next(): void | Promise<void>;
-  previous(): void | Promise<void>;
-  stop(): void;
-  seek(time: number): void;
-}
-
-type MediaPlaybackState = "playing" | "paused" | "none";
-
-export class MediaSessionIntegration extends BaseIntegration {
+export class MediaSessionIntegration
+  extends BaseIntegration
+  implements MediaSessionAdapter
+{
   name = "Media Session";
   private session: MediaSession | null = null;
   private currentTrack: Track | null = null;
   private actionHandlers: MediaActionHandlers | null = null;
 
   async initialize(): Promise<void> {
-    if (!("mediaSession" in navigator)) {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
       logger.warn("MediaSession not supported");
       return;
     }

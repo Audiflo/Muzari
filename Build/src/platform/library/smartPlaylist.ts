@@ -1,4 +1,4 @@
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { PointPerSongEngine } from "./scoring";
 
 export interface SmartPlaylistRule {

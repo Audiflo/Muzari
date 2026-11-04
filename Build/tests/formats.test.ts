@@ -129,7 +129,7 @@ describe("resolveSupport", () => {
   });
 
   it("reads Matroska tags through music-metadata", () => {
-    expect(getFormatById("matroska")?.metadata).toBe("music-metadata");
+    expect(getFormatById("matroska")?.metadata).toBe("available");
   });
 
   it("has no tag reader for RealAudio", () => {

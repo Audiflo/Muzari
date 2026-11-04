@@ -1,7 +1,7 @@
 import { getDb, STORES, tx, req } from "./db";
 import { generateUniqueId } from "../metadata";
 import type { FsDirectoryHandle } from "./directoryHandle";
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 export interface PersistedDirectory {
   id: string;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { KomorebiEngine } from "../core/engine/engine";
-import { DEFAULT_ENGINE_SETTINGS } from "../core/engine/settings";
+import type { KomorebiEngine } from "@audiflo/komorebi";
+import { DEFAULT_ENGINE_SETTINGS } from "@audiflo/komorebi";
 import {
   clampBand,
   createInitialEqualizerState,
@@ -8,14 +8,14 @@ import {
   type EqualizerBand,
   type EqualizerPreset,
   type EqualizerState,
-} from "../platform/audio/equalizer";
+} from "@audiflo/komorebi";
 import type {
   EngineEventMap,
   EngineState,
   QueueCursor,
   QueueState,
   Track,
-} from "../core/engine/types";
+} from "@audiflo/komorebi";
 
 export const EMPTY_CURSOR: QueueCursor = { kind: "empty" };
 

@@ -22,8 +22,8 @@ import { AddToPopover } from "./AddToPopover";
 import { useTranslation } from "react-i18next";
 import { Icon } from "./Icon";
 import { dialogStorage } from "../../../platform/storage";
-import { fileExtensionLabel } from "../../../platform/audio/formats/registry";
-import type { Track, Playlist } from "../../../core/engine/types";
+import { fileExtensionLabel } from "@audiflo/komorebi";
+import type { Track, Playlist } from "@audiflo/komorebi";
 
 interface SongActionsDropdownProps {
   song: Track;

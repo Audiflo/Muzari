@@ -1,10 +1,10 @@
-import { StateMachine } from "../src/core/engine/state";
-import { QueueManager } from "../src/core/engine/queue";
-import { Scheduler, CrossfadeScheduler, GaplessScheduler } from "../src/core/engine/scheduler";
-import { KomorebiEngine, IAudioBackend } from "../src/core/engine/engine";
-import type { Track, Playlist } from "../src/core/engine/types";
-import { MAX_CROSSFADE_SECONDS } from "../src/platform/audio/clamp";
-import { MAX_REPLAY_GAIN_DB } from "../src/platform/audio/replayGain";
+import { StateMachine } from "@audiflo/komorebi";
+import { QueueManager } from "@audiflo/komorebi";
+import { Scheduler, CrossfadeScheduler, GaplessScheduler } from "@audiflo/komorebi";
+import { KomorebiEngine, IAudioBackend } from "@audiflo/komorebi";
+import type { Track, Playlist } from "@audiflo/komorebi";
+import { MAX_CROSSFADE_SECONDS } from "@audiflo/komorebi";
+import { MAX_REPLAY_GAIN_DB } from "@audiflo/komorebi";
 import { describe, it, jest, expect, beforeEach, afterEach } from "@jest/globals";
 
 const createMockTrack = (id: string, duration = 180): Track => ({

@@ -13,7 +13,7 @@ import {
 } from "../src/platform/storage/directoryStore";
 import { importAudioFiles } from "../src/helpers/importAudioFiles";
 import { generateUniqueId } from "../src/platform/metadata";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 jest.mock("../src/platform/storage/directoryStore", () => ({
   directoryStore: {

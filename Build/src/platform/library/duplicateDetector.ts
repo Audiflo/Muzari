@@ -1,4 +1,4 @@
-import type { Track, TrackSourceKind } from "../../core/engine/types";
+import type { Track, TrackSourceKind } from "@audiflo/komorebi";
 import { createLogger } from "../../helpers/logger";
 
 const logger = createLogger("duplicateDetector");

@@ -18,7 +18,7 @@ import {
 } from "./DropdownMenu";
 import { useRightClickMenu } from "./DropdownMenu";
 import styles from "../features/Playlist.module.css";
-import type { PlaylistFolder, Playlist } from "../../../core/engine/types";
+import type { PlaylistFolder, Playlist } from "@audiflo/komorebi";
 
 interface FolderItemProps {
   item: PlaylistFolder;

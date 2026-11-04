@@ -3,7 +3,7 @@ import type {
   Playlist,
   PlaylistItem,
   PlaylistFolder,
-} from "../../core/engine/types";
+} from "@audiflo/komorebi";
 
 export interface LibraryState {
   songs: Track[];

@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { logger } from "../../helpers/logger";
 import { getCurrentThemeCSS } from "../../ui/theming";
 import { selectIsPlaying, useKomorebiStore } from "../../store";
-import type { QueueCursor, Track } from "../../core/engine/types";
+import type { QueueCursor, Track } from "@audiflo/komorebi";
 import {
   PIP_WINDOW_WIDTH,
   PIP_WINDOW_HEIGHT,

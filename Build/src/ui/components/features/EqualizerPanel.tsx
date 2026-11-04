@@ -26,7 +26,7 @@ import {
   MAX_GAIN_DB,
   MIN_FREQUENCY_HZ,
   MIN_GAIN_DB,
-} from "../../../platform/audio/equalizer";
+} from "@audiflo/komorebi";
 import {
   bandToGraphFilter,
   bandsToGraphFilters,

@@ -1,4 +1,4 @@
-import type { Track, PlaylistItem } from "../../core/engine/types";
+import type { Track, PlaylistItem } from "@audiflo/komorebi";
 import type { LibraryState } from "./types";
 import { trackStorage } from "../storage/trackStorage";
 import { playlistStorage, favoritesStorage } from "../storage/playlistStorage";

@@ -1,5 +1,5 @@
 import { BaseIntegration } from "./base";
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { DiscordService } from "./discordService";
 import { createLogger } from "../../helpers/logger";
 

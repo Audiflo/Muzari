@@ -60,7 +60,7 @@ export function useAlbumArt(
     };
   }, [songId, hasAlbumArt]);
 
-  return albumArt?.songId === songId ? albumArt.url : undefined;
+  return albumArt && albumArt.songId === songId ? albumArt.url : undefined;
 }
 
 export function useAlbumArtBatch(

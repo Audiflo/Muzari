@@ -4,7 +4,7 @@ import {
   EQUALIZER_PRESETS,
   MAX_GAIN_DB,
   sanitizeEqualizerState,
-} from "../src/platform/audio/equalizer";
+} from "@audiflo/komorebi";
 
 describe("sanitizeEqualizerState", () => {
   it("rejects non-object input", () => {
