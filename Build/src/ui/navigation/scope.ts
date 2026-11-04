@@ -1,4 +1,4 @@
-import type { Track, Playlist } from "../../core/engine/types";
+import type { Track, Playlist } from "@audiflo/komorebi";
 import type { NavigationState } from "./NavigationProvider";
 
 export interface NavigationScope {

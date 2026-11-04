@@ -8,7 +8,7 @@ import {
   createDefaultBands,
   type EqualizerBand,
   type EqualizerBandType,
-} from "../src/platform/audio/equalizer";
+} from "@audiflo/komorebi";
 
 const EVERY_BAND_TYPE: EqualizerBandType[] = [
   "lowshelf",

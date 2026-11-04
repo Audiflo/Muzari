@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "../primitives/Button";
 import { Icon } from "../shared/Icon";
-import type { QueueCursor, Track } from "../../../core/engine/types";
+import type { QueueCursor, Track } from "@audiflo/komorebi";
 import styles from "./Miniplayer.module.css";
 
 export interface MiniplayerControls {

@@ -2,6 +2,7 @@ import {
   useRef,
   useEffect,
   useState,
+  useMemo,
   lazy,
   Suspense,
   Component,
@@ -43,7 +44,7 @@ import {
 } from "./theming";
 import styles from "../pages/_index.module.css";
 import type { UseKomorebiReturn } from "../hooks/useKomorebi";
-import type { Track } from "../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import {
   selectCurrentTrack,
   selectIsPlaying,
@@ -164,6 +165,13 @@ function AppShellContent({ komorebi }: AppShellProps) {
   const folderInputRef = useRef<HTMLInputElement>(null);
   const currentSong = useKomorebiStore(selectCurrentTrack);
   const isPlaying = useKomorebiStore(selectIsPlaying);
+  const playbackState = useMemo(
+    () => ({
+      isPlaying,
+      analyserNode: komorebi.getAnalyser(),
+    }),
+    [isPlaying, komorebi],
+  );
 
   const handleAddSong = async (
     song: Track,
@@ -345,10 +353,7 @@ function AppShellContent({ komorebi }: AppShellProps) {
       <DraggableProvider onDragOperation={handleDragOperation}>
         <WallpaperRenderer
           currentSong={currentSong}
-          playbackState={{
-            isPlaying,
-            analyserNode: komorebi.getAnalyser(),
-          }}
+          playbackState={playbackState}
         />
         <div className={styles.container}>
           <Sidebar

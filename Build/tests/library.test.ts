@@ -7,7 +7,7 @@ import type {
   Playlist,
   PlaylistFolder,
   PlaylistItem,
-} from "../src/core/engine/types";
+} from "@audiflo/komorebi";
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 const createTrack = (id: string): Track => ({

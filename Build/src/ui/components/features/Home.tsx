@@ -5,7 +5,7 @@ import { Button } from "../primitives/Button";
 import { Icon } from "../shared/Icon";
 import { useAlbumArt } from "../../../hooks/useAlbumArt";
 import { useNavigation } from "../../navigation";
-import type { Track, Playlist } from "../../../core/engine/types";
+import type { Track, Playlist } from "@audiflo/komorebi";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 import { flattenPlaylists } from "../../../platform/library";
 import { allSongsPlaylist } from "../../navigation/scope";

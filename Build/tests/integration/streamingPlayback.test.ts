@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { BackendRouter } from "../../src/platform/audio/backends/BackendRouter";
-import { KomorebiEngine } from "../../src/core/engine/engine";
-import type { Track, Playlist } from "../../src/core/engine/types";
+import { KomorebiEngine } from "@audiflo/komorebi";
+import type { Track, Playlist } from "@audiflo/komorebi";
 import type { FloStreamDecoderProtocol } from "../../src/platform/audio/stream/FloStreamPump";
 import { FloStreamPump } from "../../src/platform/audio/stream/FloStreamPump";
 import { createWorkletHarness } from "../mocks/floWorkletHarness";

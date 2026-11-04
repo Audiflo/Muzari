@@ -7,42 +7,60 @@ export function useAlbumArt(
   songId: string | undefined,
   hasAlbumArt: boolean = false,
 ): string | undefined {
-  const [albumArt, setAlbumArt] = useState<string | undefined>(() =>
-    songId ? albumArtStorage.get(songId) : undefined,
-  );
+  const [albumArt, setAlbumArt] = useState<
+    | {
+        songId: string;
+        url: string;
+      }
+    | undefined
+  >(() => {
+    if (!songId) return undefined;
+    const url = albumArtStorage.get(songId);
+    return url ? { songId, url } : undefined;
+  });
 
   useEffect(() => {
+    let active = true;
+    setAlbumArt(undefined);
+
     if (!songId || !hasAlbumArt) {
-      setAlbumArt(undefined);
-      return;
+      return () => {
+        active = false;
+      };
     }
 
     const cached = albumArtStorage.get(songId);
     if (cached) {
-      setAlbumArt(cached);
-      return;
+      setAlbumArt({ songId, url: cached });
+      return () => {
+        active = false;
+      };
     }
 
+    const handleLoadedArt = (art: string | null) => {
+      if (active && art) setAlbumArt({ songId, url: art });
+    };
+
     if (pendingLoads.has(songId)) {
-      pendingLoads.get(songId)!.then((art) => {
-        if (art) setAlbumArt(art);
-      });
-      return;
+      pendingLoads.get(songId)!.then(handleLoadedArt);
+      return () => {
+        active = false;
+      };
     }
 
     const loadPromise = albumArtStorage.load(songId);
     pendingLoads.set(songId, loadPromise);
 
-    loadPromise
-      .then((art) => {
-        if (art) setAlbumArt(art);
-      })
-      .finally(() => {
-        pendingLoads.delete(songId);
-      });
+    loadPromise.then(handleLoadedArt).finally(() => {
+      pendingLoads.delete(songId);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [songId, hasAlbumArt]);
 
-  return albumArt;
+  return albumArt && albumArt.songId === songId ? albumArt.url : undefined;
 }
 
 export function useAlbumArtBatch(

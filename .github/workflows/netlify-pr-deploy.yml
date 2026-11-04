@@ -13,7 +13,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: netlify-preview-${{ github.event.workflow_run.id }}
+  group: netlify-preview-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 
 jobs:
@@ -21,26 +21,22 @@ jobs:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request'
-
     runs-on: ubuntu-latest
     environment: netlify-preview
-
     permissions:
       actions: read
       contents: read
       deployments: write
       issues: write
       pull-requests: write
-
     steps:
       - name: Resolve pull request
         id: pr
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const run = context.payload.workflow_run;
-
             const headRepo = run.head_repository?.full_name;
             const headBranch = run.head_branch;
             const runSha = run.head_sha;
@@ -93,7 +89,7 @@ jobs:
 
       - name: Download Netlify artifact
         if: steps.pr.outputs.skip != 'true'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           name: netlify-preview
           path: ${{ runner.temp }}/netlify-preview
@@ -105,7 +101,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           DIR="${{ runner.temp }}/netlify-preview"
 
           if [ ! -d "$DIR" ]; then
@@ -126,7 +121,7 @@ jobs:
       - name: Deploy to Netlify
         id: netlify
         if: steps.pr.outputs.skip != 'true'
-        uses: nwtgck/actions-netlify@v3
+        uses: nwtgck/actions-netlify@4cbaf4c08f1a7bfa537d6113472ef4424e4eb654 # v3
         with:
           publish-dir: ${{ runner.temp }}/netlify-preview
           production-deploy: false
@@ -141,7 +136,7 @@ jobs:
 
       - name: Create GitHub deployment and PR comment
         if: steps.pr.outputs.skip != 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           PR_HEAD_SHA: ${{ steps.pr.outputs.head-sha }}
@@ -184,18 +179,21 @@ jobs:
             });
 
             if (pr.state !== "open" || pr.base.ref !== "main") {
-              throw new Error("PR is no longer eligible for preview deployment.");
+              core.notice(`PR #${prNumber} is no longer eligible. Skipping deployment record.`);
+              return;
             }
 
             if (pr.head.sha !== expectedHeadSha) {
-              throw new Error("PR head changed while deploying.");
+              core.notice(`PR #${prNumber} head changed while deploying. Skipping deployment record.`);
+              return;
             }
 
             if (
               pr.head.sha !== runHeadSha &&
               pr.merge_commit_sha !== runHeadSha
             ) {
-              throw new Error("Build SHA no longer matches the PR.");
+              core.notice(`Build SHA no longer matches PR #${prNumber}. Skipping deployment record.`);
+              return;
             }
 
             const { data: deployment } =
@@ -223,7 +221,6 @@ jobs:
             });
 
             const marker = "<!-- netlify-preview-deployment -->";
-
             const body = [
               marker,
               "### Netlify Preview",

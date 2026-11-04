@@ -16,7 +16,7 @@ export {
   type DecodeCapability,
   type HtmlAudioSupport,
   type MetadataCapability,
-} from "./registry";
+} from "@audiflo/komorebi";
 export {
   canPlayWithHtmlAudio,
   classifyImportFile,

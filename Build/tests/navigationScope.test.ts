@@ -6,7 +6,7 @@ import {
   type NavigationScope,
 } from "../src/ui/navigation/scope";
 import type { NavigationState } from "../src/ui/navigation/NavigationProvider";
-import type { Track, Playlist } from "../src/core/engine/types";
+import type { Track, Playlist } from "@audiflo/komorebi";
 
 const track = (
   id: string,

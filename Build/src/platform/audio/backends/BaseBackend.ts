@@ -1,5 +1,5 @@
 import type { IAudioBackend } from "../../audio/index";
-import type { Track } from "../../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 export abstract class BaseAudioBackend implements IAudioBackend {
   protected durationChangeCallbacks: Set<(duration: number) => void> =

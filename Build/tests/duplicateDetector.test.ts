@@ -3,7 +3,7 @@ import {
   trackSignature,
   createDuplicateDetector,
 } from "../src/platform/library/duplicateDetector";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 const SAMPLE_BYTES = 2048;
 

@@ -1,13 +1,17 @@
-import type { ReplayGainInfo } from "../../core/engine/types";
-import { createLogger } from "../../helpers/logger";
+import type { ReplayGainInfo } from "./types";
+import type { KomorebiLogger } from "./adapters";
+import { createKomorebiLogger } from "./logger";
 
-const logger = createLogger("replayGain");
 
 export interface ReplayGainConfig {
   preampGain: number;
   defaultGain: number;
   normalizeThreshold: number;
   mode: "track" | "album" | "auto";
+}
+
+export interface ReplayGainDecoder {
+  decode(buffer: ArrayBuffer): Promise<Float32Array>;
 }
 
 const DEFAULT_CONFIG: ReplayGainConfig = {
@@ -32,11 +36,17 @@ export function gainDbToLinear(
 }
 
 export class ReplayGainAnalyzer {
+  private readonly logger: KomorebiLogger;
   private config: ReplayGainConfig = DEFAULT_CONFIG;
-  private audioContext: AudioContext | null = null;
-  private gainNode: GainNode | null = null;
+  private readonly decoder?: ReplayGainDecoder;
 
-  constructor(config?: Partial<ReplayGainConfig>) {
+  constructor(
+    config?: Partial<ReplayGainConfig>,
+    logger: KomorebiLogger = createKomorebiLogger("replayGain"),
+    decoder?: ReplayGainDecoder,
+  ) {
+    this.logger = logger;
+    this.decoder = decoder;
     if (config) {
       this.config = { ...DEFAULT_CONFIG, ...config };
     }
@@ -44,11 +54,10 @@ export class ReplayGainAnalyzer {
 
   async analyzeFromUrl(url: string): Promise<ReplayGainInfo | null> {
     try {
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      return this.analyzeFromArrayBuffer(arrayBuffer);
+      void url;
+      throw new Error("ReplayGain URL analysis requires an injected loader");
     } catch (error) {
-      logger.error("ReplayGain analysis failed:", { error: String(error) });
+      this.logger.error("ReplayGain analysis failed", { error: String(error) });
       return null;
     }
   }
@@ -57,14 +66,10 @@ export class ReplayGainAnalyzer {
     buffer: ArrayBuffer,
   ): Promise<ReplayGainInfo | null> {
     try {
-      if (!this.audioContext) {
-        this.audioContext = new AudioContext();
+      if (!this.decoder) {
+        throw new Error("ReplayGain analysis requires an injected decoder");
       }
-
-      const audioBuffer = await this.audioContext.decodeAudioData(
-        buffer.slice(0),
-      );
-      const samples = audioBuffer.getChannelData(0);
+      const samples = await this.decoder.decode(buffer);
 
       const rms = this.calculateRMS(samples);
       const peak = this.calculatePeak(samples);
@@ -78,7 +83,7 @@ export class ReplayGainAnalyzer {
         referenceLoudness: this.config.defaultGain,
       };
     } catch (error) {
-      logger.error("ReplayGain analysis error:", { error: String(error) });
+      this.logger.error("ReplayGain analysis error", { error: String(error) });
       return null;
     }
   }
@@ -104,20 +109,6 @@ export class ReplayGainAnalyzer {
     return gainDbToLinear(replayGain?.trackGain, this.config.preampGain);
   }
 
-  createGainNode(
-    context: AudioContext,
-    source: AudioBufferSourceNode,
-  ): GainNode {
-    this.gainNode = context.createGain();
-    source.connect(this.gainNode);
-    return this.gainNode;
-  }
-
-  applyGain(gainNode: GainNode, replayGain: ReplayGainInfo | undefined): void {
-    const volume = this.calculateVolume(replayGain);
-    gainNode.gain.value = volume;
-  }
-
   setPreampGain(gain: number): void {
     this.config.preampGain = gain;
   }
@@ -127,11 +118,6 @@ export class ReplayGainAnalyzer {
   }
 
   dispose(): void {
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-    }
-    this.gainNode = null;
   }
 }
 

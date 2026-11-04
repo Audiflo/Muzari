@@ -3,7 +3,7 @@ import type {
   EncodingDetails,
   GaplessInfo,
   ReplayGainInfo,
-} from "../../core/engine/types";
+} from "@audiflo/komorebi";
 
 export interface ExtractedMetadata {
   title: string;

@@ -1,7 +1,7 @@
 import { MediaSessionIntegration } from "../src/platform/integrations/mediaSession";
 import type { MediaActionHandlers } from "../src/platform/integrations/mediaSession";
 import { albumArtStorage } from "../src/platform/storage";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 
 interface StoredAction {

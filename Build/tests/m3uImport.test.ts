@@ -1,4 +1,4 @@
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { parseM3u } from "../src/platform/library/m3u";
 import {
   matchM3uEntries,

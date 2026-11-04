@@ -8,7 +8,7 @@ import {
 } from "@jest/globals";
 import { trackStorage } from "../src/platform/storage/trackStorage";
 import { loadAudio } from "../src/platform/storage/opfs";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 jest.mock("../src/platform/storage/opfs", () => ({
   loadAudio: jest.fn(),

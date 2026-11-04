@@ -1,0 +1,86 @@
+{
+  "name": "@audiflo/komorebi",
+  "version": "0.1.0",
+  "description": "Reusable, platform-agnostic playback core for web and desktop music applications.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./engine": {
+      "types": "./dist/engine/index.d.ts",
+      "import": "./dist/engine/index.js",
+      "require": "./dist/engine/index.js",
+      "default": "./dist/engine/index.js"
+    },
+    "./formats": {
+      "types": "./dist/formats/index.d.ts",
+      "import": "./dist/formats/index.js",
+      "require": "./dist/formats/index.js",
+      "default": "./dist/formats/index.js"
+    },
+    "./audio/streaming": {
+      "types": "./dist/audio/streaming.d.ts",
+      "import": "./dist/audio/streaming.js",
+      "require": "./dist/audio/streaming.js",
+      "default": "./dist/audio/streaming.js"
+    },
+    "./audio/effects": {
+      "types": "./dist/audio/effects.d.ts",
+      "import": "./dist/audio/effects.js",
+      "require": "./dist/audio/effects.js",
+      "default": "./dist/audio/effects.js"
+    },
+    "./integrations/media-session": {
+      "types": "./dist/integrations/mediaSession.d.ts",
+      "import": "./dist/integrations/mediaSession.js",
+      "require": "./dist/integrations/mediaSession.js",
+      "default": "./dist/integrations/mediaSession.js"
+    },
+    "./integrations/audio-session": {
+      "types": "./dist/integrations/audioSession.d.ts",
+      "import": "./dist/integrations/audioSession.js",
+      "require": "./dist/integrations/audioSession.js",
+      "default": "./dist/integrations/audioSession.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Audiflo/Muzari.git",
+    "directory": "packages/komorebi"
+  },
+  "homepage": "https://github.com/Audiflo/Muzari/tree/main/packages/komorebi",
+  "bugs": {
+    "url": "https://github.com/Audiflo/Muzari/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "tsdown": "^0.15.7",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@nisoku/satori": "^0.1.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MPL-2.0"
+}

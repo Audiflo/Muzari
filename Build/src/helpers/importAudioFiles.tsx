@@ -28,7 +28,7 @@ import type {
   ExtractedMetadata,
   MetadataExtractor,
 } from "../platform/metadata";
-import type { Track } from "../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 export type Translate = TFunction<"translation">;
 
