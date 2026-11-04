@@ -101,7 +101,6 @@ export function SettingsPlayback({ komorebi }: SettingsPlaybackProps) {
           onCheckedChange={(val) => komorebi.setAutoPlayNext(val)}
         />
       </div>
-
     </section>
   );
 }
