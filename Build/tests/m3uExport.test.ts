@@ -17,7 +17,7 @@ import {
   type FsDirectoryHandle,
   type FsFileHandle,
 } from "../src/platform/storage/directoryHandle";
-import type { Playlist, Track } from "../src/core/engine/types";
+import type { Playlist, Track } from "@audiflo/komorebi";
 
 function track(overrides: Partial<Track>): Track {
   return {

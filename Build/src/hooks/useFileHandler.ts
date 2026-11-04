@@ -4,7 +4,7 @@ import {
   setupFileHandler,
   type FileHandlerResult,
 } from "../platform/storage/fileHandler";
-import type { Track } from "../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import type { Translate } from "../helpers/importAudioFiles";
 import { createLogger } from "../helpers/logger";
 

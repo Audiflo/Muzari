@@ -1,4 +1,4 @@
-import type { Playlist, Track } from "../../core/engine/types";
+import type { Playlist, Track } from "@audiflo/komorebi";
 import { generateUniqueId } from "../metadata";
 import { parseM3u, type M3uEntry } from "../library/m3u";
 import {

@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { KomorebiEngine } from "../core/engine/engine";
+import { KomorebiEngine } from "@audiflo/komorebi";
 import type {
   Track,
   Playlist,
   PlaylistFolder,
   EngineState,
-} from "../core/engine/types";
+} from "@audiflo/komorebi";
 import type { IAudioBackend } from "../platform/audio";
 import { BackendRouter } from "../platform/audio/backends";
 import {
   createDiscordIntegration,
   DiscordService,
+  createMediaSessionIntegration,
 } from "../platform/integrations";
 import { LibraryManager } from "../platform/library/library";
 import { libraryPersistence } from "../platform/library/persistence";
@@ -26,7 +27,7 @@ import { storeImportedSong } from "../helpers/addSong";
 import i18n from "i18next";
 import type { Translate } from "../helpers/importAudioFiles";
 import { createLogger } from "../helpers/logger";
-import { sanitizeEqualizerState } from "../platform/audio/equalizer";
+import { sanitizeEqualizerState } from "@audiflo/komorebi";
 import {
   useKomorebiStore,
   EMPTY_ENGINE_STATE,
@@ -193,9 +194,16 @@ export function useKomorebi(
     }
 
     const backend = new BackendRouter();
+    const mediaSession = createMediaSessionIntegration();
     const engine = new KomorebiEngine(backend, {
       autoPlayNext: autoPlayRef.current,
       trackResolver: (track) => trackStorage.reconstructUrl(track),
+      preloadLoader: async (url) => {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      },
+      mediaSession,
     });
     restoreEngineSettings(engine);
 
@@ -622,7 +630,7 @@ export function useKomorebi(
   }, []);
 
   const getAnalyser = useCallback(() => {
-    return engineRef.current?.getAnalyser() ?? null;
+    return (engineRef.current?.getAnalyser() as AnalyserNode | null) ?? null;
   }, []);
 
   useEffect(() => {

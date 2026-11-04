@@ -1,5 +1,5 @@
 import { BaseStorageBackend, PlatformType } from "./base";
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { createLogger } from "../../helpers/logger";
 import { importableExtensions } from "../audio/formats";
 const logger = createLogger("webStorage");

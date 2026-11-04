@@ -1,4 +1,4 @@
-import { parseReplayGainTags } from "../src/platform/audio/replayGain";
+import { parseReplayGainTags } from "@audiflo/komorebi";
 
 describe("ReplayGain", () => {
   describe("parseReplayGainTags", () => {

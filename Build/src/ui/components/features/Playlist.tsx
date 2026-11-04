@@ -38,7 +38,7 @@ import { playlistFileName } from "../../../platform/library/m3u";
 import { useNavigation } from "../../navigation";
 import { allSongsPlaylist } from "../../navigation/scope";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
-import type { Playlist, PlaylistFolder } from "../../../core/engine/types";
+import type { Playlist, PlaylistFolder } from "@audiflo/komorebi";
 import styles from "./Playlist.module.css";
 
 interface PlaylistViewProps {

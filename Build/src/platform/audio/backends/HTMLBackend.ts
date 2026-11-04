@@ -1,6 +1,6 @@
 import { BaseAudioBackend } from "./BaseBackend";
 import { AudioGraph } from "../graph";
-import { clampRate, clampVolume } from "../clamp";
+import { clampRate, clampVolume } from "@audiflo/komorebi";
 import { createLogger, describeError } from "../../../helpers/logger";
 
 const logger = createLogger("htmlBackend");

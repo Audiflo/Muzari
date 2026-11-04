@@ -1,6 +1,6 @@
-export type DecodeCapability = "symphonia" | "flo" | "none";
+export type DecodeCapability = "required" | "none";
 
-export type MetadataCapability = "music-metadata" | "flo" | "none";
+export type MetadataCapability = "available" | "none";
 
 export interface HtmlAudioSupport {
   mime: string;
@@ -18,14 +18,37 @@ export interface AudioFormat {
   lossless: boolean;
 }
 
+export interface FormatCapabilityProvider {
+  id: string;
+  supports(format: AudioFormat): boolean;
+}
+
+export class FormatCapabilityRegistry {
+  private readonly providers: FormatCapabilityProvider[] = [];
+
+  register(provider: FormatCapabilityProvider): () => void {
+    this.providers.push(provider);
+    return () => {
+      const index = this.providers.indexOf(provider);
+      if (index >= 0) this.providers.splice(index, 1);
+    };
+  }
+
+  find(format: AudioFormat): FormatCapabilityProvider | null {
+    return (
+      this.providers.find((provider) => provider.supports(format)) ?? null
+    );
+  }
+}
+
 export const AUDIO_FORMATS: readonly AudioFormat[] = [
   {
     id: "flo",
     label: "Flo",
     extensions: [".flo"],
     mimeTypes: ["audio/x-flo"],
-    decode: "flo",
-    metadata: "flo",
+    decode: "required",
+    metadata: "available",
     htmlAudio: null,
     lossless: true,
   },
@@ -34,8 +57,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "MP3",
     extensions: [".mp3"],
     mimeTypes: ["audio/mpeg", "audio/mp3"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/mpeg" },
     lossless: false,
   },
@@ -44,8 +67,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "AAC",
     extensions: [".aac"],
     mimeTypes: ["audio/aac", "audio/aacp"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/aac" },
     lossless: false,
   },
@@ -54,8 +77,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "AAC/ALAC in MP4",
     extensions: [".m4a", ".m4b", ".mp4", ".m4p"],
     mimeTypes: ["audio/mp4", "audio/x-m4a", "video/mp4"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: 'audio/mp4; codecs="mp4a.40.2"' },
     lossless: false,
   },
@@ -64,8 +87,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "Apple Lossless (ALAC)",
     extensions: [".alac"],
     mimeTypes: ["audio/x-alac", "audio/alac"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: 'audio/mp4; codecs="alac"' },
     lossless: true,
   },
@@ -74,8 +97,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "FLAC",
     extensions: [".flac"],
     mimeTypes: ["audio/flac", "audio/x-flac"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/flac", minSafariVersion: 11 },
     lossless: true,
   },
@@ -84,8 +107,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "WAV",
     extensions: [".wav", ".wave"],
     mimeTypes: ["audio/wav", "audio/wave", "audio/x-wav"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/wav" },
     lossless: true,
   },
@@ -94,8 +117,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "AIFF",
     extensions: [".aif", ".aiff", ".aifc"],
     mimeTypes: ["audio/aiff", "audio/x-aiff"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/aiff" },
     lossless: true,
   },
@@ -104,8 +127,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "Core Audio Format",
     extensions: [".caf"],
     mimeTypes: ["audio/x-caf"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/x-caf" },
     lossless: true,
   },
@@ -114,8 +137,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "Ogg Vorbis",
     extensions: [".ogg", ".oga"],
     mimeTypes: ["audio/ogg", "audio/vorbis", "application/ogg"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: { mime: "audio/ogg; codecs=vorbis", minSafariVersion: 18.4 },
     lossless: false,
   },
@@ -124,8 +147,8 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     label: "Matroska audio",
     extensions: [".mka", ".mkv"],
     mimeTypes: ["audio/x-matroska", "video/x-matroska"],
-    decode: "symphonia",
-    metadata: "music-metadata",
+    decode: "required",
+    metadata: "available",
     htmlAudio: null,
     lossless: false,
   },
@@ -135,7 +158,7 @@ export const AUDIO_FORMATS: readonly AudioFormat[] = [
     extensions: [".opus"],
     mimeTypes: ["audio/opus", "audio/ogg; codecs=opus"],
     decode: "none",
-    metadata: "music-metadata",
+    metadata: "available",
     htmlAudio: { mime: "audio/ogg; codecs=opus", minSafariVersion: 18.4 },
     lossless: false,
   },
@@ -148,7 +171,7 @@ export const UNPLAYABLE_FORMATS: readonly AudioFormat[] = [
     extensions: [".wv"],
     mimeTypes: ["audio/x-wavpack"],
     decode: "none",
-    metadata: "music-metadata",
+    metadata: "available",
     htmlAudio: null,
     lossless: true,
   },
@@ -158,7 +181,7 @@ export const UNPLAYABLE_FORMATS: readonly AudioFormat[] = [
     extensions: [".mpc"],
     mimeTypes: ["audio/x-musepack", "audio/musepack"],
     decode: "none",
-    metadata: "music-metadata",
+    metadata: "available",
     htmlAudio: null,
     lossless: false,
   },
@@ -168,7 +191,7 @@ export const UNPLAYABLE_FORMATS: readonly AudioFormat[] = [
     extensions: [".dsf", ".dff"],
     mimeTypes: ["audio/x-dsd", "audio/dsd"],
     decode: "none",
-    metadata: "music-metadata",
+    metadata: "available",
     htmlAudio: null,
     lossless: true,
   },
@@ -178,7 +201,7 @@ export const UNPLAYABLE_FORMATS: readonly AudioFormat[] = [
     extensions: [".wma", ".asf"],
     mimeTypes: ["audio/x-ms-wma", "video/x-ms-asf"],
     decode: "none",
-    metadata: "music-metadata",
+    metadata: "available",
     htmlAudio: null,
     lossless: false,
   },

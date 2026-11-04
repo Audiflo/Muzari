@@ -1,4 +1,4 @@
-import type { Track, TrackSourceKind } from "../core/engine/types";
+import type { Track, TrackSourceKind } from "@audiflo/komorebi";
 import { saveAudio } from "../platform/storage/opfs";
 import { trackStorage } from "../platform/storage/trackStorage";
 

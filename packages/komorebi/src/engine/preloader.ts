@@ -1,7 +1,6 @@
-import type { Track } from "../../core/engine/types";
-import { createLogger } from "../../helpers/logger";
-
-const logger = createLogger("preloader");
+import type { Track } from "./types";
+import type { KomorebiLogger } from "./adapters";
+import { createKomorebiLogger } from "./logger";
 
 interface PreloadWaiter {
   resolve: (url: string) => void;
@@ -22,6 +21,7 @@ export interface PreloadConfig {
 
 export interface PreloadOptions {
   resolveTrack?: (track: Track) => Promise<Track>;
+  load?: (url: string) => Promise<string>;
 }
 
 const DEFAULT_CONFIG: PreloadConfig = {
@@ -36,13 +36,32 @@ export class PreloadManager {
   private loading: Set<string> = new Set();
   private preloadCallbacks: Map<string, Set<PreloadWaiter>> = new Map();
   private readonly resolveTrack?: (track: Track) => Promise<Track>;
+  private readonly load: (url: string) => Promise<string>;
+  private readonly logger: KomorebiLogger;
 
   constructor(
     config: Partial<PreloadConfig> = {},
     options: PreloadOptions = {},
+    logger: KomorebiLogger = createKomorebiLogger("preloader"),
   ) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.resolveTrack = options.resolveTrack;
+    this.load =
+      options.load ??
+      (async (url) => {
+        const runtime = globalThis as typeof globalThis & {
+          fetch?: (input: string) => Promise<{
+            blob(): Promise<Blob>;
+          }>;
+          URL?: { createObjectURL(blob: Blob): string };
+        };
+        if (!runtime.fetch || !runtime.URL?.createObjectURL) {
+          throw new Error("PreloadManager requires a loader in this runtime");
+        }
+        const response = await runtime.fetch(url);
+        return runtime.URL.createObjectURL(await response.blob());
+      });
+    this.logger = logger;
   }
 
   setConfig(config: Partial<PreloadConfig>): void {
@@ -89,9 +108,7 @@ export class PreloadManager {
 
     try {
       const source = this.resolveTrack ? await this.resolveTrack(track) : track;
-      const response = await fetch(source.url);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      const url = await this.load(source.url);
 
       this.cache.set(track.id, {
         track,
@@ -147,7 +164,7 @@ export class PreloadManager {
         !this.loading.has(track.id)
       ) {
         this.preload(track).catch((e) =>
-          logger.error("Preload failed", { error: String(e) }),
+          this.logger.error("Preload failed", { error: String(e) }),
         );
       }
     }

@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 22
 
+      - name: Build Komorebi
+        working-directory: packages/komorebi
+        run: npm ci && npm run build
+
       - name: Install dependencies
         working-directory: Build
         run: npm ci

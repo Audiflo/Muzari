@@ -6,7 +6,7 @@ import { isSafari } from "../../utils/safari";
 import { chooseBackendFor, identifyFormat, type BackendKind } from "../formats";
 import { sniffAudioFailure, trackCodecFailure } from "../playability";
 import type { CrossfadeSource, IAudioBackend } from "../index";
-import type { Track } from "../../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 import { createLogger, describeError } from "../../../helpers/logger";
 
 const logger = createLogger("backendRouter");
@@ -266,7 +266,7 @@ export class BackendRouter extends BaseAudioBackend {
     target.setOutputGain?.(0);
   }
 
-  getEqualizer(): import("../equalizer").Equalizer {
+  getEqualizer(): import("@audiflo/komorebi").Equalizer {
     return this.graph.getEqualizer();
   }
 

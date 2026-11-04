@@ -4,13 +4,13 @@ import type {
 import {
   KomorebiEngine,
   type IAudioEngineConfig,
-} from "../../src/core/engine/engine";
+} from "@audiflo/komorebi";
 import type {
   EngineState,
   PlayerState,
   Playlist,
   Track,
-} from "../../src/core/engine/types";
+} from "@audiflo/komorebi";
 import { createMockTrack, mulberry32, randomInt } from "../helpers";
 
 class FuzzBackend implements IAudioBackend {

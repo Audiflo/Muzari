@@ -5,7 +5,7 @@ import type {
   EncodingDetails,
   GaplessInfo,
   ReplayGainInfo,
-} from "../../core/engine/types";
+} from "@audiflo/komorebi";
 import { createLogger, describeError } from "../../helpers/logger";
 import { identifyFormat } from "../audio/formats";
 

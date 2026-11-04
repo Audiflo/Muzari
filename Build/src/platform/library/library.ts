@@ -3,7 +3,7 @@ import type {
   Playlist,
   PlaylistFolder,
   PlaylistItem,
-} from "../../core/engine/types";
+} from "@audiflo/komorebi";
 import type { LibraryState, LibraryEventMap, LibraryActions } from "./types";
 
 type EventCallback<T> = (data: T) => void;

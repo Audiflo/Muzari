@@ -1,5 +1,5 @@
 import type { ThemeMode } from "./events";
-import type { Track } from "../../core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 export interface Palette {
   name: string;

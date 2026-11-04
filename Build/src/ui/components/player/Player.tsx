@@ -23,7 +23,7 @@ import { PlayerTrackInfo } from "./PlayerTrackInfo";
 import { PlayerSecondaryControls } from "./PlayerSecondaryControls";
 import { useSettingsState } from "../../../hooks/useSettingsState";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
-import type { Track, Playlist } from "../../../core/engine/types";
+import type { Track, Playlist } from "@audiflo/komorebi";
 
 gsap.registerPlugin(useGSAP);
 

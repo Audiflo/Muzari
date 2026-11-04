@@ -11,7 +11,7 @@ import {
 import { Button } from "./Button";
 import { Input } from "./Input";
 import modalStyles from "./Dialog.module.css";
-import type { Playlist, PlaylistFolder } from "../../../core/engine/types";
+import type { Playlist, PlaylistFolder } from "@audiflo/komorebi";
 
 export type DialogType =
   "createPlaylist" | "createFolder" | "delete" | "rename" | "move" | "confirm";

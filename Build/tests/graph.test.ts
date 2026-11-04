@@ -9,7 +9,7 @@ import {
   MAX_GAIN_DB,
   MAX_Q,
   MIN_GAIN_DB,
-} from "../src/platform/audio/equalizer";
+} from "@audiflo/komorebi";
 
 describe("AudioGraph", () => {
   let graph: AudioGraph;

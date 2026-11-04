@@ -4,7 +4,7 @@ import { Switch } from "../primitives/Switch";
 import { Icon } from "../shared/Icon";
 import { EqualizerPanel } from "./EqualizerPanel";
 import styles from "./Settings.module.css";
-import { MAX_CROSSFADE_SECONDS } from "../../../platform/audio/clamp";
+import { MAX_CROSSFADE_SECONDS } from "@audiflo/komorebi";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
 
 interface SettingsAudioProps {

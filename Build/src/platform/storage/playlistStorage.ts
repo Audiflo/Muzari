@@ -1,5 +1,5 @@
-import type { Playlist, PlaylistFolder } from "../../core/engine/types";
-import { isPlaylistItem, isPlainObject } from "../../core/engine/validators";
+import type { Playlist, PlaylistFolder } from "@audiflo/komorebi";
+import { isPlaylistItem, isPlainObject } from "@audiflo/komorebi";
 import { getDb, STORES, tx, req } from "./db";
 
 export const playlistStorage = {

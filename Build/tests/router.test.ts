@@ -4,7 +4,7 @@ import {
   crossfadePartnerKinds,
 } from "../src/platform/audio/backends/BackendRouter";
 import type { IAudioBackend } from "../src/platform/audio";
-import type { Track } from "../src/core/engine/types";
+import type { Track } from "@audiflo/komorebi";
 
 jest.mock("../src/helpers/logger", () => {
   const actual = jest.requireActual("../src/helpers/logger");
