@@ -228,6 +228,22 @@ export function SettingsInterface({
 
       <div className={styles.settingItem}>
         <div className={styles.settingInfo}>
+          <label htmlFor="show-visualizer">
+            {t("settings.interface.showVisualizer")}
+          </label>
+          <p className={styles.settingDescription}>
+            {t("settings.interface.showVisualizerDesc")}
+          </p>
+        </div>
+        <Switch
+          id="show-visualizer"
+          checked={settingsState.showVisualizer}
+          onCheckedChange={(show) => settings.setShowVisualizer(show)}
+        />
+      </div>
+
+      <div className={styles.settingItem}>
+        <div className={styles.settingInfo}>
           <label htmlFor="show-lyrics">{t("settings.interface.lyrics")}</label>
           <p className={styles.settingDescription}>
             {t("settings.interface.lyricsDesc")}

@@ -71,22 +71,29 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
     const [isVisualizerClosing, setIsVisualizerClosing] = useState(false);
     const [isLyricsClosing, setIsLyricsClosing] = useState(false);
     const visualizerOverlayRef = useRef<HTMLDivElement>(null);
+    const visualizerCloseTweenRef = useRef<gsap.core.Tween | null>(null);
+    const visualizerCloseTokenRef = useRef(0);
 
     useGSAP(
       () => {
         const overlay = visualizerOverlayRef.current;
         if (!overlay) return;
         if (isVisualizerClosing) {
+          visualizerCloseTweenRef.current?.kill();
+          visualizerCloseTweenRef.current = null;
+          const closeToken = ++visualizerCloseTokenRef.current;
           if (prefersReducedMotion()) {
             setShowVisualizer(false);
             setIsVisualizerClosing(false);
           } else {
-            gsap.to(overlay, {
+            visualizerCloseTweenRef.current = gsap.to(overlay, {
               yPercent: -100,
               opacity: 0,
               duration: 0.25,
               ease: "power3.in",
               onComplete: () => {
+                if (closeToken !== visualizerCloseTokenRef.current) return;
+                visualizerCloseTweenRef.current = null;
                 setShowVisualizer(false);
                 setIsVisualizerClosing(false);
               },
@@ -155,13 +162,16 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
     }, [settingsState.showLyrics]);
 
     useEffect(() => {
-      if (!currentSong || !isPlaying || !settingsState.autoShowVisualizer) {
+      if (!currentSong || !isPlaying || !settingsState.showVisualizer) {
         return;
       }
 
+      visualizerCloseTokenRef.current += 1;
+      visualizerCloseTweenRef.current?.kill();
+      visualizerCloseTweenRef.current = null;
       setIsVisualizerClosing(false);
       setShowVisualizer(true);
-    }, [currentSong?.id, isPlaying, settingsState.autoShowVisualizer]);
+    }, [currentSong?.id, isPlaying, settingsState.showVisualizer]);
 
     const isHomeView = navState.view === "home";
 

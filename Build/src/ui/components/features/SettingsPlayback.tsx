@@ -11,7 +11,6 @@ import { Icon } from "../shared/Icon";
 import styles from "./Settings.module.css";
 import type { RepeatMode } from "../../../core/engine/types";
 import type { UseKomorebiReturn } from "../../../hooks/useKomorebi";
-import { useSettingsState } from "../../../hooks/useSettingsState";
 
 interface SettingsPlaybackProps {
   komorebi: UseKomorebiReturn;
@@ -19,7 +18,6 @@ interface SettingsPlaybackProps {
 
 export function SettingsPlayback({ komorebi }: SettingsPlaybackProps) {
   const { t } = useTranslation();
-  const settingsState = useSettingsState(komorebi.settings);
 
   return (
     <section className={styles.section}>
@@ -104,23 +102,6 @@ export function SettingsPlayback({ komorebi }: SettingsPlaybackProps) {
         />
       </div>
 
-      <div className={styles.settingItem}>
-        <div className={styles.settingInfo}>
-          <label htmlFor="auto-show-visualizer">
-            {t("settings.playback.autoShowVisualizer")}
-          </label>
-          <p className={styles.settingDescription}>
-            {t("settings.playback.autoShowVisualizerDesc")}
-          </p>
-        </div>
-        <Switch
-          id="auto-show-visualizer"
-          checked={settingsState.autoShowVisualizer}
-          onCheckedChange={(show) =>
-            komorebi.settings.setAutoShowVisualizer(show)
-          }
-        />
-      </div>
     </section>
   );
 }

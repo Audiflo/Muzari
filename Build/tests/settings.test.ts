@@ -55,10 +55,10 @@ describe("SettingsManager", () => {
       expect(settings.getSettings().showLyrics).toBe(true);
     });
 
-    it("should set auto-show visualizer", () => {
-      expect(settings.getSettings().autoShowVisualizer).toBe(false);
-      settings.setAutoShowVisualizer(true);
-      expect(settings.getSettings().autoShowVisualizer).toBe(true);
+    it("should set show visualizer", () => {
+      expect(settings.getSettings().showVisualizer).toBe(false);
+      settings.setShowVisualizer(true);
+      expect(settings.getSettings().showVisualizer).toBe(true);
     });
   });
 
