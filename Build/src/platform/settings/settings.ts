@@ -48,6 +48,11 @@ export class SettingsManager implements SettingsActions {
     this.emitSettingsChange({ showLyrics: show });
   }
 
+  setShowVisualizer(show: boolean): void {
+    this.settings.showVisualizer = show;
+    this.emitSettingsChange({ showVisualizer: show });
+  }
+
   setLastPlayed(songId: string, playlistId?: string): void {
     this.settings.lastPlayedSongId = songId;
     this.settings.lastPlayedPlaylistId = playlistId;

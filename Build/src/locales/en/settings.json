@@ -65,6 +65,8 @@
     "compactDesc": "Use a more compact layout to fit more content",
     "albumArt": "Show Album Art",
     "albumArtDesc": "Display album artwork in the player interface",
+    "showVisualizer": "Show Visualizer",
+    "showVisualizerDesc": "Display visualizer in the player interface.",
     "lyrics": "Show Lyrics",
     "lyricsDesc": "Display song lyrics when available",
     "language": "Language",

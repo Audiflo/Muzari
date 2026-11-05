@@ -8,6 +8,7 @@ module.exports = {
   testMatch: ["**/*.test.ts", "**/*.spec.ts"],
   testPathIgnorePatterns: ["/node_modules/", "<rootDir>/tests/integration/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
+  modulePaths: ["<rootDir>/node_modules"],
   transform: {
     "^.+\\.tsx?$": ["ts-jest", { useESM: true }],
   },

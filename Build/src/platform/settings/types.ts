@@ -14,6 +14,7 @@ export interface SettingsState {
   compactMode: boolean;
   showAlbumArt: boolean;
   showLyrics: boolean;
+  showVisualizer: boolean;
   lastPlayedSongId?: string;
   lastPlayedPlaylistId?: string;
   language: string;
@@ -30,6 +31,7 @@ export interface SettingsActions {
   setCompactMode(compact: boolean): void;
   setShowAlbumArt(show: boolean): void;
   setShowLyrics(show: boolean): void;
+  setShowVisualizer(show: boolean): void;
   setLastPlayed(songId: string, playlistId?: string): void;
   setLanguage(language: string): void;
   setDiscordEnabled(enabled: boolean): void;
@@ -63,6 +65,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   compactMode: false,
   showAlbumArt: true,
   showLyrics: false,
+  showVisualizer: false,
   language: "en",
   discordEnabled: false,
   erudaEnabled: false,

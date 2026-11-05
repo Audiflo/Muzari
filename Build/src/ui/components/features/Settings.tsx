@@ -61,6 +61,7 @@ export function Settings({
       settings.setCompactMode(false);
       settings.setShowAlbumArt(true);
       settings.setShowLyrics(false);
+      settings.setShowVisualizer(false);
       settings.setColorTheme(defaultThemeName);
       settings.setWallpaper("None");
       settings.setLanguage("English");

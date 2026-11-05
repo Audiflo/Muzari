@@ -54,6 +54,12 @@ describe("SettingsManager", () => {
       settings.setShowLyrics(true);
       expect(settings.getSettings().showLyrics).toBe(true);
     });
+
+    it("should set show visualizer", () => {
+      expect(settings.getSettings().showVisualizer).toBe(false);
+      settings.setShowVisualizer(true);
+      expect(settings.getSettings().showVisualizer).toBe(true);
+    });
   });
 
   describe("Language and localization", () => {
