@@ -32,7 +32,7 @@ export class SymphoniaDecoder {
    */
   end_of_input(): void;
   error_message(): string | undefined;
-  feed(bytes: Uint8Array): boolean;
+  feed(bytes: Uint8Array | number[]): boolean;
   free(): void;
   get_info(): DecoderInfo | undefined;
   has_error(): boolean;
