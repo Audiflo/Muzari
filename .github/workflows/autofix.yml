@@ -58,6 +58,12 @@ jobs:
           npm run make-pretty
           npm run generate:visualizers
 
+
+      - name: Build symphonia-wasm
+        working-directory: Build
+        run: |
+          npm run build:wasm
+
       # Re-resolving each workspace repairs Dependabot-edited changes
       - name: Sync cargo lockfiles
         run: |
