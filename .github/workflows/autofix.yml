@@ -58,7 +58,6 @@ jobs:
           npm run make-pretty
           npm run generate:visualizers
 
-
       - name: Build symphonia-wasm
         working-directory: Build
         run: |
